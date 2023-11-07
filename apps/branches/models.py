@@ -36,5 +36,5 @@ class Workdays(models.Model):
 class Branch(models.Model):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     address = models.TextField()
-    phone = PhoneNumberField()
+    phone_number = PhoneNumberField()
     link_to_map = models.URLField()
