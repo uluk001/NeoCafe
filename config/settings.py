@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
 
     # Third-Party Apps
     'rest_framework',
@@ -57,7 +58,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
 ROOT_URLCONF = 'config.urls'
 
 CORS_ALLOW_CREDENTIALS = True
@@ -140,3 +145,11 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# settings.py
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# ...
+INFOBIP_API_KEY = 'db2910e38d905789028a222860fba7fe-72d64cc9-f882-4b9c-83c8-b6744b380638'
+INFOBIP_BASE_URL = 'j3rrzn.api.infobip.com'
+INFOBIP_PHONE_NUMBER = '+996772009031'
+# ...
