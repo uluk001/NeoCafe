@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
-    "phonenumber_field",
+    'phonenumber_field',
 
     # Local Apps
     'apps.storage',

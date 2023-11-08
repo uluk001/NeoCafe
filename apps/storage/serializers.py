@@ -62,3 +62,12 @@ class ItemDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = '__all__'
+
+
+class ItemsWithBranchesAndQuantitiesSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    available_at_the_branch = AvailableAtTheBranchSerializer(many=True)
+
+    class Meta:
+        model = Item
+        fields = '__all__'
