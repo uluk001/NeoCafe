@@ -1,5 +1,5 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.accounts.views import (
     ClientConfirmPhoneNumberView,
@@ -8,11 +8,11 @@ from apps.accounts.views import (
     RegisterView,
     LoginView,
     ResendCodeView,
-    CheckPreToken
+    ClientConfirmLoginView,
+    ClientUserProfileView,
 )
 
 urlpatterns = [
-    path("login/", TokenObtainPairView.as_view()),
     path("api/refresh/", TokenRefreshView.as_view()),
     path("register/", RegisterView.as_view()),
     path("login/", LoginView.as_view()),
@@ -20,4 +20,6 @@ urlpatterns = [
     path("birth-date/", ClientBirthDateView.as_view()),
     path("edit-profile/", ClientEditProfileView.as_view()),
     path("resend-code/", ResendCodeView.as_view()),
+    path("confirm-login/", ClientConfirmLoginView.as_view()),
+    path("my-profile/", ClientUserProfileView.as_view()),
 ]

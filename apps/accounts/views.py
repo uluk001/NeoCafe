@@ -191,37 +191,93 @@ class LoginView(generics.GenericAPIView):
     - `phone_number`: Phone number of the user
     """
 
-    serializer_class = serializers.Serializer
+    serializer_class = LoginSerializer
 
     @swagger_auto_schema(
-        request_body=serializers.Serializer,
-        responses={200: serializers.Serializer}
+        request_body=LoginSerializer,
+        responses={200: LoginSerializer}
     )
 
     def post(self, request):
         phone_number = str(request.data["phone_number"])
-        user = CustomUser.objects.filter(phone_number=phone_number)
-        if user.exists():
-            user = user.first()
-            if user.is_verified:
-                refresh = RefreshToken.for_user(user)
-                user.token_auth = str(refresh.access_token)
-                user.save()
-                return Response(
-                    {
-                        "phone_number": str(user.phone_number),
-                        "token": user.token_auth,
-                        "message": f"Введите 4-х значный код, отправленный на номер {user.phone_number}",
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {"detail": "Подтвердите номер телефона"},
-                    status=status.HTTP_400_BAD_REQUEST,
+        first_name = request.data["first_name"]
+        try:
+            user = CustomUser.objects.get(phone_number=phone_number)
+        except CustomUser.DoesNotExist:
+            return Response({"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND)
+        if user.is_verified:
+            send_phone_number_verification(user.id)
+            pre_token = generate_pre_2fa_token(user)
+            return Response(
+                {
+                    "pre_token": pre_token,
+                    "detail": f"Введите 4-х значный код, отправленный на номер {user.phone_number}"
+                },
+                    status=status.HTTP_200_OK
                 )
         else:
+            return Response({"detail": "Пользователь не подтвержден"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ClientConfirmLoginView(generics.GenericAPIView):
+    """
+    Confirm login.
+
+    Use this endpoint to confirm login.
+
+    Parameters:
+    - `code`: Code for login confirmation
+    """
+
+    serializer_class = ClientConfirmPhoneNumberSerializer
+
+    @swagger_auto_schema(
+        request_body=ClientConfirmPhoneNumberSerializer,
+        responses={200: ClientConfirmPhoneNumberSerializer}
+    )
+
+    def post(self, request):
+        code = request.data["code"]
+        pre_token = request.headers.get("Authorization")
+        user = get_user_by_token(pre_token)
+        verification = PhoneNumberVerification.objects.filter(user=user, code=code)
+        if verification.exists() and not verification.first().is_expired():
+            user.is_verified = True
+            user.save()
+            refresh = RefreshToken.for_user(user)
+            token_auth = str(refresh.access_token)
+            user.token_auth = token_auth
+            login(request, user)
             return Response(
-                {"detail": "Пользователь с таким номером не найден"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "phone_number": str(user.phone_number),
+                    "refresh": str(refresh),
+                    "access": user.token_auth,
+                    "detail": "Вы успешно авторизованы"
+                },
+                status=status.HTTP_200_OK
             )
+        else:
+            return Response(
+                {
+                    "detail": "Код введен неверно, попробуйте еще раз"
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class ClientUserProfileView(generics.GenericAPIView):
+    """
+    User profile.
+
+    Use this endpoint to get user profile.
+    """
+
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsPhoneNumberVerified]
+
+
+    def get(self, request):
+        user = request.user
+        serializer = CustomUserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
