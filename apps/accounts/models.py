@@ -7,6 +7,8 @@ from django.db import models
 from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
 from apps.branches.models import Branch
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import Group, Permission
 
 
 class CustomUserManager(BaseUserManager):
@@ -62,6 +64,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = "phone_number"
+
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_('The groups this user belongs to. A user will get all permissions granted to each of their groups.'),
+        related_name="customuser_groups",
+        related_query_name="customuser",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name="customuser_permissions",
+        related_query_name="customuser",
+    )
 
     def __str__(self):
         return f"CustomUser object for {self.phone_number}"

@@ -1,83 +1,83 @@
-# from django.contrib.auth import get_user_model
-# from django.utils.crypto import get_random_string
-# from rest_framework import serializers
-# from rest_framework_simplejwt.tokens import RefreshToken
-
-# User = get_user_model()
-
-
-# class CustomUserSerializer(serializers.ModelSerializer):
-#     phone_number = serializers.CharField(required=True)
-#     first_name = serializers.CharField(required=False)
-#     last_name = serializers.CharField(required=False)
-#     password = serializers.CharField(write_only=True, required=True)
-#     password2 = serializers.CharField(write_only=True, required=True)
-
-#     class Meta:
-#         model = User
-#         fields = (
-#             "phone_number",
-#             "password",
-#             "password2",
-#             "first_name",
-#             "last_name",
-#         )
-
-#     def validate(self, attrs):
-#         if attrs["password"] != attrs["password2"]:
-#             raise serializers.ValidationError(
-#                 {"password": "Пароль не совпадает, попробуйте еще раз"}
-#             )
-#         return attrs
-
-#     def create(self, validated_data):
-#         phone_number = str(validated_data["phone_number"])
-#         password = validated_data["password"]
-#         first_name = validated_data["first_name"]
-#         last_name = validated_data["last_name"]
-#         user = User.objects.create_user(
-#             phone_number=phone_number,
-#             password=password,
-#             first_name=first_name,
-#             last_name=last_name,
-#         )
-#         user.is_active = True
-#         user.token_auth = get_random_string(64)
-#         user.save()
-
-#         refresh = RefreshToken.for_user(user)
-#         return user
+from django.contrib.auth import get_user_model
+from django.utils.crypto import get_random_string
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+import phonenumbers
+from phonenumbers import NumberParseException, is_valid_number
 
 
-# class ConfirmPhoneNumberSerializer(serializers.Serializer):
-#     code = serializers.CharField(required=True)
+User = get_user_model()
 
 
-# class EditProfileSerializer(serializers.ModelSerializer):
-#     first_name = serializers.CharField(required=False)
-#     last_name = serializers.CharField(required=False)
+def validate_phone_number(value):
+    try:
+        phone_number = phonenumbers.parse(value, None)
+    except NumberParseException:
+        raise serializers.ValidationError("Введите корректный номер телефона")
 
-#     class Meta:
-#         model = User
-#         fields = ("first_name", "last_name")
-
-
-# class ChangePasswordSerializer(serializers.Serializer):
-#     old_password = serializers.CharField(required=True)
-#     new_password = serializers.CharField(required=True)
-#     new_password2 = serializers.CharField(required=True)
+    if not is_valid_number(phone_number):
+        raise serializers.ValidationError("Номер телефона не соответствует мировому стандарту")
+    return phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.E164)
 
 
-# class ChangePhoneNumberSerializer(serializers.Serializer):
-#     phone_number = serializers.CharField(required=True)
-#     code = serializers.CharField(required=True)
+class CustomUserSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(required=True, validators=[validate_phone_number])
+    first_name = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = (
+            "phone_number",
+            "first_name",
+        )
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        phone_number = str(validated_data["phone_number"])
+        first_name = validated_data["first_name"]
+        user = User.objects.create_user(
+            phone_number=phone_number,
+            first_name=first_name,
+        )
+        user.is_active = True
+        user.token_auth = get_random_string(64)
+        user.save()
+
+        refresh = RefreshToken.for_user(user)
+        return user
 
 
-# class ResetPasswordSerializer(serializers.Serializer):
-#     user_id = serializers.IntegerField(required=True)
-#     new_password = serializers.CharField(required=True)
-#     new_password2 = serializers.CharField(required=True)
+class ClientConfirmPhoneNumberSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True)
 
 
-# class SendVerificationCodeForResetPasswordSerializer(serializers.Serializer):
-#     phone_number = serializers.CharField(required=True)
+class ClientBirthDateSerializer(serializers.Serializer):
+    birth_date = serializers.DateField(required=True)
+
+
+class ClientEditProfileSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True, validators=[validate_phone_number])
+    birth_date = serializers.DateField(required=True)
+
+
+class LoginSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=False)
+
+
+class ChangePhoneNumberSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
+    code = serializers.CharField(required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    new_password = serializers.CharField(required=True)
+    new_password2 = serializers.CharField(required=True)
+
+
+class SendVerificationCodeForResetPasswordSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
