@@ -21,7 +21,7 @@ class Workdays(models.Model):
         (7, 'Sunday'),
     ]
 
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='workdays')
     workday = models.PositiveSmallIntegerField(choices=WEEKDAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -34,10 +34,15 @@ class Workdays(models.Model):
 
 
 class Branch(models.Model):
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='branches', blank=True, null=True)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='branches')
     address = models.TextField()
     phone_number = PhoneNumberField()
     link_to_map = models.URLField()
+
+    @property
+    def workdays(self):
+        return Workdays.objects.filter(schedule=self.schedule)
 
     def __str__(self):
         return f'{self.address} - {self.phone_number}'

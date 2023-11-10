@@ -1,5 +1,6 @@
 from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ingredient, Item, ReadyMadeProduct, ReadyMadeProductAvailableAtTheBranch
-from apps.storage.serializers import AvailableAtTheBranchSerializer, CategorySerializer, CompositionSerializer, IngredientSerializer, ItemSerializer, ReadyMadeProductSerializer, ReadyMadeProductAvailableAtTheBranchSerializer, ItemsWithBranchesAndQuantitiesSerializer
+from apps.storage.serializers import AvailableAtTheBranchSerializer, CategorySerializer, CompositionSerializer, IngredientSerializer, ItemSerializer, ReadyMadeProductSerializer, ReadyMadeProductAvailableAtTheBranchSerializer, ItemsWithBranchesAndQuantitiesSerializer, EmployeeSerializer
+from apps.accounts.models import CustomUser
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +12,8 @@ from drf_yasg import openapi
 class CreateCategoryView(generics.CreateAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Create category",
+        operation_description="Use this method to create a category",
         request_body=CategorySerializer,
         responses={201: openapi.Response('Category created successfully', CategorySerializer)}
     )
@@ -30,6 +33,8 @@ class CreateCategoryView(generics.CreateAPIView):
 class DestroyCategoryView(generics.DestroyAPIView):
     
     @swagger_auto_schema(
+        operation_summary="Delete category",
+        operation_description="Use this method to delete a category",
         responses={200: openapi.Response('Category deleted successfully')}
     )
     
@@ -46,6 +51,8 @@ class DestroyCategoryView(generics.DestroyAPIView):
 class ListCategoryView(generics.ListAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Get categories",
+        operation_description="Use this method to get all categories",
         responses={200: openapi.Response('Categories list', CategorySerializer(many=True))}
     )
     
@@ -63,6 +70,8 @@ class ListCategoryView(generics.ListAPIView):
 class CreateItemView(APIView):
 
     @swagger_auto_schema(
+        operation_summary="Create item",
+        operation_description="Use this method to create an item",
         request_body=ItemSerializer,
         responses={201: openapi.Response('Item created successfully', ItemSerializer)}
     )
@@ -87,6 +96,8 @@ class CreateItemView(APIView):
 class DestroyItemView(generics.DestroyAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Delete item",
+        operation_description="Use this method to delete an item",
         responses={200: openapi.Response('Item deleted successfully')}
     )
 
@@ -103,6 +114,8 @@ class DestroyItemView(generics.DestroyAPIView):
 class ListItemView(generics.ListAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Get items",
+        operation_description="Use this method to get all items",
         responses={200: openapi.Response('Items list', ItemSerializer(many=True))}
     )
 
@@ -119,6 +132,8 @@ class ListItemView(generics.ListAPIView):
 class ItemsWithBranchesAndQuantitiesView(APIView):
 
     @swagger_auto_schema(
+        operation_summary="Get items with branches and quantities",
+        operation_description="Use this method to get all items with branches and quantities",
         responses={200: openapi.Response('Items list with branches and quantities', ItemsWithBranchesAndQuantitiesSerializer(many=True))}
     )
 
@@ -132,6 +147,8 @@ class ItemsWithBranchesAndQuantitiesView(APIView):
 class CreateIngredientView(generics.CreateAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Create ingredient",
+        operation_description="Use this method to create an ingredient",
         request_body=IngredientSerializer,
         responses={201: openapi.Response('Ingredient created successfully', IngredientSerializer)}
     )
@@ -151,6 +168,8 @@ class CreateIngredientView(generics.CreateAPIView):
 class DestroyIngredientView(generics.DestroyAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Delete ingredient",
+        operation_description="Use this method to delete an ingredient",
         responses={200: openapi.Response('Ingredient deleted successfully')}
     )
 
@@ -167,6 +186,8 @@ class DestroyIngredientView(generics.DestroyAPIView):
 class ListIngredientView(generics.ListAPIView):
 
     @swagger_auto_schema(
+        operation_summary="Get ingredients",
+        operation_description="Use this method to get all ingredients",
         responses={200: openapi.Response('Ingredients list', IngredientSerializer(many=True))}
     )
 
@@ -178,3 +199,21 @@ class ListIngredientView(generics.ListAPIView):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [permissions.IsAdminUser]
+
+
+# Employees views
+class CreateEmployeeView(generics.CreateAPIView):
+
+    @swagger_auto_schema(
+        operation_summary="Create employee",
+        operation_description="Use this method to create an employee",
+        request_body=EmployeeSerializer,
+        responses={201: openapi.Response('Employee created successfully', EmployeeSerializer)}
+    )
+
+    def post(self, request):
+        serializer = EmployeeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Employee created successfully'}, status=201)
+        return Response(serializer.errors, status=400)
