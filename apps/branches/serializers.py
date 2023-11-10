@@ -20,9 +20,6 @@ class BranchSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'schedule', 'address', 'phone_number', 'link_to_map', 'workdays']
     
     def validate_workdays(self, value):
-        """
-        Проверяем каждый элемент в workdays
-        """
         for workday_data in value:
             WorkdaysSerializer(data=workday_data).is_valid(raise_exception=True)
         return value

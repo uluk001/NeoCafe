@@ -11,6 +11,36 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group, Permission
 
 
+class EmployeeSchedule(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.title
+
+
+class EmployeeWorkdays(models.Model):
+    WEEKDAYS = [
+        (1, 'Monday'),
+        (2, 'Tuesday'),
+        (3, 'Wednesday'),
+        (4, 'Thursday'),
+        (5, 'Friday'),
+        (6, 'Saturday'),
+        (7, 'Sunday'),
+    ]
+
+    schedule = models.ForeignKey(EmployeeSchedule, on_delete=models.CASCADE, related_name='workdays')
+    workday = models.PositiveSmallIntegerField(choices=WEEKDAYS)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return f'{self.schedule.title} - {self.workday} - {self.start_time} - {self.end_time}'
+
+    class Meta:
+        verbose_name_plural = 'EmployeeWorkdays'
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, phone_number, first_name=None, last_name=None, password=None):
         if not phone_number:
@@ -49,9 +79,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     )
 
     first_name = models.CharField(max_length=255, blank=True, null=True)
+    schedule = models.ForeignKey(EmployeeSchedule, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     password = models.CharField(max_length=128)
+    username = models.CharField(max_length=255, blank=True, null=True)
     token_auth = models.CharField(max_length=64, blank=True, null=True)
     branch = models.ForeignKey(to=Branch, on_delete=models.CASCADE, null=True)
     bonus = models.IntegerField(default=0)
@@ -99,3 +131,5 @@ class PhoneNumberVerification(models.Model):
 
     def is_expired(self):
         return True if now() >= self.expiration else False
+
+
