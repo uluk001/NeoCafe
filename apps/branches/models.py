@@ -4,7 +4,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class Schedule(models.Model):
     title = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -27,7 +27,7 @@ class Workdays(models.Model):
     end_time = models.TimeField()
 
     def __str__(self):
-        return f'{self.schedule.title} - {self.day} - {self.start_time} - {self.end_time}'
+        return f'{self.schedule.title} - {self.workday} - {self.start_time} - {self.end_time}'
 
     class Meta:
         verbose_name_plural = 'Workdays'
@@ -38,3 +38,6 @@ class Branch(models.Model):
     address = models.TextField()
     phone_number = PhoneNumberField()
     link_to_map = models.URLField()
+
+    def __str__(self):
+        return f'{self.address} - {self.phone_number}'

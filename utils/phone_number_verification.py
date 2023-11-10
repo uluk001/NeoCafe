@@ -21,11 +21,15 @@ def send_phone_number_verification(user_id):
 
 def send_verification_phone_number(code, phone_number):
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    print(f"Отправка кода подтверждения на номер {phone_number}. Код: {code}")
     message = client.messages.create(
         to=f"{phone_number}",
         from_=settings.TWILIO_PHONE_NUMBER,
         body=f"Ваш код: {code}",
     )
+    print(message)
+    print(message.sid)
+    
     return message.sid
 
 
