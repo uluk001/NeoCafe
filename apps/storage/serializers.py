@@ -2,78 +2,14 @@ from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ing
 from rest_framework import serializers
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 
-
+# Categories
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
 
-class ItemSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-
-    class Meta:
-        model = Item
-        fields = '__all__'
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
-
-
-class CompositionSerializer(serializers.ModelSerializer):
-    item = ItemSerializer()
-    ingredient = IngredientSerializer()
-
-    class Meta:
-        model = Composition
-        fields = '__all__'
-
-
-class ReadyMadeProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReadyMadeProduct
-        fields = '__all__'
-
-
-class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
-    ingredient = IngredientSerializer()
-
-    class Meta:
-        model = AvailableAtTheBranch
-        fields = '__all__'
-
-
-class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer):
-    ready_made_product = ReadyMadeProductSerializer()
-
-    class Meta:
-        model = ReadyMadeProductAvailableAtTheBranch
-        fields = '__all__'
-
-
-class ItemDetailSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    composition = CompositionSerializer(many=True)
-    available_at_the_branch = AvailableAtTheBranchSerializer(many=True)
-    ready_made_product_available_at_the_branch = ReadyMadeProductAvailableAtTheBranchSerializer(many=True)
-
-    class Meta:
-        model = Item
-        fields = '__all__'
-
-
-class ItemsWithBranchesAndQuantitiesSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    available_at_the_branch = AvailableAtTheBranchSerializer(many=True)
-
-    class Meta:
-        model = Item
-        fields = '__all__'
-
-
+# Employees
 class EmployeeWorkdaysSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -161,15 +97,46 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
         schedule.title = validated_data.get('title', schedule.title)
         schedule.save()
 
-        # Удалить существующие записи
         schedule.workdays.all().delete()
 
         workdays_data = validated_data.pop('workdays', [])
 
-        # Добавить новые записи
         for workday_data in workdays_data:
             workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
             if workday_serializer.is_valid(raise_exception=True):
                 workday_serializer.save(schedule=schedule)
 
         return schedule
+
+
+# Ingredients
+class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ['id', 'branch', 'quantity']
+
+
+class CreateIngredientSerializer(serializers.ModelSerializer):
+    available_at_branches = AvailableAtTheBranchSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Ingredient
+        fields = ['id', 'category', 'name', 'measurement_unit', 'minimal_limit', 'available_at_branches']
+
+    def create(self, validated_data):
+        available_at_branches_data = validated_data.pop('available_at_branches', [])
+        ingredient = Ingredient.objects.create(**validated_data)
+        for available_at_branch_data in available_at_branches_data:
+            AvailableAtTheBranch.objects.create(ingredient=ingredient, **available_at_branch_data)
+        return ingredient
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['available_at_branches'] = AvailableAtTheBranchSerializer(AvailableAtTheBranch.objects.filter(ingredient=instance), many=True).data
+        return representation
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ['id', 'category', 'name', 'measurement_unit', 'minimal_limit', 'date_of_arrival']

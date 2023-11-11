@@ -25,17 +25,19 @@ class Ingredient(models.Model):
         ('kg', 'kilogram'),
     ]
 
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     measurement_unit = models.CharField(max_length=3, choices=MEASUREMENT_CHOICES, default='g')
     minimal_limit = models.DecimalField(max_digits=10, decimal_places=2)
+    date_of_arrival = models.DateField(auto_now=True)
 
     def __str__(self):
         return self.name
 
 
 class Composition(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='compositions', related_query_name='composition', null=True, blank=True)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='compositions', related_query_name='composition', null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -59,7 +61,7 @@ class AvailableAtTheBranch(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f'{self.branch.address} - {self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}'
+        return f'{self.branch.address} - {self.ingredient.name} {self.ingredient.measurement_unit}'
 
 
 class ReadyMadeProductAvailableAtTheBranch(models.Model):
