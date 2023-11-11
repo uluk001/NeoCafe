@@ -117,6 +117,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         schedule_data = {"title": f"График работы {validated_data['first_name']}"}
+
         schedule = EmployeeSchedule.objects.create(**schedule_data)
         employee = CustomUser.objects.create(schedule=schedule, **validated_data)
 
@@ -127,8 +128,6 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                 workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
                 if workday_serializer.is_valid(raise_exception=True):
                     workday = workday_serializer.save(schedule=schedule)
-
-        return employee
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer):
