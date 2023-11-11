@@ -1,11 +1,12 @@
-from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ingredient, Item, ReadyMadeProduct, ReadyMadeProductAvailableAtTheBranch
-from apps.storage.serializers import AvailableAtTheBranchSerializer, CategorySerializer, CompositionSerializer, IngredientSerializer, ItemSerializer, ReadyMadeProductSerializer, ReadyMadeProductAvailableAtTheBranchSerializer, ItemsWithBranchesAndQuantitiesSerializer, EmployeeSerializer
-from apps.accounts.models import CustomUser
+from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ingredient, Item
+from apps.storage.serializers import CategorySerializer, CompositionSerializer, IngredientSerializer, ItemSerializer, ItemsWithBranchesAndQuantitiesSerializer, EmployeeSerializer, EmployeeUpdateSerializer, ScheduleUpdateSerializer, EmployeeCreateSerializer
+from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from apps.storage.services import get_employees
 
 
 # Categories views
@@ -204,16 +205,165 @@ class ListIngredientView(generics.ListAPIView):
 # Employees views
 class CreateEmployeeView(generics.CreateAPIView):
 
+    permission_classes = [permissions.IsAdminUser]
+
     @swagger_auto_schema(
         operation_summary="Create employee",
         operation_description="Use this method to create an employee",
-        request_body=EmployeeSerializer,
-        responses={201: openapi.Response('Employee created successfully', EmployeeSerializer)}
+        request_body=EmployeeCreateSerializer,
+        responses={201: openapi.Response('Employee created successfully', EmployeeCreateSerializer)}
     )
 
     def post(self, request):
-        serializer = EmployeeSerializer(data=request.data)
+        serializer = EmployeeCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Employee created successfully'}, status=201)
         return Response(serializer.errors, status=400)
+
+
+class EmployeeListView(generics.ListAPIView):
+
+    queryset = get_employees()
+    serializer_class = EmployeeSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'username': openapi.Schema(type=openapi.TYPE_STRING),
+            'password': openapi.Schema(type=openapi.TYPE_STRING),
+            'first_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'position': openapi.Schema(type=openapi.TYPE_STRING),
+            'birth_date': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING),
+            'branch': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'schedule': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'title': openapi.Schema(type=openapi.TYPE_STRING),
+                    'workdays': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'workday': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'start_time': openapi.Schema(type=openapi.TYPE_STRING, format='time'),
+                                'end_time': openapi.Schema(type=openapi.TYPE_STRING, format='time'),
+                            }
+                        )
+                    ),
+                }
+            ),
+        }
+    )
+
+    list_response_schema = openapi.Schema(
+        type=openapi.TYPE_ARRAY,
+        items=manual_response_schema
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get employees",
+        operation_description="Use this method to get all employees",
+        responses={200: openapi.Response('Employees list', list_response_schema)}
+    )
+    def get(self, request):
+        return super().get(request)      
+
+
+class EmployeeDetailView(generics.RetrieveAPIView):
+
+    serializer_class = EmployeeSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = get_employees()
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'username': openapi.Schema(type=openapi.TYPE_STRING),
+            'password': openapi.Schema(type=openapi.TYPE_STRING),
+            'first_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'position': openapi.Schema(type=openapi.TYPE_STRING),
+            'birth_date': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING),
+            'branch': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'schedule': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'title': openapi.Schema(type=openapi.TYPE_STRING),
+                    'workdays': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'workday': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'start_time': openapi.Schema(type=openapi.TYPE_STRING, format='time'),
+                                'end_time': openapi.Schema(type=openapi.TYPE_STRING, format='time'),
+                            }
+                        )
+                    ),
+                }
+            ),
+        }
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get specific employee",
+        operation_description="Use this endpoint to get a specific employee",
+        responses={200: openapi.Response('Employees object', manual_response_schema)}
+    )
+    def get(self, request, pk=None):
+        return super().get(request, pk)
+
+
+class EmployeeUpdateView(generics.UpdateAPIView):
+
+    queryset = CustomUser.objects.all()
+    serializer_class = EmployeeUpdateSerializer
+    lookup_field = 'pk'
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING),
+            'first_name': openapi.Schema(type=openapi.TYPE_STRING),
+            'position': openapi.Schema(type=openapi.TYPE_STRING),
+            'birth_date': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING),
+            'branch': openapi.Schema(type=openapi.TYPE_INTEGER),
+        }
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Update employee",
+        operation_description="Use this method to update an employee",
+        request_body=manual_request_schema,
+        responses={200: openapi.Response('Employee updated successfully', EmployeeUpdateSerializer)}
+    )
+
+    def put(self, request, pk):
+        employee = CustomUser.objects.get(pk=pk)
+        serializer = EmployeeUpdateSerializer(employee, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Employee updated successfully'}, status=200)
+        return Response(serializer.errors, status=400)
+
+
+class ScheduleUpdateView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = ScheduleUpdateSerializer
+    lookup_field = 'pk'
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user_id'] = self.kwargs['pk']
+        return context

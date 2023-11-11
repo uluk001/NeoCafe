@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Branch, Schedule, Workdays
+from django.db import transaction
 
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,20 +22,23 @@ class BranchSerializer(serializers.ModelSerializer):
     
     def validate_workdays(self, value):
         for workday_data in value:
-            WorkdaysSerializer(data=workday_data).is_valid(raise_exception=True)
+            try:
+                WorkdaysSerializer(data=workday_data).is_valid(raise_exception=True)
+            except serializers.ValidationError as e:
+                raise serializers.ValidationError({"workdays": "Error in workday data: {}".format(e)})
         return value
 
     def create(self, validated_data):
-        schedule_data = validated_data.pop('schedule')
-        schedule = Schedule.objects.create(**schedule_data)
-        branch = Branch.objects.create(schedule=schedule, **validated_data)
+        with transaction.atomic():
+            schedule_data = validated_data.pop('schedule')
+            schedule = Schedule.objects.create(**schedule_data)
+            branch = Branch.objects.create(schedule=schedule, **validated_data)
 
-        if 'workdays' in self.initial_data:
-            workdays_data = self.initial_data['workdays']
-            print(workdays_data)
-            for workday_data in workdays_data:
-                workday_serializer = WorkdaysSerializer(data=workday_data)
-                if workday_serializer.is_valid(raise_exception=True):
-                    workday = workday_serializer.save(schedule=schedule)
+            if 'workdays' in self.initial_data:
+                workdays_data = self.initial_data['workdays']
+                for workday_data in workdays_data:
+                    workday_serializer = WorkdaysSerializer(data=workday_data)
+                    if workday_serializer.is_valid(raise_exception=True):
+                        workday = workday_serializer.save(schedule=schedule)
 
         return branch

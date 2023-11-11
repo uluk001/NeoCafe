@@ -7,7 +7,7 @@ class WorkdaysInline(admin.TabularInline):
 
 
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description')
+    list_display = ('title',)
     inlines = [WorkdaysInline]
 
 
