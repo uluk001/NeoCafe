@@ -26,7 +26,7 @@ urlpatterns = [
 
    # local
    path('accounts/', include('apps.accounts.urls')),
-   path('storage/', include('apps.storage.urls')),
+   path('admin-panel/', include('apps.storage.urls')),
    path('branches/', include('apps.branches.urls')),
 
    # Swagger

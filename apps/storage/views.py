@@ -1,9 +1,17 @@
-from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ingredient, Item
-from apps.storage.serializers import CategorySerializer, CompositionSerializer, IngredientSerializer, ItemSerializer, ItemsWithBranchesAndQuantitiesSerializer, EmployeeSerializer, EmployeeUpdateSerializer, ScheduleUpdateSerializer, EmployeeCreateSerializer
-from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
+from apps.storage.models import Category
+from apps.storage.serializers import (
+    CategorySerializer,
+    EmployeeSerializer,
+    EmployeeUpdateSerializer,
+    ScheduleUpdateSerializer,
+    EmployeeCreateSerializer,
+    CreateIngredientSerializer,
+    IngredientSerializer,
+)
+from apps.accounts.models import CustomUser
+from apps.storage.models import AvailableAtTheBranch, Ingredient
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from apps.storage.services import get_employees
@@ -28,7 +36,6 @@ class CreateCategoryView(generics.CreateAPIView):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAdminUser]
 
 
 class DestroyCategoryView(generics.DestroyAPIView):
@@ -64,141 +71,6 @@ class ListCategoryView(generics.ListAPIView):
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-# Items views
-class CreateItemView(APIView):
-
-    @swagger_auto_schema(
-        operation_summary="Create item",
-        operation_description="Use this method to create an item",
-        request_body=ItemSerializer,
-        responses={201: openapi.Response('Item created successfully', ItemSerializer)}
-    )
-    
-    def post(self, request):
-        serializer = ItemSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Item created successfully'}, status=201)
-        return Response(serializer.errors, status=400)
-
-    permission_classes = [permissions.IsAdminUser]
-
-    def post(self, request):
-        serializer = ItemSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Item created successfully'}, status=201)
-        return Response(serializer.errors, status=400)
-
-
-class DestroyItemView(generics.DestroyAPIView):
-
-    @swagger_auto_schema(
-        operation_summary="Delete item",
-        operation_description="Use this method to delete an item",
-        responses={200: openapi.Response('Item deleted successfully')}
-    )
-
-    def delete(self, request, pk):
-        item = Item.objects.get(pk=pk)
-        item.delete()
-        return Response({'message': 'Item deleted successfully'}, status=200)
-
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class ListItemView(generics.ListAPIView):
-
-    @swagger_auto_schema(
-        operation_summary="Get items",
-        operation_description="Use this method to get all items",
-        responses={200: openapi.Response('Items list', ItemSerializer(many=True))}
-    )
-
-    def get(self, request):
-        items = Item.objects.all()
-        serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data)
-
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class ItemsWithBranchesAndQuantitiesView(APIView):
-
-    @swagger_auto_schema(
-        operation_summary="Get items with branches and quantities",
-        operation_description="Use this method to get all items with branches and quantities",
-        responses={200: openapi.Response('Items list with branches and quantities', ItemsWithBranchesAndQuantitiesSerializer(many=True))}
-    )
-
-    def get(self, request):
-        items = Item.objects.all()
-        serializer = ItemsWithBranchesAndQuantitiesSerializer(items, many=True)
-        return Response(serializer.data)
-
-
-# Ingredients views
-class CreateIngredientView(generics.CreateAPIView):
-
-    @swagger_auto_schema(
-        operation_summary="Create ingredient",
-        operation_description="Use this method to create an ingredient",
-        request_body=IngredientSerializer,
-        responses={201: openapi.Response('Ingredient created successfully', IngredientSerializer)}
-    )
-
-    def post(self, request):
-        serializer = IngredientSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Ingredient created successfully'}, status=201)
-        return Response(serializer.errors, status=400)
-
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class DestroyIngredientView(generics.DestroyAPIView):
-
-    @swagger_auto_schema(
-        operation_summary="Delete ingredient",
-        operation_description="Use this method to delete an ingredient",
-        responses={200: openapi.Response('Ingredient deleted successfully')}
-    )
-
-    def delete(self, request, pk):
-        ingredient = Ingredient.objects.get(pk=pk)
-        ingredient.delete()
-        return Response({'message': 'Ingredient deleted successfully'}, status=200)
-
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class ListIngredientView(generics.ListAPIView):
-
-    @swagger_auto_schema(
-        operation_summary="Get ingredients",
-        operation_description="Use this method to get all ingredients",
-        responses={200: openapi.Response('Ingredients list', IngredientSerializer(many=True))}
-    )
-
-    def get(self, request):
-        ingredients = Ingredient.objects.all()
-        serializer = IngredientSerializer(ingredients, many=True)
-        return Response(serializer.data)
-
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
@@ -365,5 +237,75 @@ class ScheduleUpdateView(generics.UpdateAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['user_id'] = self.kwargs['pk']
+        context['user_id'] = self.kwargs.get('pk')
         return context
+
+
+# Ingredients views
+class CreateIngredientView(generics.CreateAPIView):
+    queryset = Ingredient.objects.all()
+    serializer_class = CreateIngredientSerializer
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'category': openapi.Schema(type=openapi.TYPE_STRING),
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
+            'measurement_unit': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                enum=['g', 'ml', 'l', 'kg'],
+            ),
+            'minimal_limit': openapi.Schema(type=openapi.TYPE_NUMBER),
+            'available_at_branches': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'branch': openapi.Schema(type=openapi.TYPE_STRING),
+                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER),
+                    }
+                )
+            )
+        }
+    )
+
+
+class IngredientListView(generics.ListAPIView):
+    
+        queryset = Category.objects.all()
+        serializer_class = IngredientSerializer
+        permission_classes = [permissions.IsAdminUser]
+    
+        manual_response_schema = openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'category': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'name': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                ),
+                'name': openapi.Schema(type=openapi.TYPE_STRING),
+                'measurement_unit': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=['g', 'ml', 'l', 'kg'],
+                ),
+                'minimal_limit': openapi.Schema(type=openapi.TYPE_NUMBER),
+                'date_of_arrival': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
+            }
+        )
+    
+        list_response_schema = openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=manual_response_schema
+        )
+    
+        @swagger_auto_schema(
+            operation_summary="Get ingredients",
+            operation_description="Use this method to get all ingredients",
+            responses={200: openapi.Response('Ingredients list', list_response_schema)}
+        )
+        def get(self, request):
+            return super().get(request)
