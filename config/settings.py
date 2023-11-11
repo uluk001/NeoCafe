@@ -98,6 +98,7 @@ CLOUDINARY_STORAGE = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -154,7 +155,7 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 # Twilio settings
 TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = config("TWILIO_PHONE_NUMBER")
+TWILIO_SERVICE_SID = config("TWILIO_SERVICE_SID")
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {

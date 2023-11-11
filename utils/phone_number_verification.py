@@ -24,7 +24,7 @@ def send_verification_phone_number(code, phone_number):
     print(f"Отправка кода подтверждения на номер {phone_number}. Код: {code}")
     message = client.messages.create(
         to=f"{phone_number}",
-        from_=settings.TWILIO_PHONE_NUMBER,
+        from_=settings.TWILIO_SERVICE_SID,
         body=f"Ваш код: {code}",
     )
     print(message)
