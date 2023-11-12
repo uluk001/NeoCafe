@@ -1,10 +1,9 @@
+import phonenumbers
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
+from phonenumbers import NumberParseException, is_valid_number
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-import phonenumbers
-from phonenumbers import NumberParseException, is_valid_number
-
 
 User = get_user_model()
 
@@ -16,12 +15,16 @@ def validate_phone_number(value):
         raise serializers.ValidationError("Введите корректный номер телефона")
 
     if not is_valid_number(phone_number):
-        raise serializers.ValidationError("Номер телефона не соответствует мировому стандарту")
+        raise serializers.ValidationError(
+            "Номер телефона не соответствует мировому стандарту"
+        )
     return phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.E164)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    phone_number = serializers.CharField(required=True, validators=[validate_phone_number])
+    phone_number = serializers.CharField(
+        required=True, validators=[validate_phone_number]
+    )
     first_name = serializers.CharField(required=False)
 
     class Meta:
@@ -59,7 +62,9 @@ class ClientBirthDateSerializer(serializers.Serializer):
 
 class ClientEditProfileSerializer(serializers.Serializer):
     first_name = serializers.CharField(required=True)
-    phone_number = serializers.CharField(required=True, validators=[validate_phone_number])
+    phone_number = serializers.CharField(
+        required=True, validators=[validate_phone_number]
+    )
     birth_date = serializers.DateField(required=True)
 
 

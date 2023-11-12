@@ -1,14 +1,11 @@
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        Group, Permission, PermissionsMixin)
 from django.db import models
 from django.utils.timezone import now
-from phonenumber_field.modelfields import PhoneNumberField
-from apps.branches.models import Branch
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import Group, Permission
+from phonenumber_field.modelfields import PhoneNumberField
+
+from apps.branches.models import Branch
 
 
 class EmployeeSchedule(models.Model):
@@ -20,25 +17,27 @@ class EmployeeSchedule(models.Model):
 
 class EmployeeWorkdays(models.Model):
     WEEKDAYS = [
-        (1, 'Monday'),
-        (2, 'Tuesday'),
-        (3, 'Wednesday'),
-        (4, 'Thursday'),
-        (5, 'Friday'),
-        (6, 'Saturday'),
-        (7, 'Sunday'),
+        (1, "Monday"),
+        (2, "Tuesday"),
+        (3, "Wednesday"),
+        (4, "Thursday"),
+        (5, "Friday"),
+        (6, "Saturday"),
+        (7, "Sunday"),
     ]
 
-    schedule = models.ForeignKey(EmployeeSchedule, on_delete=models.CASCADE, related_name='workdays')
+    schedule = models.ForeignKey(
+        EmployeeSchedule, on_delete=models.CASCADE, related_name="workdays"
+    )
     workday = models.PositiveSmallIntegerField(choices=WEEKDAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
     def __str__(self):
-        return f'{self.schedule.title} - {self.workday} - {self.start_time} - {self.end_time}'
+        return f"{self.schedule.title} - {self.workday} - {self.start_time} - {self.end_time}"
 
     class Meta:
-        verbose_name_plural = 'EmployeeWorkdays'
+        verbose_name_plural = "EmployeeWorkdays"
 
 
 class CustomUserManager(BaseUserManager):
@@ -71,15 +70,16 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-
-    POSITIONS = (
-        ("barista", "Barista"),
-        ("waiter", "Waiter"),
-        ("client", "Client")
-    )
+    POSITIONS = (("barista", "Barista"), ("waiter", "Waiter"), ("client", "Client"))
 
     first_name = models.CharField(max_length=255, blank=True, null=True)
-    schedule = models.ForeignKey(EmployeeSchedule, on_delete=models.CASCADE, related_name='employees', null=True, blank=True)
+    schedule = models.ForeignKey(
+        EmployeeSchedule,
+        on_delete=models.CASCADE,
+        related_name="employees",
+        null=True,
+        blank=True,
+    )
     last_name = models.CharField(max_length=255, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     password = models.CharField(max_length=128)
@@ -99,17 +99,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     groups = models.ManyToManyField(
         Group,
-        verbose_name=_('groups'),
+        verbose_name=_("groups"),
         blank=True,
-        help_text=_('The groups this user belongs to. A user will get all permissions granted to each of their groups.'),
+        help_text=_(
+            "The groups this user belongs to. A user will get all permissions granted to each of their groups."
+        ),
         related_name="customuser_groups",
         related_query_name="customuser",
     )
     user_permissions = models.ManyToManyField(
         Permission,
-        verbose_name=_('user permissions'),
+        verbose_name=_("user permissions"),
         blank=True,
-        help_text=_('Specific permissions for this user.'),
+        help_text=_("Specific permissions for this user."),
         related_name="customuser_permissions",
         related_query_name="customuser",
     )
@@ -131,5 +133,3 @@ class PhoneNumberVerification(models.Model):
 
     def is_expired(self):
         return True if now() >= self.expiration else False
-
-

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('branches', '0003_alter_schedule_description'),
+        ("branches", "0003_alter_schedule_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='branch',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='branches'),
+            model_name="branch",
+            name="image",
+            field=models.ImageField(blank=True, null=True, upload_to="branches"),
         ),
     ]
