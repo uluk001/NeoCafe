@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('branches', '0002_rename_phone_branch_phone_number'),
+        ("branches", "0002_rename_phone_branch_phone_number"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='schedule',
-            name='description',
+            model_name="schedule",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
     ]

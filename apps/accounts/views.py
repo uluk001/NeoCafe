@@ -1,38 +1,60 @@
 from django.contrib.auth import get_user_model, login
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from utils.phone_number_verification import send_phone_number_verification, generate_pre_2fa_token, get_user_by_token
+from utils.phone_number_verification import (generate_pre_2fa_token,
+                                             get_user_by_token,
+                                             send_phone_number_verification)
 
 from .models import CustomUser, PhoneNumberVerification
-from .serializers import ClientConfirmPhoneNumberSerializer, CustomUserSerializer, ClientBirthDateSerializer, ClientEditProfileSerializer, LoginSerializer
 from .permissions import IsPhoneNumberVerified
-from drf_yasg.utils import swagger_auto_schema
-
+from .serializers import (ClientBirthDateSerializer,
+                          ClientConfirmPhoneNumberSerializer,
+                          ClientEditProfileSerializer, CustomUserSerializer,
+                          LoginSerializer)
 
 User = get_user_model()
 
 
 class RegisterView(generics.GenericAPIView):
-    """
-    Register user.
-
-    Use this endpoint to register new user.
-
-    Parameters:
-    - `phone_number`: Phone number of the user
-    - `first_name`: First name of the user
-    """
-    
     serializer_class = CustomUserSerializer
-
-    @swagger_auto_schema(
-        request_body=CustomUserSerializer,
-        responses={201: CustomUserSerializer}
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Phone number"
+            ),
+            "first_name": openapi.Schema(
+                type=openapi.TYPE_STRING, description="First name"
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Phone number"
+            ),
+            "refresh": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Refresh token"
+            ),
+            "access": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Access token"
+            ),
+            "message": openapi.Schema(type=openapi.TYPE_STRING, description="Message"),
+        },
     )
 
+    @swagger_auto_schema(
+        operation_summary="Register user",
+        operation_description="Use this method to register a user",
+        request_body=manual_request_schema,
+        responses={201: manual_response_schema},
+    )
     def post(self, request):
         phone_number = str(request.data["phone_number"])
         first_name = request.data["first_name"]
@@ -49,7 +71,6 @@ class RegisterView(generics.GenericAPIView):
         token_auth = str(refresh.access_token)
         user.token_auth = token_auth
 
-
         response_data = {
             "phone_number": str(user.phone_number),
             "refresh": str(refresh),
@@ -61,18 +82,30 @@ class RegisterView(generics.GenericAPIView):
 
 
 class ClientConfirmPhoneNumberView(generics.GenericAPIView):
-    """
-    Confirm phone number.
-
-    Use this endpoint to confirm user phone number.
-
-    Parameters:
-    - `code`: Code for phone number confirmation
-    """
-
     serializer_class = ClientConfirmPhoneNumberSerializer
     permission_classes = [permissions.IsAuthenticated]
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "code": openapi.Schema(type=openapi.TYPE_STRING, description="Code"),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+            "response": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Response"
+            ),
+        },
+    )
 
+    @swagger_auto_schema(
+        operation_summary="Confirm phone number",
+        operation_description="Use this method to confirm phone number",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
     def post(self, request):
         code = request.data["code"]
         user = CustomUser.objects.get(id=request.user.id)
@@ -85,90 +118,111 @@ class ClientConfirmPhoneNumberView(generics.GenericAPIView):
             return Response(
                 {
                     "detail": "Поздравляем, ваш номер телефона подтвержден!",
-                    "response": response
+                    "response": response,
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
                 {
                     "detail": "Код введен неверно, попробуйте еще раз",
-                    "response": response
+                    "response": response,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
 class ResendCodeView(generics.GenericAPIView):
-    """
-    Resend code.
-
-    Use this endpoint to resend code.
-
-    Parameters:
-    - `phone_number`: Phone number of the user
-    """
-
     serializer_class = serializers.Serializer
     permission_classes = [permissions.IsAuthenticated]
-    
-    @swagger_auto_schema(
-        request_body=serializers.Serializer,
-        responses={200: serializers.Serializer}
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
     )
 
-    def post(self, request):
+    @swagger_auto_schema(
+        operation_summary="Resend code",
+        operation_description="Use this method to resend code",
+        responses={200: manual_response_schema},
+    )
+    def get(self, request):
         user = request.user
         verification = send_phone_number_verification(user.id)
-        return Response({"detail": "Код был отправлен заново"}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Код был отправлен заново"}, status=status.HTTP_200_OK
+        )
 
 
 class ClientBirthDateView(generics.GenericAPIView):
-    """
-    Birth date.
-
-    Use this endpoint to set birth date.
-
-    Parameters:
-    - `birth_date`: Birth date of the user
-    """
-
     serializer_class = ClientBirthDateSerializer
     permission_classes = [permissions.IsAuthenticated, IsPhoneNumberVerified]
-    
-    @swagger_auto_schema(
-        request_body=ClientBirthDateSerializer,
-        responses={200: ClientBirthDateSerializer}
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "birth_date": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Birth date in format YYYY-MM-DD",
+                example="1999-01-01",
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
     )
 
+    @swagger_auto_schema(
+        operation_summary="Set birth date",
+        operation_description="Use this method to set birth date",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
     def post(self, request):
         user = request.user
         birth_date = request.data["birth_date"]
         user.birth_date = birth_date
         user.save()
-        return Response({"detail": "Дата рождения сохранена"}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Дата рождения сохранена"}, status=status.HTTP_200_OK
+        )
 
 
 class ClientEditProfileView(APIView):
-    """
-    Edit profile.
-
-    Use this endpoint to edit user profile.
-
-    Parameters:
-    - `first_name`: First name of the user
-    - `phone_number`: Phone number of the user
-    - `birth_date`: Birth date of the user
-    """
-    
     permission_classes = [permissions.IsAuthenticated, IsPhoneNumberVerified]
     serializer_class = ClientEditProfileSerializer
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "first_name": openapi.Schema(
+                type=openapi.TYPE_STRING, description="First name of the user"
+            ),
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Phone number of the user"
+            ),
+            "birth_date": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Birth date in format YYYY-MM-DD",
+                example="1999-01-01",
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
 
     @swagger_auto_schema(
-        request_body=ClientEditProfileSerializer,
-        responses={200: ClientEditProfileSerializer}
+        operation_summary="Edit profile",
+        operation_description="Use this method to edit profile",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
     )
-    
     def post(self, request):
         user = request.user
         first_name = request.data["first_name"]
@@ -178,64 +232,106 @@ class ClientEditProfileView(APIView):
         user.phone_number = phone_number
         user.birth_date = birth_date
         user.save()
-        return Response({"detail": "Профиль успешно изменен"}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Профиль успешно изменен"}, status=status.HTTP_200_OK
+        )
 
 
 class LoginView(generics.GenericAPIView):
-    """
-    Login user.
-
-    Use this endpoint to login user.
-
-    Parameters:
-    - `phone_number`: Phone number of the user
-    """
-
     serializer_class = LoginSerializer
-
-    @swagger_auto_schema(
-        request_body=LoginSerializer,
-        responses={200: LoginSerializer}
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Phone number",
+                example="+996777777777",
+            ),
+            "first_name": openapi.Schema(
+                type=openapi.TYPE_STRING, description="First name", example="John"
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "pre_token": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Pre token for 2fa"
+            ),
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
     )
 
+    @swagger_auto_schema(
+        operation_summary="Login",
+        operation_description="Use this method to log the user in. The endpoint will return a temporary token to confirm two-factor authentication. To confirm, use this token in the 'Authorization' header and navigate to the following endpoint '/confirm-login/'",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
     def post(self, request):
         phone_number = str(request.data["phone_number"])
         first_name = request.data["first_name"]
         try:
-            user = CustomUser.objects.get(phone_number=phone_number)
+            user = CustomUser.objects.get(
+                phone_number=phone_number, first_name=first_name
+            )
         except CustomUser.DoesNotExist:
-            return Response({"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
         if user.is_verified:
             send_phone_number_verification(user.id)
             pre_token = generate_pre_2fa_token(user)
             return Response(
                 {
                     "pre_token": pre_token,
-                    "detail": f"Введите 4-х значный код, отправленный на номер {user.phone_number}"
+                    "detail": f"Введите 4-х значный код, отправленный на номер {user.phone_number}",
                 },
-                    status=status.HTTP_200_OK
-                )
+                status=status.HTTP_200_OK,
+            )
         else:
-            return Response({"detail": "Пользователь не подтвержден"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Пользователь не подтвержден"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class ClientConfirmLoginView(generics.GenericAPIView):
-    """
-    Confirm login.
-
-    Use this endpoint to confirm login.
-
-    Parameters:
-    - `code`: Code for login confirmation
-    """
-
     serializer_class = ClientConfirmPhoneNumberSerializer
-
-    @swagger_auto_schema(
-        request_body=ClientConfirmPhoneNumberSerializer,
-        responses={200: ClientConfirmPhoneNumberSerializer}
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "code": openapi.Schema(type=openapi.TYPE_STRING, description="Code"),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Phone number"
+            ),
+            "refresh": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Refresh token"
+            ),
+            "access": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Access token"
+            ),
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+    manual_response_schema_for_400 = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
     )
 
+    @swagger_auto_schema(
+        operation_summary="Confirm login",
+        operation_description="Use this method to confirm login. The endpoint will return a refresh and access token. Use the access token in the 'Authorization' header to access protected endpoints. The refresh token can be used to get a new access token when the old one expires.",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema, 400: manual_response_schema_for_400},
+    )
     def post(self, request):
         code = request.data["code"]
         pre_token = request.headers.get("Authorization")
@@ -253,30 +349,40 @@ class ClientConfirmLoginView(generics.GenericAPIView):
                     "phone_number": str(user.phone_number),
                     "refresh": str(refresh),
                     "access": user.token_auth,
-                    "detail": "Вы успешно авторизованы"
+                    "detail": "Вы успешно авторизованы",
                 },
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
-                {
-                    "detail": "Код введен неверно, попробуйте еще раз"
-                },
-                status=status.HTTP_400_BAD_REQUEST
+                {"detail": "Код введен неверно, попробуйте еще раз"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
 class ClientUserProfileView(generics.GenericAPIView):
-    """
-    User profile.
-
-    Use this endpoint to get user profile.
-    """
-
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAuthenticated, IsPhoneNumberVerified]
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Phone number"
+            ),
+            "first_name": openapi.Schema(
+                type=openapi.TYPE_STRING, description="First name"
+            ),
+            "birth_date": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Birth date"
+            ),
+        },
+    )
 
-
+    @swagger_auto_schema(
+        operation_summary="Get user profile",
+        operation_description="Use this method to get user profile. The endpoint will return user profile.",
+        responses={200: manual_response_schema},
+    )
     def get(self, request):
         user = request.user
         serializer = CustomUserSerializer(user)

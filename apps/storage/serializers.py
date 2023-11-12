@@ -1,20 +1,23 @@
-from apps.storage.models import AvailableAtTheBranch, Category, Composition, Ingredient, Item, ReadyMadeProduct, ReadyMadeProductAvailableAtTheBranch
 from rest_framework import serializers
+
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
+from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
+                                 Ingredient, Item, ReadyMadeProduct,
+                                 ReadyMadeProductAvailableAtTheBranch)
+
 
 # Categories
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = "__all__"
 
 
 # Employees
 class EmployeeWorkdaysSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = EmployeeWorkdays
-        fields = ['id', 'workday', 'start_time', 'end_time']
+        fields = ["id", "workday", "start_time", "end_time"]
 
 
 class EmployeeScheduleSerializer(serializers.ModelSerializer):
@@ -22,7 +25,7 @@ class EmployeeScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeSchedule
-        fields = ['id', 'title', 'workdays']
+        fields = ["id", "title", "workdays"]
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -31,7 +34,18 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'password', 'first_name', 'position', 'birth_date', 'phone_number', 'branch', 'schedule', 'workdays']
+        fields = [
+            "id",
+            "username",
+            "password",
+            "first_name",
+            "position",
+            "birth_date",
+            "phone_number",
+            "branch",
+            "schedule",
+            "workdays",
+        ]
 
     def validate_workdays(self, value):
         for workday_data in value:
@@ -44,7 +58,17 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'password', 'first_name', 'position', 'birth_date', 'phone_number', 'branch', 'workdays']
+        fields = [
+            "id",
+            "username",
+            "password",
+            "first_name",
+            "position",
+            "birth_date",
+            "phone_number",
+            "branch",
+            "workdays",
+        ]
 
     def validate_workdays(self, value):
         for workday_data in value:
@@ -57,8 +81,8 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         schedule = EmployeeSchedule.objects.create(**schedule_data)
         employee = CustomUser.objects.create(schedule=schedule, **validated_data)
 
-        if 'workdays' in self.initial_data:
-            workdays_data = self.initial_data['workdays']
+        if "workdays" in self.initial_data:
+            workdays_data = self.initial_data["workdays"]
             print(workdays_data)
             for workday_data in workdays_data:
                 workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
@@ -69,15 +93,24 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 class EmployeeUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'position', 'birth_date', 'phone_number', 'branch']
+        fields = [
+            "username",
+            "first_name",
+            "position",
+            "birth_date",
+            "phone_number",
+            "branch",
+        ]
 
     def update(self, instance, validated_data):
-        instance.username = validated_data.get('username', instance.username)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.position = validated_data.get('position', instance.position)
-        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
-        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
-        instance.branch = validated_data.get('branch', instance.branch)
+        instance.username = validated_data.get("username", instance.username)
+        instance.first_name = validated_data.get("first_name", instance.first_name)
+        instance.position = validated_data.get("position", instance.position)
+        instance.birth_date = validated_data.get("birth_date", instance.birth_date)
+        instance.phone_number = validated_data.get(
+            "phone_number", instance.phone_number
+        )
+        instance.branch = validated_data.get("branch", instance.branch)
         instance.save()
         return instance
 
@@ -87,19 +120,19 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeSchedule
-        fields = ['title', 'workdays']
+        fields = ["title", "workdays"]
 
     def update(self, instance, validated_data):
-        user_id = self.context['user_id']
+        user_id = self.context["user_id"]
         user = CustomUser.objects.get(id=user_id)
         schedule = user.schedule
 
-        schedule.title = validated_data.get('title', schedule.title)
+        schedule.title = validated_data.get("title", schedule.title)
         schedule.save()
 
         schedule.workdays.all().delete()
 
-        workdays_data = validated_data.pop('workdays', [])
+        workdays_data = validated_data.pop("workdays", [])
 
         for workday_data in workdays_data:
             workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
@@ -113,7 +146,7 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
 class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailableAtTheBranch
-        fields = ['id', 'branch', 'quantity']
+        fields = ["id", "branch", "quantity"]
 
 
 class CreateIngredientSerializer(serializers.ModelSerializer):
@@ -121,22 +154,40 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'category', 'name', 'measurement_unit', 'minimal_limit', 'available_at_branches']
+        fields = [
+            "id",
+            "category",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+            "available_at_branches",
+        ]
 
     def create(self, validated_data):
-        available_at_branches_data = validated_data.pop('available_at_branches', [])
+        available_at_branches_data = validated_data.pop("available_at_branches", [])
         ingredient = Ingredient.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
-            AvailableAtTheBranch.objects.create(ingredient=ingredient, **available_at_branch_data)
+            AvailableAtTheBranch.objects.create(
+                ingredient=ingredient, **available_at_branch_data
+            )
         return ingredient
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['available_at_branches'] = AvailableAtTheBranchSerializer(AvailableAtTheBranch.objects.filter(ingredient=instance), many=True).data
+        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
+            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
+        ).data
         return representation
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ['id', 'category', 'name', 'measurement_unit', 'minimal_limit', 'date_of_arrival']
+        fields = [
+            "id",
+            "category",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+            "date_of_arrival",
+        ]

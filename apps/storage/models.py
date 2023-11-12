@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.branches.models import Branch
 
 
@@ -14,20 +15,22 @@ class Item(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='images')
+    image = models.ImageField(upload_to="images")
 
 
 class Ingredient(models.Model):
     MEASUREMENT_CHOICES = [
-        ('g', 'gram'),
-        ('ml', 'milliliter'),
-        ('l', 'liter'),
-        ('kg', 'kilogram'),
+        ("g", "gram"),
+        ("ml", "milliliter"),
+        ("l", "liter"),
+        ("kg", "kilogram"),
     ]
 
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    measurement_unit = models.CharField(max_length=3, choices=MEASUREMENT_CHOICES, default='g')
+    measurement_unit = models.CharField(
+        max_length=3, choices=MEASUREMENT_CHOICES, default="g"
+    )
     minimal_limit = models.DecimalField(max_digits=10, decimal_places=2)
     date_of_arrival = models.DateField(auto_now=True)
 
@@ -36,16 +39,30 @@ class Ingredient(models.Model):
 
 
 class Composition(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='compositions', related_query_name='composition', null=True, blank=True)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='compositions', related_query_name='composition', null=True, blank=True)
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name="compositions",
+        related_query_name="composition",
+        null=True,
+        blank=True,
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name="compositions",
+        related_query_name="composition",
+        null=True,
+        blank=True,
+    )
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f'{self.item.name} - {self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}'
+        return f"{self.item.name} - {self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}"
 
 
 class ReadyMadeProduct(models.Model):
-    image = models.ImageField(upload_to='images')
+    image = models.ImageField(upload_to="images")
     minimal_limit = models.DecimalField(max_digits=10, decimal_places=2)
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -61,7 +78,7 @@ class AvailableAtTheBranch(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f'{self.branch.address} - {self.ingredient.name} {self.ingredient.measurement_unit}'
+        return f"{self.branch.address} - {self.ingredient.name} {self.ingredient.measurement_unit}"
 
 
 class ReadyMadeProductAvailableAtTheBranch(models.Model):
@@ -70,4 +87,4 @@ class ReadyMadeProductAvailableAtTheBranch(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f'{self.branch.address} - {self.ready_made_product.name} - {self.amount} {self.ready_made_product.measurement_unit}'
+        return f"{self.branch.address} - {self.ready_made_product.name} - {self.amount} {self.ready_made_product.measurement_unit}"

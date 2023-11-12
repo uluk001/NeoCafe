@@ -1,16 +1,10 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from apps.accounts.views import (
-    ClientConfirmPhoneNumberView,
-    ClientEditProfileView,
-    ClientBirthDateView,
-    RegisterView,
-    LoginView,
-    ResendCodeView,
-    ClientConfirmLoginView,
-    ClientUserProfileView,
-)
+from apps.accounts.views import (ClientBirthDateView, ClientConfirmLoginView,
+                                 ClientConfirmPhoneNumberView,
+                                 ClientEditProfileView, ClientUserProfileView,
+                                 LoginView, RegisterView, ResendCodeView)
 
 urlpatterns = [
     path("api/refresh/", TokenRefreshView.as_view()),

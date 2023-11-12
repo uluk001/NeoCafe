@@ -1,6 +1,10 @@
-import random
-import jwt
+"""
+Module for phone number verification
+"""
 
+import secrets
+
+import jwt
 from django.conf import settings
 from django.utils import timezone
 from twilio.rest import Client
@@ -9,6 +13,9 @@ from apps.accounts.models import CustomUser, PhoneNumberVerification
 
 
 def send_phone_number_verification(user_id):
+    """
+    Create verification code and send it to user phone number
+    """
     user = CustomUser.objects.get(id=user_id)
     code = generate_code()
     expiration = timezone.now() + timezone.timedelta(minutes=10)
@@ -20,6 +27,9 @@ def send_phone_number_verification(user_id):
 
 
 def send_verification_phone_number(code, phone_number):
+    """
+    Send verification code to user phone number
+    """
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     print(f"Отправка кода подтверждения на номер {phone_number}. Код: {code}")
     message = client.messages.create(
@@ -27,30 +37,37 @@ def send_verification_phone_number(code, phone_number):
         from_=settings.TWILIO_SERVICE_SID,
         body=f"Ваш код: {code}",
     )
-    print(message)
-    print(message.sid)
-    
+
     return message.sid
 
 
 def generate_code():
-    return "".join([str(random.randint(0, 9)) for _ in range(4)])
+    """
+    Generate 4-digit code
+    """
+    return "".join([str(secrets.randbelow(10)) for _ in range(4)])
 
 
 def generate_pre_2fa_token(user):
+    """
+    Generate token for pre 2fa auth
+    """
     payload = {
-        'id': user.id,
-        'phone_number': str(user.phone_number),
-        'pre_2fa_auth': True,
+        "id": user.id,
+        "phone_number": str(user.phone_number),
+        "pre_2fa_auth": True,
     }
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
     return token
 
 
 def get_user_by_token(token):
+    """
+    Get user by token
+    """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        user = CustomUser.objects.get(id=payload['id'])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user = CustomUser.objects.get(id=payload["id"])
         return user
     except CustomUser.DoesNotExist:
         return None
