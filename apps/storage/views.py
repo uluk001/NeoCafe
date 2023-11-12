@@ -20,13 +20,20 @@ from apps.storage.services import get_employees
 # Categories views
 class CreateCategoryView(generics.CreateAPIView):
 
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
+        }
+    )
+
     @swagger_auto_schema(
         operation_summary="Create category",
-        operation_description="Use this method to create a category",
-        request_body=CategorySerializer,
-        responses={201: openapi.Response('Category created successfully', CategorySerializer)}
+        operation_description="Use this method to create a category. Only admins can create categories",
+        request_body=manual_request_schema,
+        responses={201: openapi.Response('Category created successfully')}
     )
-    
+
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
@@ -40,12 +47,19 @@ class CreateCategoryView(generics.CreateAPIView):
 
 class DestroyCategoryView(generics.DestroyAPIView):
     
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'message': openapi.Schema(type=openapi.TYPE_STRING),
+        }
+    )
+
     @swagger_auto_schema(
         operation_summary="Delete category",
-        operation_description="Use this method to delete a category",
-        responses={200: openapi.Response('Category deleted successfully')}
+        operation_description="Use this method to delete a category. Only admins can delete categories",
+        responses={200: openapi.Response('Category deleted successfully', manual_response_schema)}
     )
-    
+
     def delete(self, request, pk):
         category = Category.objects.get(pk=pk)
         category.delete()
@@ -58,12 +72,25 @@ class DestroyCategoryView(generics.DestroyAPIView):
 
 class ListCategoryView(generics.ListAPIView):
 
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
+        }
+    )
+
+    list_response_schema = openapi.Schema(
+        type=openapi.TYPE_ARRAY,
+        items=manual_response_schema
+    )
+
     @swagger_auto_schema(
         operation_summary="Get categories",
         operation_description="Use this method to get all categories",
-        responses={200: openapi.Response('Categories list', CategorySerializer(many=True))}
+        responses={200: openapi.Response('Categories list', list_response_schema)}
     )
-    
+
     def get(self, request):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, many=True)
@@ -81,9 +108,31 @@ class CreateEmployeeView(generics.CreateAPIView):
 
     @swagger_auto_schema(
         operation_summary="Create employee",
-        operation_description="Use this method to create an employee",
-        request_body=EmployeeCreateSerializer,
-        responses={201: openapi.Response('Employee created successfully', EmployeeCreateSerializer)}
+        operation_description="Use this method to create an employee. Only admins can create employees.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, example="Alixandro_barman"),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, example="123456789"),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, example="Алихандро"),
+                'position': openapi.Schema(type=openapi.TYPE_STRING, enum=["barista", "waiter"], example="barista"),
+                'birth_date': openapi.Schema(type=openapi.TYPE_STRING, format='date', example="1997-05-31"),
+                'phone_number': openapi.Schema(type=openapi.TYPE_STRING, example="+996555231234"),
+                'branch': openapi.Schema(type=openapi.TYPE_INTEGER,description="Branch id where employee works", example=1),
+                'workdays': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'workday': openapi.Schema(type=openapi.TYPE_INTEGER, description="Workday number. 1 - Monday, 2 - Tuesday, etc.", example=1),
+                            'start_time': openapi.Schema(type=openapi.TYPE_STRING, example="09:00"),
+                            'end_time': openapi.Schema(type=openapi.TYPE_STRING, example="17:00"),
+                        }
+                    )
+                ),
+            },
+        ),
+        responses={201: 'Employee created successfully'}
     )
 
     def post(self, request):
