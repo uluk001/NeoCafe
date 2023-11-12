@@ -11,7 +11,8 @@ from apps.storage.serializers import (CategorySerializer,
                                       EmployeeSerializer,
                                       EmployeeUpdateSerializer,
                                       IngredientSerializer,
-                                      ScheduleUpdateSerializer)
+                                      ScheduleUpdateSerializer,
+                                      CreateItemSerializer,)
 from apps.storage.services import get_employees
 
 
@@ -346,9 +347,8 @@ class CreateIngredientView(generics.CreateAPIView):
 
 
 class IngredientListView(generics.ListAPIView):
-    queryset = Category.objects.all()
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [permissions.IsAdminUser]
 
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -382,3 +382,100 @@ class IngredientListView(generics.ListAPIView):
     )
     def get(self, request):
         return super().get(request)
+
+
+# Items views
+class CreateItemView(generics.CreateAPIView):
+    queryset = Ingredient.objects.all()
+    serializer_class = CreateItemSerializer
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "category": openapi.Schema(type=openapi.TYPE_STRING),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "composition": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "ingredient": openapi.Schema(type=openapi.TYPE_STRING),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+            "category": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "composition": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "ingredient": openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                "category": openapi.Schema(
+                                    type=openapi.TYPE_OBJECT,
+                                    properties={
+                                        "id": openapi.Schema(
+                                            type=openapi.TYPE_INTEGER
+                                        ),
+                                        "name": openapi.Schema(
+                                            type=openapi.TYPE_STRING
+                                        ),
+                                    },
+                                ),
+                                "name": openapi.Schema(type=openapi.TYPE_STRING),
+                                "measurement_unit": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    enum=["g", "ml", "l", "kg"],
+                                ),
+                                "minimal_limit": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER
+                                ),
+                                "date_of_arrival": openapi.Schema(
+                                    type=openapi.TYPE_STRING, format="date"
+                                ),
+                            },
+                        ),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Create item",
+        operation_description="Use this method to create an item. Only admins can create items",
+        request_body=manual_request_schema,
+        responses={201: openapi.Response("Item created successfully", manual_response_schema)},
+    )
+
+    def post(self, request):
+        serializer = CreateItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Item created successfully"}, status=201)
+        return Response(serializer.errors, status=400)
+

@@ -181,13 +181,45 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+
     class Meta:
         model = Ingredient
+        fields = ['id', 'name', 'measurement_unit', 'minimal_limit', 'date_of_arrival', 'category']
+
+
+# Items
+class CompositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Composition
+        fields = ["id", "ingredient", "quantity"]
+
+
+class CreateItemSerializer(serializers.ModelSerializer):
+    composition = CompositionSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Item
         fields = [
             "id",
             "category",
             "name",
-            "measurement_unit",
-            "minimal_limit",
-            "date_of_arrival",
+            "price",
+            "image",
+            "composition",
+            "is_available",
         ]
+
+    def create(self, validated_data):
+        composition_data = validated_data.pop("composition", [])
+        item = Item.objects.create(**validated_data)
+        for composition in composition_data:
+            Composition.objects.create(item=item, **composition)
+        return item
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["composition"] = CompositionSerializer(
+            Composition.objects.filter(item=instance), many=True
+        ).data
+        return representation
