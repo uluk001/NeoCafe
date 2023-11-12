@@ -3,33 +3,16 @@ from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import BranchSerializer
+from .serializers import BranchSerializer, BranchCreateSerializer
 from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
 
 
 class BranchListView(ListAPIView):
 
-    @swagger_auto_schema(
-        operation_summary="Get branches",
-        operation_description="Use this method to get all branches",
-        responses={200: BranchSerializer(many=True)}
-    )
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-
-
-class BranchCreateView(CreateAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    permission_classes = [IsAdminUser]
-
-    manual_request_schema = openapi.Schema(
+    manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
+            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
             'image': openapi.Schema(type=openapi.TYPE_STRING, description='Path to image'),
             'schedule': openapi.Schema(
                 type=openapi.TYPE_OBJECT,
@@ -56,10 +39,49 @@ class BranchCreateView(CreateAPIView):
     )
 
     @swagger_auto_schema(
+        operation_summary="Get branches",
+        operation_description="Use this method to get branches",
+        responses={200: manual_response_schema}
+    )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    queryset = Branch.objects.all()
+    serializer_class = BranchSerializer
+
+
+class BranchCreateView(CreateAPIView):
+    queryset = Branch.objects.all()
+    serializer_class = BranchCreateSerializer
+    permission_classes = [IsAdminUser]
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'image': openapi.Schema(type=openapi.TYPE_STRING, description='Path to image'),
+            'address': openapi.Schema(type=openapi.TYPE_STRING),
+            'phone_number': openapi.Schema(type=openapi.TYPE_STRING),
+            'link_to_map': openapi.Schema(type=openapi.TYPE_STRING),
+            'workdays': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'workday': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'start_time': openapi.Schema(type=openapi.TYPE_STRING),
+                        'end_time': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            )
+        }
+    )
+
+    @swagger_auto_schema(
         operation_summary="Create branch",
-        operation_description="Use this method to create a branch",
+        operation_description="Use this method to create a branch. You must be an admin to do this.",
         request_body=manual_request_schema,
-        responses={200: BranchSerializer}
+        responses={200: BranchCreateSerializer}
     )
 
     def post(self, request, *args, **kwargs):
