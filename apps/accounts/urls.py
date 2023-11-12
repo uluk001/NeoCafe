@@ -4,16 +4,18 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from apps.accounts.views import (ClientBirthDateView, ClientConfirmLoginView,
                                  ClientConfirmPhoneNumberView,
                                  ClientEditProfileView, ClientUserProfileView,
-                                 LoginView, RegisterView, ResendCodeView)
+                                 LoginView, RegisterView, ResendCodeView,
+                                 AdminLoginView)
 
 urlpatterns = [
-    path("api/refresh/", TokenRefreshView.as_view()),
-    path("register/", RegisterView.as_view()),
-    path("login/", LoginView.as_view()),
-    path("confirm-phone-number/", ClientConfirmPhoneNumberView.as_view()),
-    path("birth-date/", ClientBirthDateView.as_view()),
-    path("edit-profile/", ClientEditProfileView.as_view()),
-    path("resend-code/", ResendCodeView.as_view()),
-    path("confirm-login/", ClientConfirmLoginView.as_view()),
-    path("my-profile/", ClientUserProfileView.as_view()),
+    path("refresh/", TokenRefreshView.as_view()), # accounts/refresh/
+    path("register/", RegisterView.as_view()), # accounts/register/
+    path("login/", LoginView.as_view()), # accounts/login/
+    path("confirm-phone-number/", ClientConfirmPhoneNumberView.as_view()), # accounts/confirm-phone-number/
+    path("birth-date/", ClientBirthDateView.as_view()), # accounts/birth-date/
+    path("edit-profile/", ClientEditProfileView.as_view()), # accounts/edit-profile/
+    path("resend-code/", ResendCodeView.as_view()), # accounts/resend-code/
+    path("confirm-login/", ClientConfirmLoginView.as_view()), # accounts/confirm-login/
+    path("my-profile/", ClientUserProfileView.as_view()), # accounts/my-profile/
+    path("admin-login/", AdminLoginView.as_view()), # accounts/admin-login/
 ]

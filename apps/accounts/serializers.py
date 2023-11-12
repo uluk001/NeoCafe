@@ -86,3 +86,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 class SendVerificationCodeForResetPasswordSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
+
+
+class AdminLoginSerializer(serializers.Serializer):
+    login = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)

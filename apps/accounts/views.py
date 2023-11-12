@@ -15,7 +15,7 @@ from .permissions import IsPhoneNumberVerified
 from .serializers import (ClientBirthDateSerializer,
                           ClientConfirmPhoneNumberSerializer,
                           ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginSerializer)
+                          LoginSerializer, AdminLoginSerializer)
 
 User = get_user_model()
 
@@ -387,3 +387,78 @@ class ClientUserProfileView(generics.GenericAPIView):
         user = request.user
         serializer = CustomUserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AdminLoginView(generics.GenericAPIView):
+    serializer_class = AdminLoginSerializer
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "username": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Username"
+            ),
+            "password": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Password"
+            ),
+        },
+    )
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "refresh": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Refresh token"
+            ),
+            "access": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Access token"
+            ),
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+    manual_response_schema_for_400 = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Admin login",
+        operation_description="Use this method to log the admin in. The endpoint will return a refresh and access token. Use the access token in the 'Authorization' header to access protected endpoints. The refresh token can be used to get a new access token when the old one expires.",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema, 400: manual_response_schema_for_400, 404: manual_response_schema_for_400},
+    )
+
+    def post(self, request):
+        username = request.data["username"]
+        password = request.data["password"]
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if user.is_staff:
+            if user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+                token_auth = str(refresh.access_token)
+                user.token_auth = token_auth
+                login(request, user)
+                return Response(
+                    {
+                        "refresh": str(refresh),
+                        "access": user.token_auth,
+                        "detail": "Вы успешно авторизованы",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"detail": "Неверный пароль"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(
+                {"detail": "Пользователь не является администратором"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
