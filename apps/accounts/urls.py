@@ -5,7 +5,7 @@ from apps.accounts.views import (ClientBirthDateView, ClientConfirmLoginView,
                                  ClientConfirmPhoneNumberView,
                                  ClientEditProfileView, ClientUserProfileView,
                                  LoginView, RegisterView, ResendCodeView,
-                                 AdminLoginView)
+                                 AdminLoginView, LoginForClientView)
 
 urlpatterns = [
     path("refresh/", TokenRefreshView.as_view()), # accounts/refresh/
@@ -18,4 +18,5 @@ urlpatterns = [
     path("confirm-login/", ClientConfirmLoginView.as_view()), # accounts/confirm-login/
     path("my-profile/", ClientUserProfileView.as_view()), # accounts/my-profile/
     path("admin-login/", AdminLoginView.as_view()), # accounts/admin-login/
+    path("login-for-client/", LoginForClientView.as_view()), # accounts/login-for-client/
 ]

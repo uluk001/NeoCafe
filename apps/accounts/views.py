@@ -15,7 +15,8 @@ from .permissions import IsPhoneNumberVerified
 from .serializers import (ClientBirthDateSerializer,
                           ClientConfirmPhoneNumberSerializer,
                           ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginSerializer, AdminLoginSerializer)
+                          LoginSerializer, AdminLoginSerializer,
+                          LoginForClientSerializer)
 
 User = get_user_model()
 
@@ -30,6 +31,11 @@ class RegisterView(generics.GenericAPIView):
             ),
             "first_name": openapi.Schema(
                 type=openapi.TYPE_STRING, description="First name"
+            ),
+            "birth_date": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Birth date in format YYYY-MM-DD",
+                example="1999-01-01",
             ),
         },
     )
@@ -58,9 +64,11 @@ class RegisterView(generics.GenericAPIView):
     def post(self, request):
         phone_number = str(request.data["phone_number"])
         first_name = request.data["first_name"]
+        birth_date = request.data["birth_date"]
         data = {
             "phone_number": phone_number,
             "first_name": first_name,
+            "birth_date": birth_date,
         }
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -460,5 +468,60 @@ class AdminLoginView(generics.GenericAPIView):
         else:
             return Response(
                 {"detail": "Пользователь не является администратором"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class LoginForClientView(generics.GenericAPIView):
+    serializer_class = LoginForClientSerializer
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "phone_number": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Phone number",
+                example="+996777777777",
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "pre_token": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Pre token for 2fa"
+            ),
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Login for client",
+        operation_description="Use this method to log the client in. The endpoint will return a temporary token to confirm two-factor authentication. To confirm, use this token in the 'Authorization' header and navigate to the following endpoint '/confirm-login-for-client/'",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
+    def post(self, request):
+        phone_number = str(request.data["phone_number"])
+        try:
+            user = CustomUser.objects.get(
+                phone_number=phone_number
+            )
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if user.is_verified:
+            send_phone_number_verification(user.id)
+            pre_token = generate_pre_2fa_token(user)
+            return Response(
+                {
+                    "pre_token": pre_token,
+                    "detail": f"Введите 4-х значный код, отправленный на номер {user.phone_number}",
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "Пользователь не подтвержде"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
