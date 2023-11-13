@@ -489,13 +489,167 @@ class ItemListView(generics.ListAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
 
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+            "category": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "description": openapi.Schema(type=openapi.TYPE_STRING),
+            "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "composition": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "ingredient": openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                "category": openapi.Schema(
+                                    type=openapi.TYPE_OBJECT,
+                                    properties={
+                                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                        "name": openapi.Schema(
+                                            type=openapi.TYPE_STRING
+                                        ),
+                                    },
+                                ),
+                                "name": openapi.Schema(type=openapi.TYPE_STRING),
+                                "measurement_unit": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    enum=["g", "ml", "l", "kg"],
+                                ),
+                                "minimal_limit": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER
+                                ),
+                                "date_of_arrival": openapi.Schema(
+                                    type=openapi.TYPE_STRING, format="date"
+                                ),
+                            },
+                        ),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    list_response_schema = openapi.Schema(
+        type=openapi.TYPE_ARRAY, items=manual_response_schema
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get items",
+        operation_description="Use this method to get all items",
+        responses={200: openapi.Response("Items list", list_response_schema)},
+    )
+
+    def get(self, request):
+        return super().get(request)
+
 
 class ItemDetailView(generics.RetrieveAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+            "category": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "description": openapi.Schema(type=openapi.TYPE_STRING),
+            "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "composition": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "ingredient": openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                "category": openapi.Schema(
+                                    type=openapi.TYPE_OBJECT,
+                                    properties={
+                                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                                        "name": openapi.Schema(
+                                            type=openapi.TYPE_STRING
+                                        ),
+                                    },
+                                ),
+                                "name": openapi.Schema(type=openapi.TYPE_STRING),
+                                "measurement_unit": openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    enum=["g", "ml", "l", "kg"],
+                                ),
+                                "minimal_limit": openapi.Schema(
+                                    type=openapi.TYPE_NUMBER
+                                ),
+                                "date_of_arrival": openapi.Schema(
+                                    type=openapi.TYPE_STRING, format="date"
+                                ),
+                            },
+                        ),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get specific item",
+        operation_description="Use this endpoint to get a specific item",
+        responses={200: openapi.Response("Items object", manual_response_schema)},
+    )
+
+    def get(self, request, pk=None):
+        return super().get(request, pk)
 
 
 class ItemUpdateView(generics.UpdateAPIView):
     queryset = Item.objects.all()
     serializer_class = UpdateItemSerializer
     lookup_field = "pk"
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "category": openapi.Schema(type=openapi.TYPE_STRING),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "description": openapi.Schema(type=openapi.TYPE_STRING),
+            "price": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            "composition": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "ingredient": openapi.Schema(type=openapi.TYPE_STRING),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
