@@ -1,9 +1,15 @@
 from rest_framework import serializers
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch,
+)
 
 
 # Categories
@@ -185,7 +191,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'measurement_unit', 'minimal_limit', 'date_of_arrival', 'category']
+        fields = [
+            "id",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+            "date_of_arrival",
+            "category",
+        ]
 
 
 # Items
@@ -235,9 +248,38 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
             "price",
             "image",
             "composition",
             "is_available",
             "category",
         ]
+
+
+class UpdateItemSerializer(serializers.ModelSerializer):
+    composition = CompositionSerializer(many=True)
+
+    class Meta:
+        model = Item
+        fields = [
+            "id",
+            "category",
+            "name",
+            "description",
+            "price",
+            "image",
+            "composition",
+            "is_available",
+        ]
+
+    def update(self, instance, validated_data):
+        composition_data = validated_data.pop('composition', [])
+        instance = super().update(instance, validated_data)
+
+        instance.composition.all().delete()
+
+        for composition in composition_data:
+            Composition.objects.create(item=instance, **composition)
+
+        return instance

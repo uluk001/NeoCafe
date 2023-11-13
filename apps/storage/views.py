@@ -5,14 +5,18 @@ from rest_framework.response import Response
 
 from apps.accounts.models import CustomUser
 from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item
-from apps.storage.serializers import (CategorySerializer,
-                                      CreateIngredientSerializer,
-                                      EmployeeCreateSerializer,
-                                      EmployeeSerializer,
-                                      EmployeeUpdateSerializer,
-                                      IngredientSerializer,
-                                      ScheduleUpdateSerializer,
-                                      CreateItemSerializer, ItemSerializer)
+from apps.storage.serializers import (
+    CategorySerializer,
+    CreateIngredientSerializer,
+    EmployeeCreateSerializer,
+    EmployeeSerializer,
+    EmployeeUpdateSerializer,
+    IngredientSerializer,
+    ScheduleUpdateSerializer,
+    CreateItemSerializer,
+    ItemSerializer,
+    UpdateItemSerializer,
+)
 from apps.storage.services import get_employees
 
 
@@ -438,9 +442,7 @@ class CreateItemView(generics.CreateAPIView):
                                 "category": openapi.Schema(
                                     type=openapi.TYPE_OBJECT,
                                     properties={
-                                        "id": openapi.Schema(
-                                            type=openapi.TYPE_INTEGER
-                                        ),
+                                        "id": openapi.Schema(type=openapi.TYPE_INTEGER),
                                         "name": openapi.Schema(
                                             type=openapi.TYPE_STRING
                                         ),
@@ -471,9 +473,10 @@ class CreateItemView(generics.CreateAPIView):
         operation_summary="Create item",
         operation_description="Use this method to create an item. Only admins can create items",
         request_body=manual_request_schema,
-        responses={201: openapi.Response("Item created successfully", manual_response_schema)},
+        responses={
+            201: openapi.Response("Item created successfully", manual_response_schema)
+        },
     )
-
     def post(self, request):
         serializer = CreateItemSerializer(data=request.data)
         if serializer.is_valid():
@@ -482,7 +485,17 @@ class CreateItemView(generics.CreateAPIView):
         return Response(serializer.errors, status=400)
 
 
-
 class ItemListView(generics.ListAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+
+class ItemDetailView(generics.RetrieveAPIView):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+
+
+class ItemUpdateView(generics.UpdateAPIView):
+    queryset = Item.objects.all()
+    serializer_class = UpdateItemSerializer
+    lookup_field = "pk"

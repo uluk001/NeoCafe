@@ -54,7 +54,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
                 first_name=first_name,
             )
         except IntegrityError:
-            raise serializers.ValidationError({"message": "Пользователь с таким номером телефона уже существует"})
+            raise serializers.ValidationError(
+                {"message": "Пользователь с таким номером телефона уже существует"}
+            )
         user.birth_date = birth_date
         user.is_active = True
         user.token_auth = get_random_string(64)

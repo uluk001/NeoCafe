@@ -6,17 +6,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from utils.phone_number_verification import (generate_pre_2fa_token,
-                                             get_user_by_token,
-                                             send_phone_number_verification)
+from utils.phone_number_verification import (
+    generate_pre_2fa_token,
+    get_user_by_token,
+    send_phone_number_verification,
+)
 
 from .models import CustomUser, PhoneNumberVerification
 from .permissions import IsPhoneNumberVerified
-from .serializers import (ClientBirthDateSerializer,
-                          ClientConfirmPhoneNumberSerializer,
-                          ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginSerializer, AdminLoginSerializer,
-                          LoginForClientSerializer)
+from .serializers import (
+    ClientBirthDateSerializer,
+    ClientConfirmPhoneNumberSerializer,
+    ClientEditProfileSerializer,
+    CustomUserSerializer,
+    LoginSerializer,
+    AdminLoginSerializer,
+    LoginForClientSerializer,
+)
 
 User = get_user_model()
 
@@ -434,9 +440,12 @@ class AdminLoginView(generics.GenericAPIView):
         operation_summary="Admin login",
         operation_description="Use this method to log the admin in. The endpoint will return a refresh and access token. Use the access token in the 'Authorization' header to access protected endpoints. The refresh token can be used to get a new access token when the old one expires.",
         request_body=manual_request_schema,
-        responses={200: manual_response_schema, 400: manual_response_schema_for_400, 404: manual_response_schema_for_400},
+        responses={
+            200: manual_response_schema,
+            400: manual_response_schema_for_400,
+            404: manual_response_schema_for_400,
+        },
     )
-
     def post(self, request):
         username = request.data["username"]
         password = request.data["password"]
@@ -503,9 +512,7 @@ class LoginForClientView(generics.GenericAPIView):
     def post(self, request):
         phone_number = str(request.data["phone_number"])
         try:
-            user = CustomUser.objects.get(
-                phone_number=phone_number
-            )
+            user = CustomUser.objects.get(phone_number=phone_number)
         except CustomUser.DoesNotExist:
             return Response(
                 {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND

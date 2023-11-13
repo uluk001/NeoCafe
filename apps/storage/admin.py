@@ -1,8 +1,14 @@
 from django.contrib import admin
 
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch,
+)
 
 
 class CategoryAdmin(admin.ModelAdmin):

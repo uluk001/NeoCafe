@@ -1,11 +1,21 @@
 from django.urls import path
 
-from apps.storage.views import (CreateCategoryView, CreateEmployeeView,
-                                CreateIngredientView, DestroyCategoryView,
-                                EmployeeDetailView, EmployeeListView,
-                                EmployeeUpdateView, IngredientListView,
-                                ListCategoryView, ScheduleUpdateView,
-                                CreateItemView, ItemListView)
+from apps.storage.views import (
+    CreateCategoryView,
+    CreateEmployeeView,
+    CreateIngredientView,
+    DestroyCategoryView,
+    EmployeeDetailView,
+    EmployeeListView,
+    EmployeeUpdateView,
+    IngredientListView,
+    ListCategoryView,
+    ScheduleUpdateView,
+    CreateItemView,
+    ItemListView,
+    ItemDetailView,
+    ItemUpdateView,
+)
 
 urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # storage/categories/
@@ -33,5 +43,9 @@ urlpatterns = [
     ),  # storage/ingredients/create/
     path("ingredients/", IngredientListView.as_view()),  # storage/ingredients/
     path("items/create/", CreateItemView.as_view()),  # storage/items/create/
-    path("items/", ItemListView.as_view()),  # storage/items/    
+    path("items/", ItemListView.as_view()),  # storage/items/
+    path("items/<int:pk>/", ItemDetailView.as_view()),  # storage/items/<int:pk>/
+    path(
+        "items/update/<int:pk>/", ItemUpdateView.as_view()
+    ),  # storage/items/update/<int:pk>/
 ]
