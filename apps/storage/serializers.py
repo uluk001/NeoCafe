@@ -204,6 +204,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
             "id",
             "category",
             "name",
+            "description",
             "price",
             "image",
             "composition",
@@ -227,6 +228,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    composition = CompositionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Item

@@ -4,7 +4,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 
 from apps.accounts.models import CustomUser
-from apps.storage.models import AvailableAtTheBranch, Category, Ingredient
+from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item
 from apps.storage.serializers import (CategorySerializer,
                                       CreateIngredientSerializer,
                                       EmployeeCreateSerializer,
@@ -12,7 +12,7 @@ from apps.storage.serializers import (CategorySerializer,
                                       EmployeeUpdateSerializer,
                                       IngredientSerializer,
                                       ScheduleUpdateSerializer,
-                                      CreateItemSerializer,)
+                                      CreateItemSerializer, ItemSerializer)
 from apps.storage.services import get_employees
 
 
@@ -394,6 +394,7 @@ class CreateItemView(generics.CreateAPIView):
         properties={
             "category": openapi.Schema(type=openapi.TYPE_STRING),
             "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "description": openapi.Schema(type=openapi.TYPE_STRING),
             "price": openapi.Schema(type=openapi.TYPE_NUMBER),
             "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
             "composition": openapi.Schema(
@@ -421,6 +422,7 @@ class CreateItemView(generics.CreateAPIView):
                 },
             ),
             "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "description": openapi.Schema(type=openapi.TYPE_STRING),
             "price": openapi.Schema(type=openapi.TYPE_NUMBER),
             "is_available": openapi.Schema(type=openapi.TYPE_BOOLEAN),
             "composition": openapi.Schema(
@@ -480,4 +482,7 @@ class CreateItemView(generics.CreateAPIView):
         return Response(serializer.errors, status=400)
 
 
-# class 
+
+class ItemListView(generics.ListAPIView):
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
