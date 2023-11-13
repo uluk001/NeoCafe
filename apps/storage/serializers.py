@@ -223,3 +223,19 @@ class CreateItemSerializer(serializers.ModelSerializer):
             Composition.objects.filter(item=instance), many=True
         ).data
         return representation
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = Item
+        fields = [
+            "id",
+            "name",
+            "price",
+            "image",
+            "composition",
+            "is_available",
+            "category",
+        ]

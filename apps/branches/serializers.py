@@ -25,6 +25,7 @@ class BranchSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "image",
+            "name_of_shop",
             "schedule",
             "address",
             "phone_number",
@@ -63,7 +64,7 @@ class BranchCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Branch
-        fields = ["id", "image", "address", "phone_number", "link_to_map", "workdays"]
+        fields = ["id", "image", "name_of_shop", "address", "phone_number", "link_to_map", "workdays"]
 
     def validate_workdays(self, value):
         for workday_data in value:
