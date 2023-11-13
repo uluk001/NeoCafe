@@ -16,6 +16,7 @@ class BranchListView(ListAPIView):
             "image": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Path to image"
             ),
+            "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
             "schedule": openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
@@ -65,6 +66,7 @@ class BranchCreateView(CreateAPIView):
             ),
             "address": openapi.Schema(type=openapi.TYPE_STRING),
             "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
+            "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
             "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
             "workdays": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
@@ -110,6 +112,7 @@ class BranchUpdateView(UpdateAPIView):
             ),
             "address": openapi.Schema(type=openapi.TYPE_STRING),
             "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
+            "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
             "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
             "workdays": openapi.Schema(
                 type=openapi.TYPE_ARRAY,

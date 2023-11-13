@@ -1,9 +1,15 @@
 from rest_framework import serializers
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch,
+)
 
 
 # Categories
@@ -185,7 +191,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'measurement_unit', 'minimal_limit', 'date_of_arrival', 'category']
+        fields = [
+            "id",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+            "date_of_arrival",
+            "category",
+        ]
 
 
 # Items
@@ -204,6 +217,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
             "id",
             "category",
             "name",
+            "description",
             "price",
             "image",
             "composition",
@@ -223,3 +237,100 @@ class CreateItemSerializer(serializers.ModelSerializer):
             Composition.objects.filter(item=instance), many=True
         ).data
         return representation
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    composition = CompositionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Item
+        fields = [
+            "id",
+            "name",
+            "description",
+            "price",
+            "image",
+            "composition",
+            "is_available",
+            "category",
+        ]
+
+
+class UpdateItemSerializer(serializers.ModelSerializer):
+    composition = CompositionSerializer(many=True)
+
+    class Meta:
+        model = Item
+        fields = [
+            "id",
+            "category",
+            "name",
+            "description",
+            "price",
+            "image",
+            "composition",
+            "is_available",
+        ]
+
+    def update(self, instance, validated_data):
+        composition_data = validated_data.pop('composition', [])
+        instance = super().update(instance, validated_data)
+
+        instance.composition.all().delete()
+
+        for composition in composition_data:
+            Composition.objects.create(item=instance, **composition)
+
+        return instance
+
+
+# Ready-made products
+class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    ready_made_product = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = ReadyMadeProductAvailableAtTheBranch
+        fields = ["id", "branch", "ready_made_product", "quantity"]
+
+
+class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
+    available_at_branches = ReadyMadeProductAvailableAtTheBranchSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = ReadyMadeProduct
+        fields = [
+            "id",
+            "name",
+            "minimal_limit",
+            "description",
+            "price",
+            "available_at_branches",
+        ]
+
+    def create(self, validated_data):
+        available_at_branches_data = validated_data.pop("available_at_branches", [])
+        product = ReadyMadeProduct.objects.create(**validated_data)
+        for available_at_branch_data in available_at_branches_data:
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                ready_made_product=product, **available_at_branch_data
+            )
+        return product
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["available_at_branches"] = ReadyMadeProductAvailableAtTheBranchSerializer(
+            ReadyMadeProductAvailableAtTheBranch.objects.filter(ready_made_product=instance), many=True
+        ).data
+        return representation
+
+class ReadyMadeProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReadyMadeProduct
+        fields = [
+            "id",
+            "name",
+            "minimal_limit",
+            "description",
+            "price",
+        ]

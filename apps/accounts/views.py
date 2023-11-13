@@ -6,17 +6,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from utils.phone_number_verification import (generate_pre_2fa_token,
-                                             get_user_by_token,
-                                             send_phone_number_verification)
+from utils.phone_number_verification import (
+    generate_pre_2fa_token,
+    get_user_by_token,
+    send_phone_number_verification,
+)
 
 from .models import CustomUser, PhoneNumberVerification
 from .permissions import IsPhoneNumberVerified
-from .serializers import (ClientBirthDateSerializer,
-                          ClientConfirmPhoneNumberSerializer,
-                          ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginSerializer, AdminLoginSerializer,
-                          LoginForClientSerializer)
+from .serializers import (
+    ClientBirthDateSerializer,
+    ClientConfirmPhoneNumberSerializer,
+    ClientEditProfileSerializer,
+    CustomUserSerializer,
+    LoginSerializer,
+    AdminLoginSerializer,
+    LoginForClientSerializer,
+)
 
 User = get_user_model()
 
@@ -34,7 +40,7 @@ class RegisterView(generics.GenericAPIView):
             ),
             "birth_date": openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description="Birth date in format YYYY-MM-DD",
+                description="Birth date in format YYYY-MM-DD. Not required",
                 example="1999-01-01",
             ),
         },
@@ -108,6 +114,26 @@ class ClientConfirmPhoneNumberView(generics.GenericAPIView):
         },
     )
 
+    manual_response_schema_for_400 = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+            "response": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Response"
+            ),
+        },
+    )
+
+    manual_response_schema_for_404 = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+            "response": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Response"
+            ),
+        },
+    )
+
     @swagger_auto_schema(
         operation_summary="Confirm phone number",
         operation_description="Use this method to confirm phone number",
@@ -118,15 +144,12 @@ class ClientConfirmPhoneNumberView(generics.GenericAPIView):
         code = request.data["code"]
         user = CustomUser.objects.get(id=request.user.id)
         verification = PhoneNumberVerification.objects.filter(user=user, code=code)
-        response = 0
         if verification.exists() and not verification.first().is_expired():
             user.is_verified = True
             user.save()
-            response = 1
             return Response(
                 {
                     "detail": "Поздравляем, ваш номер телефона подтвержден!",
-                    "response": response,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -134,7 +157,6 @@ class ClientConfirmPhoneNumberView(generics.GenericAPIView):
             return Response(
                 {
                     "detail": "Код введен неверно, попробуйте еще раз",
-                    "response": response,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -231,11 +253,11 @@ class ClientEditProfileView(APIView):
         request_body=manual_request_schema,
         responses={200: manual_response_schema},
     )
-    def post(self, request):
+    def put(self, request):
         user = request.user
-        first_name = request.data["first_name"]
-        phone_number = request.data["phone_number"]
-        birth_date = request.data["birth_date"]
+        first_name = request.data.get("first_name", user.first_name)
+        phone_number = request.data.get("phone_number", user.phone_number)
+        birth_date = request.data.get("birth_date", user.birth_date)
         user.first_name = first_name
         user.phone_number = phone_number
         user.birth_date = birth_date
@@ -434,9 +456,12 @@ class AdminLoginView(generics.GenericAPIView):
         operation_summary="Admin login",
         operation_description="Use this method to log the admin in. The endpoint will return a refresh and access token. Use the access token in the 'Authorization' header to access protected endpoints. The refresh token can be used to get a new access token when the old one expires.",
         request_body=manual_request_schema,
-        responses={200: manual_response_schema, 400: manual_response_schema_for_400, 404: manual_response_schema_for_400},
+        responses={
+            200: manual_response_schema,
+            400: manual_response_schema_for_400,
+            404: manual_response_schema_for_400,
+        },
     )
-
     def post(self, request):
         username = request.data["username"]
         password = request.data["password"]
@@ -503,9 +528,7 @@ class LoginForClientView(generics.GenericAPIView):
     def post(self, request):
         phone_number = str(request.data["phone_number"])
         try:
-            user = CustomUser.objects.get(
-                phone_number=phone_number
-            )
+            user = CustomUser.objects.get(phone_number=phone_number)
         except CustomUser.DoesNotExist:
             return Response(
                 {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND

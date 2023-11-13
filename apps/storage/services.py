@@ -1,7 +1,13 @@
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 
-from .models import (AvailableAtTheBranch, Category, Composition, Ingredient,
-                     Item, ReadyMadeProduct)
+from .models import (
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    ReadyMadeProduct,
+)
 
 
 def get_employees():

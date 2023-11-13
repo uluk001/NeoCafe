@@ -40,6 +40,7 @@ class Branch(models.Model):
     schedule = models.ForeignKey(
         Schedule, on_delete=models.CASCADE, related_name="branches"
     )
+    name_of_shop = models.CharField(max_length=100, default="NeoCafe Dzerzhinka")
     address = models.TextField()
     phone_number = PhoneNumberField()
     link_to_map = models.URLField()

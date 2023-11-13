@@ -1,5 +1,10 @@
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        Group, Permission, PermissionsMixin)
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    Group,
+    Permission,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
