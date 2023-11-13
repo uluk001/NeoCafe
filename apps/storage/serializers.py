@@ -283,3 +283,54 @@ class UpdateItemSerializer(serializers.ModelSerializer):
             Composition.objects.create(item=instance, **composition)
 
         return instance
+
+
+# Ready-made products
+class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    ready_made_product = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = ReadyMadeProductAvailableAtTheBranch
+        fields = ["id", "branch", "ready_made_product", "quantity"]
+
+
+class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
+    available_at_branches = ReadyMadeProductAvailableAtTheBranchSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = ReadyMadeProduct
+        fields = [
+            "id",
+            "name",
+            "minimal_limit",
+            "description",
+            "price",
+            "available_at_branches",
+        ]
+
+    def create(self, validated_data):
+        available_at_branches_data = validated_data.pop("available_at_branches", [])
+        product = ReadyMadeProduct.objects.create(**validated_data)
+        for available_at_branch_data in available_at_branches_data:
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                ready_made_product=product, **available_at_branch_data
+            )
+        return product
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["available_at_branches"] = ReadyMadeProductAvailableAtTheBranchSerializer(
+            ReadyMadeProductAvailableAtTheBranch.objects.filter(ready_made_product=instance), many=True
+        ).data
+        return representation
+
+class ReadyMadeProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReadyMadeProduct
+        fields = [
+            "id",
+            "name",
+            "minimal_limit",
+            "description",
+            "price",
+        ]

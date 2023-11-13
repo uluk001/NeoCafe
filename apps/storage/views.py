@@ -4,7 +4,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 
 from apps.accounts.models import CustomUser
-from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item
+from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item, ReadyMadeProduct
 from apps.storage.serializers import (
     CategorySerializer,
     CreateIngredientSerializer,
@@ -16,6 +16,8 @@ from apps.storage.serializers import (
     CreateItemSerializer,
     ItemSerializer,
     UpdateItemSerializer,
+    CreateReadyMadeProductSerializer,
+    ReadyMadeProductSerializer,
 )
 from apps.storage.services import get_employees
 
@@ -653,3 +655,46 @@ class ItemUpdateView(generics.UpdateAPIView):
             "image": openapi.Schema(type=openapi.TYPE_FILE),
         },
     )
+
+
+# Ready made products views
+class ReadyMadeProductCreateView(generics.CreateAPIView):
+    queryset = ReadyMadeProduct.objects.all()
+    serializer_class = CreateReadyMadeProductSerializer
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Product name'),
+            'minimal_limit': openapi.Schema(type=openapi.TYPE_NUMBER, description='Minimal limit'),
+            'description': openapi.Schema(type=openapi.TYPE_STRING, description='Product description'),
+            'price': openapi.Schema(type=openapi.TYPE_NUMBER, description='Product price'),
+            'available_at_branches': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'branch': openapi.Schema(type=openapi.TYPE_INTEGER, description='Branch ID'),
+                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='Quantity'),
+                    },
+                ),
+                description='List of branches where the product is available',
+            ),
+        },
+        required=['name', 'minimal_limit', 'description', 'price', 'available_at_branches'],
+    )
+
+    @swagger_auto_schema(request_body=manual_request_schema)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+
+class ReadyMadeProductUpdateView(generics.UpdateAPIView):
+    queryset = ReadyMadeProduct.objects.all()
+    serializer_class = CreateReadyMadeProductSerializer
+    lookup_field = "pk"
+
+
+class ReadyMadeProductListView(generics.ListAPIView):
+    queryset = ReadyMadeProduct.objects.all()
+    serializer_class = ReadyMadeProductSerializer

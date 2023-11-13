@@ -15,6 +15,9 @@ from apps.storage.views import (
     ItemListView,
     ItemDetailView,
     ItemUpdateView,
+    ReadyMadeProductCreateView,
+    ReadyMadeProductListView,
+    
 )
 
 urlpatterns = [
@@ -48,4 +51,13 @@ urlpatterns = [
     path(
         "items/update/<int:pk>/", ItemUpdateView.as_view()
     ),  # storage/items/update/<int:pk>/
+    path(
+        "ready-made-products/create/", ReadyMadeProductCreateView.as_view()
+    ),  # storage/ready-made-products/create/
+    path(
+        "ready-made-products/", ReadyMadeProductListView.as_view()
+    ),  # storage/ready-made-products/
+    path(
+        "ready-made-products/<int:pk>/", ReadyMadeProductListView.as_view()
+    ),  # storage/ready-made-products/<int:pk>/    
 ]
