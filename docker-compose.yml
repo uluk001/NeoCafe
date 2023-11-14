@@ -3,7 +3,11 @@ version: '3.11'
 services:
   db:
     container_name: pg_db
-    image: postgres:latest
+    image: postgres:15.3
+    environment:
+      POSTGRES_USER: neocafeuser
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: neocafe
     volumes:
       - .auth_db/postgres/:/var/lib/postgresql/data/
     expose:
@@ -12,6 +16,7 @@ services:
       - "5432:5432"
     env_file:
       - .env
+    
 
   web:
     container_name: backend
