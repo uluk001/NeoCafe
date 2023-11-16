@@ -303,8 +303,6 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "minimal_limit",
-            "description",
-            "price",
             "available_at_branches",
         ]
 
@@ -331,6 +329,4 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "minimal_limit",
-            "description",
-            "price",
         ]

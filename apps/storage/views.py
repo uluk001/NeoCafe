@@ -667,8 +667,6 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
         properties={
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='Product name'),
             'minimal_limit': openapi.Schema(type=openapi.TYPE_NUMBER, description='Minimal limit'),
-            'description': openapi.Schema(type=openapi.TYPE_STRING, description='Product description'),
-            'price': openapi.Schema(type=openapi.TYPE_NUMBER, description='Product price'),
             'available_at_branches': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
@@ -681,7 +679,7 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
                 description='List of branches where the product is available',
             ),
         },
-        required=['name', 'minimal_limit', 'description', 'price', 'available_at_branches'],
+        required=['name', 'minimal_limit', 'available_at_branches'],
     )
 
     @swagger_auto_schema(request_body=manual_request_schema)

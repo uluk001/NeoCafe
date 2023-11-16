@@ -34,8 +34,8 @@ class CompositionAdmin(admin.ModelAdmin):
 
 
 class ReadyMadeProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "description", "price", "image", "minimal_limit")
-    search_fields = ("name", "description")
+    list_display = ("name", "image", "minimal_limit")
+    search_fields = ("name",)
 
 
 class AvailableAtTheBranchAdmin(admin.ModelAdmin):
