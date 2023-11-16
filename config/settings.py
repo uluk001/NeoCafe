@@ -98,13 +98,6 @@ CLOUDINARY_STORAGE = {
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-if config('POSTGRES_DB', default=None):
-    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('POSTGRES_DB'),
         'USER': config('POSTGRES_USER'),
@@ -112,6 +105,7 @@ if config('POSTGRES_DB', default=None):
         'HOST': config('POSTGRES_HOST'),
         'PORT': config('POSTGRES_PORT'),
     }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
