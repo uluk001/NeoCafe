@@ -480,8 +480,8 @@ class CreateItemView(generics.CreateAPIView):
     def post(self, request):
         serializer = CreateItemSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Item created successfully"}, status=201)
+            item = serializer.save()
+            return Response({"id": item.id}, status=201)
         return Response(serializer.errors, status=400)
 
 
