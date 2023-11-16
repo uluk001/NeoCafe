@@ -18,6 +18,7 @@ from apps.storage.serializers import (
     UpdateItemSerializer,
     CreateReadyMadeProductSerializer,
     ReadyMadeProductSerializer,
+    AvailableAtTheBranchSerializer,
 )
 from apps.storage.services import get_employees
 
@@ -380,6 +381,11 @@ class IngredientListView(generics.ListAPIView):
     )
     def get(self, request):
         return super().get(request)
+
+
+class AvailableAtTheBranchView(generics.ListAPIView):
+    queryset = AvailableAtTheBranch.objects.all()
+    serializer_class = AvailableAtTheBranchSerializer
 
 
 # Items views

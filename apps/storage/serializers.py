@@ -1,3 +1,4 @@
+from .models import AvailableAtTheBranch
 from rest_framework import serializers
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
@@ -199,6 +200,16 @@ class IngredientSerializer(serializers.ModelSerializer):
         ]
 
 
+class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    branch = serializers.StringRelatedField()
+    ingredient = serializers.StringRelatedField()
+
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ['id', 'branch', 'ingredient', 'quantity']
+        ref_name = 'AvailableAtTheBranchSerializer'
+
+
 # Items
 class CompositionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -319,6 +330,7 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
             ReadyMadeProductAvailableAtTheBranch.objects.filter(ready_made_product=instance), many=True
         ).data
         return representation
+
 
 class ReadyMadeProductSerializer(serializers.ModelSerializer):
     class Meta:

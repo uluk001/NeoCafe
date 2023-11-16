@@ -17,7 +17,7 @@ from apps.storage.views import (
     ItemUpdateView,
     ReadyMadeProductCreateView,
     ReadyMadeProductListView,
-    
+    AvailableAtTheBranchView,
 )
 
 urlpatterns = [
@@ -59,5 +59,8 @@ urlpatterns = [
     ),  # storage/ready-made-products/
     path(
         "ready-made-products/<int:pk>/", ReadyMadeProductListView.as_view()
-    ),  # storage/ready-made-products/<int:pk>/    
+    ),  # storage/ready-made-products/<int:pk>/ 
+    path(
+        "available-at-the-branch/", AvailableAtTheBranchView.as_view()
+    ),  # storage/available-at-the-branch/   
 ]

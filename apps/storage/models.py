@@ -87,4 +87,4 @@ class ReadyMadeProductAvailableAtTheBranch(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.branch.address} - {self.ready_made_product.name} - {self.amount} {self.ready_made_product.measurement_unit}"
+        return f"{self.branch.address} - {self.ready_made_product.name}"

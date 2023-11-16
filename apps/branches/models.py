@@ -50,4 +50,4 @@ class Branch(models.Model):
         return Workdays.objects.filter(schedule=self.schedule)
 
     def __str__(self):
-        return f"{self.address} - {self.phone_number}"
+        return f"{self.name_of_shop}"
