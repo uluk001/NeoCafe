@@ -28,7 +28,6 @@ class Ingredient(models.Model):
         ("kg", "kilogram"),
     ]
 
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     measurement_unit = models.CharField(
         max_length=3, choices=MEASUREMENT_CHOICES, default="g"

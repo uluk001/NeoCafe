@@ -331,7 +331,6 @@ class CreateIngredientView(generics.CreateAPIView):
     manual_request_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "category": openapi.Schema(type=openapi.TYPE_STRING),
             "name": openapi.Schema(type=openapi.TYPE_STRING),
             "measurement_unit": openapi.Schema(
                 type=openapi.TYPE_STRING,
@@ -360,13 +359,6 @@ class IngredientListView(generics.ListAPIView):
         type=openapi.TYPE_OBJECT,
         properties={
             "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-            "category": openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-                    "name": openapi.Schema(type=openapi.TYPE_STRING),
-                },
-            ),
             "name": openapi.Schema(type=openapi.TYPE_STRING),
             "measurement_unit": openapi.Schema(
                 type=openapi.TYPE_STRING,

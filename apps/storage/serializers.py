@@ -162,7 +162,6 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = [
             "id",
-            "category",
             "name",
             "measurement_unit",
             "minimal_limit",
@@ -197,7 +196,6 @@ class IngredientSerializer(serializers.ModelSerializer):
             "measurement_unit",
             "minimal_limit",
             "date_of_arrival",
-            "category",
         ]
 
 
