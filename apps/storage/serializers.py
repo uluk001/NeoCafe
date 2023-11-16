@@ -187,7 +187,6 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Ingredient
@@ -250,7 +249,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    composition = CompositionSerializer(many=True, read_only=True)
+    compositions = CompositionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Item
@@ -260,7 +259,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "description",
             "price",
             "image",
-            "composition",
+            "compositions",
             "is_available",
             "category",
         ]

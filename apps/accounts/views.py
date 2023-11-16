@@ -326,6 +326,28 @@ class LoginView(generics.GenericAPIView):
             )
 
 
+class TemporaryLoginView(generics.GenericAPIView):
+
+    serializer_class = LoginForClientSerializer
+
+    def post(self, request):
+        phone_number = request.data["phone_number"]
+        user = CustomUser.objects.get(phone_number=phone_number)
+        refresh = RefreshToken.for_user(user)
+        token_auth = str(refresh.access_token)
+        user.token_auth = token_auth
+        login(request, user)
+        return Response(
+            {
+                "phone_number": str(user.phone_number),
+                "refresh": str(refresh),
+                "access": user.token_auth,
+                "detail": "Вы успешно авторизованы",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class ClientConfirmLoginView(generics.GenericAPIView):
     serializer_class = ClientConfirmPhoneNumberSerializer
     manual_request_schema = openapi.Schema(

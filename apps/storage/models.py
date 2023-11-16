@@ -19,6 +19,9 @@ class Item(models.Model):
     image = models.ImageField(upload_to="images", null=True, blank=True)
     is_available = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     MEASUREMENT_CHOICES = [
@@ -36,7 +39,7 @@ class Ingredient(models.Model):
     date_of_arrival = models.DateField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Composition(models.Model):

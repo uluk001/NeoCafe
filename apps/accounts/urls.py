@@ -12,6 +12,7 @@ from apps.accounts.views import (
     ResendCodeView,
     AdminLoginView,
     LoginForClientView,
+    TemporaryLoginView,
 )
 
 urlpatterns = [
@@ -30,4 +31,7 @@ urlpatterns = [
     path(
         "login-for-client/", LoginForClientView.as_view()
     ),  # accounts/login-for-client/
+    path(
+        "temporary-login/", TemporaryLoginView.as_view()
+    ),  # accounts/temporary-login/
 ]
