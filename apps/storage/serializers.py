@@ -327,4 +327,5 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "minimal_limit",
+            "date_of_arrival",
         ]
