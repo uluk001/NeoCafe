@@ -29,6 +29,7 @@ class CreateCategoryView(generics.CreateAPIView):
         type=openapi.TYPE_OBJECT,
         properties={
             "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
         },
     )
 
@@ -36,8 +37,9 @@ class CreateCategoryView(generics.CreateAPIView):
         operation_summary="Create category",
         operation_description="Use this method to create a category. Only admins can create categories",
         request_body=manual_request_schema,
-        responses={201: openapi.Response("Category created successfully")},
+        responses={201: "Category created successfully"},
     )
+
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
@@ -45,7 +47,7 @@ class CreateCategoryView(generics.CreateAPIView):
             return Response({"message": "Category created successfully"}, status=201)
         return Response(serializer.errors, status=400)
 
-    queryset = Category.objects.all()
+    permission_classes = [permissions.IsAdminUser]
     serializer_class = CategorySerializer
 
 
