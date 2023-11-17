@@ -103,7 +103,7 @@ class SendVerificationCodeForResetPasswordSerializer(serializers.Serializer):
 
 
 class AdminLoginSerializer(serializers.Serializer):
-    login = serializers.CharField(required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
 
