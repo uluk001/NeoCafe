@@ -1,10 +1,5 @@
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    Group,
-    Permission,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        Group, Permission, PermissionsMixin)
 from django.db import models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -90,7 +85,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     username = models.CharField(max_length=255, blank=True, null=True)
     token_auth = models.CharField(max_length=64, blank=True, null=True)
-    branch = models.ForeignKey(to=Branch, on_delete=models.CASCADE, null=True, blank=True)
+    branch = models.ForeignKey(
+        to=Branch, on_delete=models.CASCADE, null=True, blank=True
+    )
     bonus = models.IntegerField(default=0)
     position = models.CharField(max_length=255, choices=POSITIONS, default="client")
     is_active = models.BooleanField(default=True)

@@ -1,6 +1,7 @@
 from django.urls import path
 
-from .views import BranchCreateView, BranchDeleteView, BranchListView, BranchUpdateView
+from .views import (BranchCreateView, BranchDeleteView, BranchListView,
+                    BranchUpdateView)
 
 urlpatterns = [
     path("", BranchListView.as_view()),  # /branches/

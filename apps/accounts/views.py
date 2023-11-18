@@ -6,23 +6,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from utils.phone_number_verification import (
-    generate_pre_2fa_token,
-    get_user_by_token,
-    send_phone_number_verification,
-)
+from utils.phone_number_verification import (generate_pre_2fa_token,
+                                             get_user_by_token,
+                                             send_phone_number_verification)
 
 from .models import CustomUser, PhoneNumberVerification
 from .permissions import IsPhoneNumberVerified
-from .serializers import (
-    ClientBirthDateSerializer,
-    ClientConfirmPhoneNumberSerializer,
-    ClientEditProfileSerializer,
-    CustomUserSerializer,
-    LoginSerializer,
-    AdminLoginSerializer,
-    LoginForClientSerializer,
-)
+from .serializers import (AdminLoginSerializer, ClientBirthDateSerializer,
+                          ClientConfirmPhoneNumberSerializer,
+                          ClientEditProfileSerializer, CustomUserSerializer,
+                          LoginForClientSerializer, LoginSerializer)
 
 User = get_user_model()
 
@@ -327,7 +320,6 @@ class LoginView(generics.GenericAPIView):
 
 
 class TemporaryLoginView(generics.GenericAPIView):
-
     serializer_class = LoginForClientSerializer
 
     def post(self, request):

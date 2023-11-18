@@ -1,26 +1,15 @@
 from django.urls import path
 
-from apps.storage.views import (
-    CreateCategoryView,
-    CreateEmployeeView,
-    CreateIngredientView,
-    DestroyCategoryView,
-    EmployeeDetailView,
-    EmployeeListView,
-    EmployeeUpdateView,
-    IngredientListView,
-    ListCategoryView,
-    ScheduleUpdateView,
-    CreateItemView,
-    ItemListView,
-    ItemDetailView,
-    ItemUpdateView,
-    ReadyMadeProductCreateView,
-    ReadyMadeProductListView,
-    AvailableAtTheBranchView,
-    PutImageToItemView,
-    UpdateAvailableAtTheBranchView,
-)
+from apps.storage.views import (AvailableAtTheBranchView, CreateCategoryView,
+                                CreateEmployeeView, CreateIngredientView,
+                                CreateItemView, DestroyCategoryView,
+                                EmployeeDetailView, EmployeeListView,
+                                EmployeeUpdateView, IngredientListView,
+                                ItemDetailView, ItemListView, ItemUpdateView,
+                                ListCategoryView, PutImageToItemView,
+                                ReadyMadeProductCreateView,
+                                ReadyMadeProductListView, ScheduleUpdateView,
+                                UpdateAvailableAtTheBranchView)
 
 urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # storage/categories/
@@ -61,7 +50,7 @@ urlpatterns = [
     ),  # storage/ready-made-products/
     path(
         "ready-made-products/<int:pk>/", ReadyMadeProductListView.as_view()
-    ),  # storage/ready-made-products/<int:pk>/ 
+    ),  # storage/ready-made-products/<int:pk>/
     path(
         "available-at-the-branch/", AvailableAtTheBranchView.as_view()
     ),  # storage/available-at-the-branch/

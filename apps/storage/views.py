@@ -5,24 +5,22 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
-from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item, ReadyMadeProduct
-from apps.storage.serializers import (
-    CategorySerializer,
-    CreateIngredientSerializer,
-    EmployeeCreateSerializer,
-    EmployeeSerializer,
-    EmployeeUpdateSerializer,
-    IngredientSerializer,
-    ScheduleUpdateSerializer,
-    CreateItemSerializer,
-    ItemSerializer,
-    UpdateItemSerializer,
-    CreateReadyMadeProductSerializer,
-    ReadyMadeProductSerializer,
-    AvailableAtTheBranchSerializer,
-    PutImageToItemSerializer,
-    UpdateAvailableAtTheBranchSerializer
-)
+from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
+                                 Item, ReadyMadeProduct)
+from apps.storage.serializers import (AvailableAtTheBranchSerializer,
+                                      CategorySerializer,
+                                      CreateIngredientSerializer,
+                                      CreateItemSerializer,
+                                      CreateReadyMadeProductSerializer,
+                                      EmployeeCreateSerializer,
+                                      EmployeeSerializer,
+                                      EmployeeUpdateSerializer,
+                                      IngredientSerializer, ItemSerializer,
+                                      PutImageToItemSerializer,
+                                      ReadyMadeProductSerializer,
+                                      ScheduleUpdateSerializer,
+                                      UpdateAvailableAtTheBranchSerializer,
+                                      UpdateItemSerializer)
 from apps.storage.services import get_employees
 
 
@@ -42,7 +40,6 @@ class CreateCategoryView(generics.CreateAPIView):
         request_body=manual_request_schema,
         responses={201: "Category created successfully"},
     )
-
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
@@ -547,7 +544,6 @@ class ItemListView(generics.ListAPIView):
         operation_description="Use this method to get all items",
         responses={200: openapi.Response("Items list", list_response_schema)},
     )
-
     def get(self, request):
         return super().get(request)
 
@@ -616,7 +612,6 @@ class ItemDetailView(generics.RetrieveAPIView):
         operation_description="Use this endpoint to get a specific item",
         responses={200: openapi.Response("Items object", manual_response_schema)},
     )
-
     def get(self, request, pk=None):
         return super().get(request, pk)
 
@@ -666,12 +661,9 @@ class PutImageToItemView(generics.UpdateAPIView):
         operation_description="Use this method to put an image to item",
         request_body=manual_request_schema,
         responses={
-            200: openapi.Response(
-                "Image added successfully", PutImageToItemSerializer
-            )
+            200: openapi.Response("Image added successfully", PutImageToItemSerializer)
         },
     )
-
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
 
@@ -684,21 +676,29 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
     manual_request_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'name': openapi.Schema(type=openapi.TYPE_STRING, description='Product name'),
-            'minimal_limit': openapi.Schema(type=openapi.TYPE_NUMBER, description='Minimal limit'),
-            'available_at_branches': openapi.Schema(
+            "name": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Product name"
+            ),
+            "minimal_limit": openapi.Schema(
+                type=openapi.TYPE_NUMBER, description="Minimal limit"
+            ),
+            "available_at_branches": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'branch': openapi.Schema(type=openapi.TYPE_INTEGER, description='Branch ID'),
-                        'quantity': openapi.Schema(type=openapi.TYPE_NUMBER, description='Quantity'),
+                        "branch": openapi.Schema(
+                            type=openapi.TYPE_INTEGER, description="Branch ID"
+                        ),
+                        "quantity": openapi.Schema(
+                            type=openapi.TYPE_NUMBER, description="Quantity"
+                        ),
                     },
                 ),
-                description='List of branches where the product is available',
+                description="List of branches where the product is available",
             ),
         },
-        required=['name', 'minimal_limit', 'available_at_branches'],
+        required=["name", "minimal_limit", "available_at_branches"],
     )
 
     @swagger_auto_schema(request_body=manual_request_schema)

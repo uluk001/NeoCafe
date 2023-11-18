@@ -1,10 +1,12 @@
+import datetime
+
+import phonenumbers
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.utils.crypto import get_random_string
 from phonenumbers import NumberParseException, is_valid_number
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db import IntegrityError
-import datetime, phonenumbers
 
 User = get_user_model()
 
