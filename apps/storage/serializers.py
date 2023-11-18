@@ -1,5 +1,6 @@
 from .models import AvailableAtTheBranch
 from rest_framework import serializers
+from django.db import models
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 from apps.storage.models import (
@@ -218,6 +219,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation["total_quantity"] = round(AvailableAtTheBranch.objects.filter(ingredient=instance).aggregate(
+            total_quantity=models.Sum("quantity")
+        )["total_quantity"] / 1000, 2)
         representation["date_of_arrival"] = instance.date_of_arrival.strftime("%Y-%m-%d")
         representation["available_at_branches"] = AvailableAtTheBranchSerializer(
             AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
