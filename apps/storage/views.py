@@ -1,3 +1,6 @@
+"""
+Views for storage app
+"""
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
@@ -5,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
-from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
-                                 Item, ReadyMadeProduct)
 from apps.storage.serializers import (AvailableAtTheBranchSerializer,
                                       CategorySerializer,
                                       CreateIngredientSerializer,
@@ -21,11 +22,16 @@ from apps.storage.serializers import (AvailableAtTheBranchSerializer,
                                       ScheduleUpdateSerializer,
                                       UpdateAvailableAtTheBranchSerializer,
                                       UpdateItemSerializer)
-from apps.storage.services import get_employees
+from apps.storage.services import get_employees, get_specific_category, get_categories, get_ingrediants, get_available_at_the_branch, get_items, get_ready_made_products
 
 
-# Categories views
+# =====================================================================
+# CATEGORY VIEWS
+# =====================================================================
 class CreateCategoryView(generics.CreateAPIView):
+    """
+    Create category view for admins.
+    """
     manual_request_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -41,6 +47,9 @@ class CreateCategoryView(generics.CreateAPIView):
         responses={201: "Category created successfully"},
     )
     def post(self, request):
+        """
+        Create category method.
+        """
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -52,6 +61,9 @@ class CreateCategoryView(generics.CreateAPIView):
 
 
 class DestroyCategoryView(generics.DestroyAPIView):
+    """
+    Delete category view for admins.
+    """
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -69,16 +81,22 @@ class DestroyCategoryView(generics.DestroyAPIView):
         },
     )
     def delete(self, request, pk):
-        category = Category.objects.get(pk=pk)
+        """
+        Delete category method.
+        """
+        category = get_specific_category(pk)
         category.delete()
         return Response({"message": "Category deleted successfully"}, status=200)
 
-    queryset = Category.objects.all()
+    queryset = get_categories()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
 
 
 class ListCategoryView(generics.ListAPIView):
+    """
+    List category view.
+    """
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -97,17 +115,25 @@ class ListCategoryView(generics.ListAPIView):
         responses={200: openapi.Response("Categories list", list_response_schema)},
     )
     def get(self, request):
-        categories = Category.objects.all()
+        """
+        Get categories method.
+        """
+        categories = get_categories()
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 
-    queryset = Category.objects.all()
+    queryset = get_categories()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
 
 
-# Employees views
+# =====================================================================
+# EMPLOYEE VIEWS
+# =====================================================================
 class CreateEmployeeView(generics.CreateAPIView):
+    """
+    Create employee view.
+    """
     permission_classes = [permissions.IsAdminUser]
 
     @swagger_auto_schema(
@@ -165,6 +191,9 @@ class CreateEmployeeView(generics.CreateAPIView):
         responses={201: "Employee created successfully"},
     )
     def post(self, request):
+        """
+        Create employee method.
+        """
         serializer = EmployeeCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -173,6 +202,9 @@ class CreateEmployeeView(generics.CreateAPIView):
 
 
 class EmployeeListView(generics.ListAPIView):
+    """
+    List employee view.
+    """
     queryset = get_employees()
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAdminUser]
@@ -224,10 +256,16 @@ class EmployeeListView(generics.ListAPIView):
         responses={200: openapi.Response("Employees list", list_response_schema)},
     )
     def get(self, request):
+        """
+        Get employees method.
+        """
         return super().get(request)
 
 
 class EmployeeDetailView(generics.RetrieveAPIView):
+    """
+    Employee detail view. Only admins can get employee details.
+    """
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAdminUser]
     queryset = get_employees()
@@ -275,10 +313,16 @@ class EmployeeDetailView(generics.RetrieveAPIView):
         responses={200: openapi.Response("Employees object", manual_response_schema)},
     )
     def get(self, request, pk=None):
+        """
+        Get specific employee method.
+        """
         return super().get(request, pk)
 
 
 class EmployeeUpdateView(generics.UpdateAPIView):
+    """
+    Update employee view.
+    """
     queryset = CustomUser.objects.all()
     serializer_class = EmployeeUpdateSerializer
     lookup_field = "pk"
@@ -316,19 +360,30 @@ class EmployeeUpdateView(generics.UpdateAPIView):
 
 
 class ScheduleUpdateView(generics.UpdateAPIView):
+    """
+    Update employee schedule view.
+    """
     queryset = CustomUser.objects.all()
     serializer_class = ScheduleUpdateSerializer
     lookup_field = "pk"
 
     def get_serializer_context(self):
+        """
+        Get serializer context.
+        """
         context = super().get_serializer_context()
         context["user_id"] = self.kwargs.get("pk")
         return context
 
 
-# Ingredients views
+# =====================================================================
+# INGREDIENT VIEWS
+# =====================================================================
 class CreateIngredientView(generics.CreateAPIView):
-    queryset = Ingredient.objects.all()
+    """
+    Create ingredient view.
+    """
+    queryset = get_ingrediants()
     serializer_class = CreateIngredientSerializer
 
     manual_request_schema = openapi.Schema(
@@ -355,33 +410,43 @@ class CreateIngredientView(generics.CreateAPIView):
 
 
 class IngredientListView(APIView):
+    """
+    List ingredient view.
+    """
     def get(self, request):
-        ingredients = Ingredient.objects.all()
+        """
+        Get ingredients method.
+        """
+        ingredients = get_ingrediants()
         serializer = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data)
 
-    def post(self, request):
-        serializer = IngredientSerializer(data=request.data)
-        if serializer.is_valid():
-            ingredient = serializer.save()
-            return Response({"id": ingredient.id}, status=201)
-        return Response(serializer.errors, status=400)
-
 
 class AvailableAtTheBranchView(generics.ListAPIView):
-    queryset = AvailableAtTheBranch.objects.all()
+    """
+    Class for getting available ingredients at the branch. It is getting all available ingredients at the branch
+    """
+    queryset = get_available_at_the_branch()
     serializer_class = AvailableAtTheBranchSerializer
 
 
 class UpdateAvailableAtTheBranchView(generics.UpdateAPIView):
-    queryset = AvailableAtTheBranch.objects.all()
+    """
+    Class for updating available ingredients at the branch.
+    """
+    queryset = get_available_at_the_branch()
     serializer_class = UpdateAvailableAtTheBranchSerializer
     lookup_field = "id"
 
 
-# Items views
+# =====================================================================
+# ITEM VIEWS
+# =====================================================================
 class CreateItemView(generics.CreateAPIView):
-    queryset = Ingredient.objects.all()
+    """
+    Class for creating items.
+    """
+    queryset = get_ingrediants()
     serializer_class = CreateItemSerializer
 
     manual_request_schema = openapi.Schema(
@@ -469,6 +534,9 @@ class CreateItemView(generics.CreateAPIView):
         },
     )
     def post(self, request):
+        """
+        Create item method.
+        """
         serializer = CreateItemSerializer(data=request.data)
         if serializer.is_valid():
             item = serializer.save()
@@ -477,7 +545,10 @@ class CreateItemView(generics.CreateAPIView):
 
 
 class ItemListView(generics.ListAPIView):
-    queryset = Item.objects.all()
+    """
+    List item view.
+    """
+    queryset = get_items()
     serializer_class = ItemSerializer
 
     manual_response_schema = openapi.Schema(
@@ -545,11 +616,17 @@ class ItemListView(generics.ListAPIView):
         responses={200: openapi.Response("Items list", list_response_schema)},
     )
     def get(self, request):
+        """
+        Get items method.
+        """
         return super().get(request)
 
 
 class ItemDetailView(generics.RetrieveAPIView):
-    queryset = Item.objects.all()
+    """
+    Item detail view.
+    """
+    queryset = get_items()
     serializer_class = ItemSerializer
 
     manual_response_schema = openapi.Schema(
@@ -613,11 +690,17 @@ class ItemDetailView(generics.RetrieveAPIView):
         responses={200: openapi.Response("Items object", manual_response_schema)},
     )
     def get(self, request, pk=None):
+        """
+        Get specific item method.
+        """
         return super().get(request, pk)
 
 
 class ItemUpdateView(generics.UpdateAPIView):
-    queryset = Item.objects.all()
+    """
+    Update item view.
+    """
+    queryset = get_items()
     serializer_class = UpdateItemSerializer
     lookup_field = "pk"
 
@@ -645,7 +728,10 @@ class ItemUpdateView(generics.UpdateAPIView):
 
 
 class PutImageToItemView(generics.UpdateAPIView):
-    queryset = Item.objects.all()
+    """
+    Class for putting image to item by item id.
+    """
+    queryset = get_items()
     serializer_class = PutImageToItemSerializer
     lookup_field = "pk"
 
@@ -668,9 +754,14 @@ class PutImageToItemView(generics.UpdateAPIView):
         return super().put(request, *args, **kwargs)
 
 
-# Ready made products views
+# =====================================================================
+# READY MADE PRODUCTS VIEWS
+# =====================================================================
 class ReadyMadeProductCreateView(generics.CreateAPIView):
-    queryset = ReadyMadeProduct.objects.all()
+    """
+    Create ready made product view.
+    """
+    queryset = get_ready_made_products()
     serializer_class = CreateReadyMadeProductSerializer
 
     manual_request_schema = openapi.Schema(
@@ -707,11 +798,17 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
 
 
 class ReadyMadeProductUpdateView(generics.UpdateAPIView):
-    queryset = ReadyMadeProduct.objects.all()
+    """
+    Update ready made product view.
+    """
+    queryset = get_ready_made_products()
     serializer_class = CreateReadyMadeProductSerializer
     lookup_field = "pk"
 
 
 class ReadyMadeProductListView(generics.ListAPIView):
-    queryset = ReadyMadeProduct.objects.all()
+    """
+    List ready made product view.
+    """
+    queryset = get_ready_made_products()
     serializer_class = ReadyMadeProductSerializer

@@ -1,3 +1,6 @@
+"""
+Serializers for storage app.
+"""
 from django.db import models
 from rest_framework import serializers
 
@@ -6,24 +9,35 @@ from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
                                  Ingredient, Item, ReadyMadeProduct,
                                  ReadyMadeProductAvailableAtTheBranch)
 
-from .models import AvailableAtTheBranch
 
-
-# Categories
+# =====================================================================
+# CATEGORY SERIALIZER
+# =====================================================================
 class CategorySerializer(serializers.ModelSerializer):
+    """
+    Category serializer.
+    """
     class Meta:
         model = Category
         fields = "__all__"
 
 
-# Employees
+# =====================================================================
+# EMPLOYEE SERIALIZERS
+# =====================================================================
 class EmployeeWorkdaysSerializer(serializers.ModelSerializer):
+    """
+    EmployeeWorkdays serializer.
+    """
     class Meta:
         model = EmployeeWorkdays
         fields = ["id", "workday", "start_time", "end_time"]
 
 
 class EmployeeScheduleSerializer(serializers.ModelSerializer):
+    """
+    EmployeeSchedule serializer for EmployeeSerializer and ScheduleUpdateSerializer.
+    """
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
     class Meta:
@@ -32,6 +46,9 @@ class EmployeeScheduleSerializer(serializers.ModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    """
+    Employee serializer.
+    """
     schedule = EmployeeScheduleSerializer()
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
@@ -51,12 +68,18 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ]
 
     def validate_workdays(self, value):
+        """
+        Validate workdays data.
+        """
         for workday_data in value:
             EmployeeWorkdaysSerializer(data=workday_data).is_valid(raise_exception=True)
         return value
 
 
 class EmployeeCreateSerializer(serializers.ModelSerializer):
+    """
+    Employee create serializer.
+    """
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
     class Meta:
@@ -74,15 +97,21 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_workdays(self, value):
+        """
+        Validate workdays data.
+        """
         for workday_data in value:
             EmployeeWorkdaysSerializer(data=workday_data).is_valid(raise_exception=True)
         return value
 
     def create(self, validated_data):
-        schedule_data = {"title": f"График работы {validated_data['first_name']}"}
+        """
+        Create employee.
+        """
+        schedule_data = {"title": f"{validated_data['first_name']}'s schedule"}
 
         schedule = EmployeeSchedule.objects.create(**schedule_data)
-        employee = CustomUser.objects.create(schedule=schedule, **validated_data)
+        CustomUser.objects.create(schedule=schedule, **validated_data)
 
         if "workdays" in self.initial_data:
             workdays_data = self.initial_data["workdays"]
@@ -90,7 +119,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
             for workday_data in workdays_data:
                 workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
                 if workday_serializer.is_valid(raise_exception=True):
-                    workday = workday_serializer.save(schedule=schedule)
+                    workday_serializer.save(schedule=schedule)
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer):
@@ -106,6 +135,9 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        """
+        Update employee.
+        """
         instance.username = validated_data.get("username", instance.username)
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.position = validated_data.get("position", instance.position)
@@ -119,6 +151,9 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer):
 
 
 class ScheduleUpdateSerializer(serializers.ModelSerializer):
+    """
+    Schedule update serializer.
+    """
     workdays = EmployeeWorkdaysSerializer(many=True)
 
     class Meta:
@@ -126,6 +161,9 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
         fields = ["title", "workdays"]
 
     def update(self, instance, validated_data):
+        """
+        Update schedule.
+        """
         user_id = self.context["user_id"]
         user = CustomUser.objects.get(id=user_id)
         schedule = user.schedule
@@ -145,14 +183,22 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
         return schedule
 
 
-# Ingredients
+# =====================================================================
+# INGREDIENT SERIALIZERS
+# =====================================================================
 class CreateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    """
+    CreateAvailableAtTheBranch serializer.
+    """
     class Meta:
         model = AvailableAtTheBranch
         fields = ["id", "branch", "quantity"]
 
 
 class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    """
+    AvailableAtTheBranch serializer.
+    """
     branch = serializers.StringRelatedField()
     ingredient = serializers.StringRelatedField()
 
@@ -161,6 +207,9 @@ class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
         fields = ["id", "branch", "ingredient", "quantity"]
 
     def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
         representation = super().to_representation(instance)
         representation["ingredient"] = instance.ingredient.name
         representation["branch"] = instance.branch.name_of_shop
@@ -174,6 +223,9 @@ class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
 
 
 class CreateIngredientSerializer(serializers.ModelSerializer):
+    """
+    CreateIngredient serializer.
+    """
     available_at_branches = CreateAvailableAtTheBranchSerializer(
         many=True, write_only=True
     )
@@ -189,6 +241,9 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        """
+        Create ingredient.
+        """
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         ingredient = Ingredient.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
@@ -200,6 +255,9 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
         return ingredient
 
     def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
         representation = super().to_representation(instance)
         representation["available_at_branches"] = AvailableAtTheBranchSerializer(
             AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
@@ -208,6 +266,9 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """
+    Ingredient serializer.
+    """
     class Meta:
         model = Ingredient
         fields = [
@@ -219,12 +280,14 @@ class IngredientSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
         representation = super().to_representation(instance)
         representation["total_quantity"] = round(
             AvailableAtTheBranch.objects.filter(ingredient=instance).aggregate(
                 total_quantity=models.Sum("quantity")
-            )["total_quantity"]
-            / 1000,
+            )["total_quantity"] / 1000,
             2,
         )
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
@@ -237,6 +300,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class UpdateIngredientSerializer(serializers.ModelSerializer):
+    """
+    UpdateIngredient serializer.
+    """
     class Meta:
         model = Ingredient
         fields = [
@@ -248,11 +314,17 @@ class UpdateIngredientSerializer(serializers.ModelSerializer):
 
 
 class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    """
+    UpdateAvailableAtTheBranch serializer.
+    """
     class Meta:
         model = AvailableAtTheBranch
         fields = ["id", "quantity"]
 
     def update(self, instance, validated_data):
+        """
+        Update quantity.
+        """
         quantity = validated_data.get("quantity", instance.quantity)
         if instance.ingredient.measurement_unit in ["kg", "l"]:
             quantity *= 1000
@@ -261,6 +333,9 @@ class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
         representation = super().to_representation(instance)
         representation["ingredient"] = instance.ingredient.name
         representation["branch"] = instance.branch.name_of_shop
@@ -276,14 +351,22 @@ class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
         return representation
 
 
-# Items
+# =====================================================================
+# ITEM SERIALIZERS
+# =====================================================================
 class CompositionSerializer(serializers.ModelSerializer):
+    """
+    Composition serializer.
+    """
     class Meta:
         model = Composition
         fields = ["id", "ingredient", "quantity"]
 
 
 class CreateItemSerializer(serializers.ModelSerializer):
+    """
+    CreateItem serializer.
+    """
     composition = CompositionSerializer(many=True, write_only=True)
 
     class Meta:
@@ -300,6 +383,9 @@ class CreateItemSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        """
+        Create item.
+        """
         composition_data = validated_data.pop("composition", [])
         item = Item.objects.create(**validated_data)
         for composition in composition_data:
@@ -307,6 +393,9 @@ class CreateItemSerializer(serializers.ModelSerializer):
         return item
 
     def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
         representation = super().to_representation(instance)
         representation["composition"] = CompositionSerializer(
             Composition.objects.filter(item=instance), many=True
@@ -315,6 +404,9 @@ class CreateItemSerializer(serializers.ModelSerializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    """
+    Item serializer.
+    """
     category = CategorySerializer(read_only=True)
     compositions = CompositionSerializer(many=True, read_only=True)
 
@@ -333,6 +425,9 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 class UpdateItemSerializer(serializers.ModelSerializer):
+    """
+    UpdateItem serializer.
+    """
     composition = CompositionSerializer(many=True)
 
     class Meta:
@@ -349,6 +444,9 @@ class UpdateItemSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        """
+        Update item and composition of item.
+        """
         composition_data = validated_data.pop("composition", [])
         instance = super().update(instance, validated_data)
 
@@ -361,13 +459,21 @@ class UpdateItemSerializer(serializers.ModelSerializer):
 
 
 class PutImageToItemSerializer(serializers.ModelSerializer):
+    """
+    PutImageToItem serializer for ItemImageUpdateView
+    """
     class Meta:
         model = Item
         fields = ["image"]
 
 
-# Ready-made products
+# =====================================================================
+# READY MADE PRODUCT SERIALIZERS
+# =====================================================================
 class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    """
+    ReadyMadeProductAvailableAtTheBranch serializer.
+    """
     ready_made_product = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -376,6 +482,9 @@ class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer
 
 
 class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
+    """
+    CreateReadyMadeProduct serializer.
+    """
     available_at_branches = ReadyMadeProductAvailableAtTheBranchSerializer(
         many=True, write_only=True
     )
@@ -390,6 +499,9 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        """
+        Create ready-made product and available at the branch.
+        """
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         product = ReadyMadeProduct.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
@@ -399,6 +511,9 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
         return product
 
     def to_representation(self, instance):
+        """
+        Create ready-made product and available at the branch representation.
+        """
         representation = super().to_representation(instance)
         representation[
             "available_at_branches"
@@ -412,6 +527,9 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
 
 
 class ReadyMadeProductSerializer(serializers.ModelSerializer):
+    """
+    ReadyMadeProduct serializer.
+    """
     class Meta:
         model = ReadyMadeProduct
         fields = [

@@ -1,6 +1,6 @@
-from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
+from apps.accounts.models import CustomUser
 
-from .models import (AvailableAtTheBranch, Category, Composition, Ingredient,
+from .models import (AvailableAtTheBranch, Category, Ingredient,
                      Item, ReadyMadeProduct)
 
 
@@ -14,3 +14,39 @@ def get_specific_employee(pk):
     """Get specific employee"""
     employee = CustomUser.objects.filter(pk=pk).first()
     return employee
+
+
+def get_specific_category(pk):
+    """Get specific category"""
+    category = Category.objects.filter(pk=pk).first()
+    return category
+
+
+def get_categories():
+    """Get all categories"""
+    categories = Category.objects.all()
+    return categories
+
+
+def get_ingrediants():
+    """Get all ingrediants"""
+    ingrediants = Ingredient.objects.all()
+    return ingrediants
+
+
+def get_available_at_the_branch():
+    """Get all available at the branch"""
+    available_at_the_branch = AvailableAtTheBranch.objects.all()
+    return available_at_the_branch
+
+
+def get_items():
+    """Get all items"""
+    items = Item.objects.all()
+    return items
+
+
+def get_ready_made_products():
+    """Get all ready made products"""
+    ready_made_products = ReadyMadeProduct.objects.all()
+    return ready_made_products

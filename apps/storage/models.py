@@ -1,17 +1,26 @@
+"""
+Module for storage models.
+"""
 from django.db import models
 
 from apps.branches.models import Branch
 
 
 class Category(models.Model):
+    """
+    Category model.
+    """
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to="images", null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Item(models.Model):
+    """
+    Item model.
+    """
     name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.TextField(null=True, blank=True)
@@ -20,10 +29,13 @@ class Item(models.Model):
     is_available = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Ingredient(models.Model):
+    """
+    Ingredient model.
+    """
     MEASUREMENT_CHOICES = [
         ("g", "gram"),
         ("ml", "milliliter"),
@@ -43,6 +55,9 @@ class Ingredient(models.Model):
 
 
 class Composition(models.Model):
+    """
+    Composition model.
+    """
     item = models.ForeignKey(
         Item,
         on_delete=models.CASCADE,
@@ -62,20 +77,26 @@ class Composition(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.item.name} - {self.ingredient.name} - {self.quantity} {self.ingredient.measurement_unit}"
+        return f"{self.item.name} - {self.ingredient.name} - {self.quantity}"
 
 
 class ReadyMadeProduct(models.Model):
+    """
+    ReadyMadeProduct model.
+    """
     image = models.ImageField(upload_to="images")
     minimal_limit = models.DecimalField(max_digits=10, decimal_places=2)
     name = models.CharField(max_length=100)
     date_of_arrival = models.DateField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class AvailableAtTheBranch(models.Model):
+    """
+    AvailableAtTheBranch model.
+    """
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
@@ -85,6 +106,9 @@ class AvailableAtTheBranch(models.Model):
 
 
 class ReadyMadeProductAvailableAtTheBranch(models.Model):
+    """
+    ReadyMadeProductAvailableAtTheBranch model.
+    """
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     ready_made_product = models.ForeignKey(ReadyMadeProduct, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
