@@ -1,31 +1,32 @@
-version: '3.11'
-
+version: "3.10"
 services:
-  db:
-    container_name: pg_db
-    image: postgres:14
-    env_file:
-      - .env
+  db_neocaffee:
+    container_name: database_neo
+    image: postgres:latest
     volumes:
-      - ./auth_db/postgres:/var/lib/postgresql/data
+      - .db_neo/postgres/:/var/lib/postgresql/data
     expose:
       - 5432
     ports:
       - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: "12345"
 
   web:
-    container_name: backend
+    container_name: neocaffee_backend
     restart: always
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      - .env
     expose:
       - 8000
     ports:
       - "8000:8000"
     volumes:
-      - .:/back_end
+      - .:/backend_neo
+    env_file:
+      - .env
     depends_on:
-      - db
+      - db_neocaffee
