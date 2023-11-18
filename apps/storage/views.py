@@ -2,6 +2,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
 from apps.storage.models import AvailableAtTheBranch, Category, Ingredient, Item, ReadyMadeProduct
@@ -354,35 +355,18 @@ class CreateIngredientView(generics.CreateAPIView):
     )
 
 
-class IngredientListView(generics.ListAPIView):
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-
-    manual_response_schema = openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "id": openapi.Schema(type=openapi.TYPE_INTEGER),
-            "name": openapi.Schema(type=openapi.TYPE_STRING),
-            "measurement_unit": openapi.Schema(
-                type=openapi.TYPE_STRING,
-                enum=["g", "ml", "l", "kg"],
-            ),
-            "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
-            "date_of_arrival": openapi.Schema(type=openapi.TYPE_STRING, format="date"),
-        },
-    )
-
-    list_response_schema = openapi.Schema(
-        type=openapi.TYPE_ARRAY, items=manual_response_schema
-    )
-
-    @swagger_auto_schema(
-        operation_summary="Get ingredients",
-        operation_description="Use this method to get all ingredients",
-        responses={200: openapi.Response("Ingredients list", list_response_schema)},
-    )
+class IngredientListView(APIView):
     def get(self, request):
-        return super().get(request)
+        ingredients = Ingredient.objects.all()
+        serializer = IngredientSerializer(ingredients, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = IngredientSerializer(data=request.data)
+        if serializer.is_valid():
+            ingredient = serializer.save()
+            return Response({"id": ingredient.id}, status=201)
+        return Response(serializer.errors, status=400)
 
 
 class AvailableAtTheBranchView(generics.ListAPIView):

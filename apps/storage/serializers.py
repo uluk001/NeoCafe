@@ -150,14 +150,32 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
 
 
 # Ingredients
-class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
+class CreateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = AvailableAtTheBranch
         fields = ["id", "branch", "quantity"]
 
 
+class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    branch = serializers.StringRelatedField()
+    ingredient = serializers.StringRelatedField()
+
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ["id", "branch", "ingredient", "quantity"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["ingredient"] = instance.ingredient.name
+        representation["branch"] = instance.branch.name_of_shop
+        quantity = round(instance.quantity / 1000, 2) if instance.ingredient.measurement_unit in ["kg", "l"] else instance.quantity
+        representation["quantity"] = quantity
+        return representation
+
+
 class CreateIngredientSerializer(serializers.ModelSerializer):
-    available_at_branches = AvailableAtTheBranchSerializer(many=True, write_only=True)
+    available_at_branches = CreateAvailableAtTheBranchSerializer(many=True, write_only=True)
 
     class Meta:
         model = Ingredient
@@ -173,9 +191,9 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         ingredient = Ingredient.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
-            AvailableAtTheBranch.objects.create(
-                ingredient=ingredient, **available_at_branch_data
-            )
+            if ingredient.measurement_unit in ["kg", "l"]:
+                available_at_branch_data["quantity"] *= 1000
+            AvailableAtTheBranch.objects.create(ingredient=ingredient, **available_at_branch_data)
         return ingredient
 
     def to_representation(self, instance):
@@ -198,15 +216,13 @@ class IngredientSerializer(serializers.ModelSerializer):
             "date_of_arrival",
         ]
 
-
-class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
-    branch = serializers.StringRelatedField()
-    ingredient = serializers.StringRelatedField()
-
-    class Meta:
-        model = AvailableAtTheBranch
-        fields = ['id', 'branch', 'ingredient', 'quantity']
-        ref_name = 'AvailableAtTheBranchSerializer'
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["date_of_arrival"] = instance.date_of_arrival.strftime("%Y-%m-%d")
+        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
+            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
+        ).data
+        return representation
 
 
 # Items
