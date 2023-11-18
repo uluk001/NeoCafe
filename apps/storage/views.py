@@ -20,6 +20,7 @@ from apps.storage.serializers import (
     CreateReadyMadeProductSerializer,
     ReadyMadeProductSerializer,
     AvailableAtTheBranchSerializer,
+    PutImageToItemSerializer,
 )
 from apps.storage.services import get_employees
 
@@ -639,6 +640,33 @@ class ItemUpdateView(generics.UpdateAPIView):
             "image": openapi.Schema(type=openapi.TYPE_FILE),
         },
     )
+
+
+class PutImageToItemView(generics.UpdateAPIView):
+    queryset = Item.objects.all()
+    serializer_class = PutImageToItemSerializer
+    lookup_field = "pk"
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Put image to item",
+        operation_description="Use this method to put an image to item",
+        request_body=manual_request_schema,
+        responses={
+            200: openapi.Response(
+                "Image added successfully", PutImageToItemSerializer
+            )
+        },
+    )
+
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
 
 
 # Ready made products views

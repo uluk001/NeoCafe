@@ -229,6 +229,18 @@ class IngredientSerializer(serializers.ModelSerializer):
         return representation
 
 
+class UpdateIngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = [
+            "id",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+        ]
+
+
 # Items
 class CompositionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -311,6 +323,12 @@ class UpdateItemSerializer(serializers.ModelSerializer):
             Composition.objects.create(item=instance, **composition)
 
         return instance
+
+
+class PutImageToItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ["image"]
 
 
 # Ready-made products
