@@ -241,6 +241,33 @@ class UpdateIngredientSerializer(serializers.ModelSerializer):
         ]
 
 
+class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ["id", "quantity"]
+
+    def update(self, instance, validated_data):
+        quantity = validated_data.get("quantity", instance.quantity)
+        if instance.ingredient.measurement_unit in ["kg", "l"]:
+            quantity *= 1000
+        instance.quantity = quantity
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["ingredient"] = instance.ingredient.name
+        representation["branch"] = instance.branch.name_of_shop
+        quantity = instance.quantity
+        if isinstance(quantity, str):
+            quantity = float(quantity)
+        quantity = round(quantity / 1000, 2) if instance.ingredient.measurement_unit in ["kg", "l"] else quantity
+        representation["quantity"] = quantity
+        return representation
+
+
+
 # Items
 class CompositionSerializer(serializers.ModelSerializer):
     class Meta:

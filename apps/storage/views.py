@@ -21,6 +21,7 @@ from apps.storage.serializers import (
     ReadyMadeProductSerializer,
     AvailableAtTheBranchSerializer,
     PutImageToItemSerializer,
+    UpdateAvailableAtTheBranchSerializer
 )
 from apps.storage.services import get_employees
 
@@ -373,6 +374,12 @@ class IngredientListView(APIView):
 class AvailableAtTheBranchView(generics.ListAPIView):
     queryset = AvailableAtTheBranch.objects.all()
     serializer_class = AvailableAtTheBranchSerializer
+
+
+class UpdateAvailableAtTheBranchView(generics.UpdateAPIView):
+    queryset = AvailableAtTheBranch.objects.all()
+    serializer_class = UpdateAvailableAtTheBranchSerializer
+    lookup_field = "id"
 
 
 # Items views

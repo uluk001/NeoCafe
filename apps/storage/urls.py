@@ -19,6 +19,7 @@ from apps.storage.views import (
     ReadyMadeProductListView,
     AvailableAtTheBranchView,
     PutImageToItemView,
+    UpdateAvailableAtTheBranchView,
 )
 
 urlpatterns = [
@@ -67,4 +68,8 @@ urlpatterns = [
     path(
         "put-image-to-item/<int:pk>/", PutImageToItemView.as_view()
     ),  # storage/put-image-to-item/<int:pk>/
+    path(
+        "update-available-at-the-branch/<int:id>/",
+        UpdateAvailableAtTheBranchView.as_view(),
+    ),  # storage/update-available-at-the-branch/<int:pk>/
 ]
