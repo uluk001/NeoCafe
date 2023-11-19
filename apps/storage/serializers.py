@@ -333,9 +333,45 @@ class UpdateIngredientSerializer(serializers.ModelSerializer):
         ]
 
 
-class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+class IngredientDetailSerializer(serializers.ModelSerializer):
     """
-    UpdateAvailableAtTheBranch serializer.
+    IngredientDetail serializer.
+    """
+
+    class Meta:
+        model = Ingredient
+        fields = [
+            "id",
+            "name",
+            "measurement_unit",
+            "minimal_limit",
+            "date_of_arrival",
+        ]
+
+    def to_representation(self, instance):
+        """
+        Change quantity to kg or l if measurement unit is kg or l.
+        """
+        representation = super().to_representation(instance)
+        total_quantity = AvailableAtTheBranch.objects.filter(
+            ingredient=instance
+        ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
+        if total_quantity is not None:
+            representation["total_quantity"] = round(total_quantity / 1000, 2)
+        else:
+            representation["total_quantity"] = 0
+        representation["date_of_arrival"] = instance.date_of_arrival.strftime(
+            "%Y-%m-%d"
+        )
+        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
+            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
+        ).data
+        return representation
+
+
+class IngredientQuantityUpdateSerializer(serializers.ModelSerializer):
+    """
+    IngredientQuantityUpdate serializer.
     """
 
     class Meta:

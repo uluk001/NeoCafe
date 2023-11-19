@@ -46,7 +46,7 @@ class Ingredient(models.Model):
         ("kg", "kilogram"),
     ]
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     measurement_unit = models.CharField(
         max_length=3, choices=MEASUREMENT_CHOICES, default="g"
     )
@@ -91,7 +91,7 @@ class ReadyMadeProduct(models.Model):
 
     image = models.ImageField(upload_to="images")
     minimal_limit = models.DecimalField(max_digits=10, decimal_places=2)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
     date_of_arrival = models.DateField(auto_now=True)
 
     def __str__(self):

@@ -1,16 +1,17 @@
 from django.urls import path
 
-from apps.storage.views import (AvailableAtTheBranchView, CreateCategoryView,
-                                CreateEmployeeView, CreateIngredientView,
-                                CreateItemView, DestroyCategoryView,
-                                EmployeeDestroyView, EmployeeDetailView,
-                                EmployeeListView, EmployeeUpdateView,
-                                IngredientListView, ItemDetailView,
+from apps.storage.views import (CreateCategoryView, CreateEmployeeView,
+                                CreateIngredientView, CreateItemView,
+                                DestroyCategoryView, EmployeeDestroyView,
+                                EmployeeDetailView, EmployeeListView,
+                                EmployeeUpdateView, IngredientDestroyView,
+                                IngredientDetailView, IngredientListView,
+                                IngredientQuantityUpdateView,
+                                InredientDestroyFromBranchView, ItemDetailView,
                                 ItemListView, ItemUpdateView, ListCategoryView,
                                 PutImageToItemView, ReadyMadeProductCreateView,
                                 ReadyMadeProductListView, ScheduleUpdateView,
-                                UpdateAvailableAtTheBranchView,
-                                UpdateCategoryView)
+                                UpdateCategoryView, UpdateIngredientView)
 
 urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # storage/categories/
@@ -42,7 +43,24 @@ urlpatterns = [
     path(
         "ingredients/create/", CreateIngredientView.as_view()
     ),  # storage/ingredients/create/
+    path(
+        "ingredients/update/<int:pk>/", UpdateIngredientView.as_view()
+    ),  # storage/ingredients/update/<int:pk>/
+    path(
+        "ingredients/<int:pk>/", IngredientDetailView.as_view()
+    ),  # storage/ingredients/<int:pk>/
+    path(
+        "ingredients/destroy/<int:pk>/", IngredientDestroyView.as_view()
+    ),  # storage/ingredients/destroy/<int:pk>/
     path("ingredients/", IngredientListView.as_view()),  # storage/ingredients/
+    path(
+        "ingredient-quantity-update/<int:id>/",
+        IngredientQuantityUpdateView.as_view(),
+    ),  # storage/ingredient-quantity-update/<int:pk>/
+    path(
+        "ingredient-destroy-from-branch/<int:pk>/",
+        InredientDestroyFromBranchView.as_view(),
+    ),  # storage/ingredient-destroy-from-branch/<int:pk>/
     path("items/create/", CreateItemView.as_view()),  # storage/items/create/
     path("items/", ItemListView.as_view()),  # storage/items/
     path("items/<int:pk>/", ItemDetailView.as_view()),  # storage/items/<int:pk>/
@@ -59,13 +77,6 @@ urlpatterns = [
         "ready-made-products/<int:pk>/", ReadyMadeProductListView.as_view()
     ),  # storage/ready-made-products/<int:pk>/
     path(
-        "available-at-the-branch/", AvailableAtTheBranchView.as_view()
-    ),  # storage/available-at-the-branch/
-    path(
         "put-image-to-item/<int:pk>/", PutImageToItemView.as_view()
     ),  # storage/put-image-to-item/<int:pk>/
-    path(
-        "update-available-at-the-branch/<int:id>/",
-        UpdateAvailableAtTheBranchView.as_view(),
-    ),  # storage/update-available-at-the-branch/<int:pk>/
 ]

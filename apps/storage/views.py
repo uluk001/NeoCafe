@@ -16,11 +16,13 @@ from apps.storage.serializers import (AvailableAtTheBranchSerializer,
                                       EmployeeCreateSerializer,
                                       EmployeeSerializer,
                                       EmployeeUpdateSerializer,
+                                      IngredientDetailSerializer,
+                                      IngredientQuantityUpdateSerializer,
                                       IngredientSerializer, ItemSerializer,
                                       PutImageToItemSerializer,
                                       ReadyMadeProductSerializer,
                                       ScheduleUpdateSerializer,
-                                      UpdateAvailableAtTheBranchSerializer,
+                                      UpdateIngredientSerializer,
                                       UpdateItemSerializer)
 from apps.storage.services import (delete_employee_schedule_by_employee,
                                    get_available_at_the_branch, get_categories,
@@ -474,6 +476,7 @@ class CreateIngredientView(generics.CreateAPIView):
 
     queryset = get_ingrediants()
     serializer_class = CreateIngredientSerializer
+    permission_classes = [permissions.IsAdminUser]
 
     manual_request_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -498,10 +501,63 @@ class CreateIngredientView(generics.CreateAPIView):
     )
 
 
+class UpdateIngredientView(generics.UpdateAPIView):
+    """
+    Update ingredient view.
+    """
+
+    queryset = get_ingrediants()
+    serializer_class = UpdateIngredientSerializer
+    lookup_field = "pk"
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "measurement_unit": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                enum=["g", "ml", "l", "kg"],
+            ),
+            "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
+            "available_at_branches": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "branch": openapi.Schema(type=openapi.TYPE_STRING),
+                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    },
+                ),
+            ),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Update ingredient",
+        operation_description="Use this method to update an ingredient",
+        request_body=manual_request_schema,
+        responses={
+            200: openapi.Response(
+                "Ingredient updated successfully", UpdateIngredientSerializer
+            )
+        },
+    )
+    def put(self, request, pk):
+        ingredient = get_ingrediants().filter(pk=pk).first()
+        serializer = UpdateIngredientSerializer(ingredient, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Ingredient updated successfully"}, status=200)
+        return Response(serializer.errors, status=400)
+
+
 class IngredientListView(APIView):
     """
     List ingredient view.
     """
+
+    permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
         """
@@ -512,23 +568,89 @@ class IngredientListView(APIView):
         return Response(serializer.data)
 
 
-class AvailableAtTheBranchView(generics.ListAPIView):
+class IngredientDestroyView(generics.DestroyAPIView):
     """
-    Class for getting available ingredients at the branch. It is getting all available ingredients at the branch
+    Delete ingredient view.
+    """
+
+    queryset = get_ingrediants()
+    serializer_class = IngredientSerializer
+    lookup_field = "pk"
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "message": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Delete ingredient",
+        operation_description="Use this method to delete an ingredient. Only admins can delete ingredients",
+        responses={
+            200: openapi.Response(
+                "Ingredient deleted successfully", manual_response_schema
+            )
+        },
+    )
+    def delete(self, request, pk):
+        """
+        Delete ingredient method.
+        """
+        ingredient = get_ingrediants().filter(pk=pk).first()
+        ingredient.delete()
+        return Response({"message": "Ingredient deleted successfully"}, status=200)
+
+
+class IngredientDetailView(generics.RetrieveAPIView):
+    """
+    Ingredient detail view.
+    """
+
+    queryset = get_ingrediants()
+    serializer_class = IngredientDetailSerializer
+    lookup_field = "pk"
+    permission_classes = [permissions.IsAdminUser]
+
+
+class IngredientQuantityUpdateView(generics.UpdateAPIView):
+    """
+    Class for updating ingredient quantity.
+    """
+
+    queryset = get_available_at_the_branch()
+    serializer_class = IngredientQuantityUpdateSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = "id"
+
+
+class InredientDestroyFromBranchView(generics.DestroyAPIView):
+    """
+    Class for deleting ingredient from branch.
     """
 
     queryset = get_available_at_the_branch()
     serializer_class = AvailableAtTheBranchSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = "pk"
 
-
-class UpdateAvailableAtTheBranchView(generics.UpdateAPIView):
-    """
-    Class for updating available ingredients at the branch.
-    """
-
-    queryset = get_available_at_the_branch()
-    serializer_class = UpdateAvailableAtTheBranchSerializer
-    lookup_field = "id"
+    @swagger_auto_schema(
+        operation_summary="Delete ingredient from branch",
+        operation_description="Use this method to delete an ingredient from branch. Only admins can delete ingredients from branch",
+        responses={
+            200: openapi.Response(
+                "Ingredient deleted successfully", AvailableAtTheBranchSerializer
+            )
+        },
+    )
+    def delete(self, request, pk):
+        """
+        Delete ingredient from branch method.
+        """
+        ingredient = get_available_at_the_branch().filter(pk=pk).first()
+        ingredient.delete()
+        return Response({"message": "Ingredient deleted successfully"}, status=200)
 
 
 # =====================================================================
