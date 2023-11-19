@@ -9,7 +9,7 @@ from apps.storage.views import (AvailableAtTheBranchView, CreateCategoryView,
                                 ListCategoryView, PutImageToItemView,
                                 ReadyMadeProductCreateView,
                                 ReadyMadeProductListView, ScheduleUpdateView,
-                                UpdateAvailableAtTheBranchView)
+                                UpdateAvailableAtTheBranchView, UpdateCategoryView)
 
 urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # storage/categories/
@@ -19,6 +19,9 @@ urlpatterns = [
     path(
         "categories/destroy/<int:pk>/", DestroyCategoryView.as_view()
     ),  # storage/categories/destroy/<int:pk>/
+    path(
+        "categories/update/<int:pk>/", UpdateCategoryView.as_view()
+    ),  # storage/categories/update/<int:pk>/
     path(
         "employees/create/", CreateEmployeeView.as_view()
     ),  # storage/employees/create/

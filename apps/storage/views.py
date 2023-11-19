@@ -127,6 +127,44 @@ class ListCategoryView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
+class UpdateCategoryView(generics.UpdateAPIView):
+    """
+    Update category view for admins.
+    """
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Update category",
+        operation_description="Use this method to update a category. Only admins can update categories",
+        request_body=manual_request_schema,
+        responses={
+            200: openapi.Response(
+                "Category updated successfully", CategorySerializer
+            )
+        },
+    )
+    def put(self, request, pk):
+        """
+        Update category method.
+        """
+        category = get_specific_category(pk)
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Category updated successfully"}, status=200)
+        return Response(serializer.errors, status=400)
+
+    queryset = get_categories()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
 # =====================================================================
 # EMPLOYEE VIEWS
 # =====================================================================
