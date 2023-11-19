@@ -284,12 +284,13 @@ class IngredientSerializer(serializers.ModelSerializer):
         Change quantity to kg or l if measurement unit is kg or l.
         """
         representation = super().to_representation(instance)
-        representation["total_quantity"] = round(
-            AvailableAtTheBranch.objects.filter(ingredient=instance).aggregate(
-                total_quantity=models.Sum("quantity")
-            )["total_quantity"] / 1000,
-            2,
-        )
+        total_quantity = AvailableAtTheBranch.objects.filter(ingredient=instance).aggregate(
+            total_quantity=models.Sum("quantity")
+        )["total_quantity"]
+        if total_quantity is not None:
+            representation["total_quantity"] = round(total_quantity / 1000, 2)
+        else:
+            representation["total_quantity"] = 0
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
             "%Y-%m-%d"
         )
