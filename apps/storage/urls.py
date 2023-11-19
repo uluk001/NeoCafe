@@ -3,13 +3,14 @@ from django.urls import path
 from apps.storage.views import (AvailableAtTheBranchView, CreateCategoryView,
                                 CreateEmployeeView, CreateIngredientView,
                                 CreateItemView, DestroyCategoryView,
-                                EmployeeDetailView, EmployeeListView,
-                                EmployeeUpdateView, IngredientListView,
-                                ItemDetailView, ItemListView, ItemUpdateView,
-                                ListCategoryView, PutImageToItemView,
-                                ReadyMadeProductCreateView,
+                                EmployeeDestroyView, EmployeeDetailView,
+                                EmployeeListView, EmployeeUpdateView,
+                                IngredientListView, ItemDetailView,
+                                ItemListView, ItemUpdateView, ListCategoryView,
+                                PutImageToItemView, ReadyMadeProductCreateView,
                                 ReadyMadeProductListView, ScheduleUpdateView,
-                                UpdateAvailableAtTheBranchView, UpdateCategoryView)
+                                UpdateAvailableAtTheBranchView,
+                                UpdateCategoryView)
 
 urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # storage/categories/
@@ -35,6 +36,9 @@ urlpatterns = [
     path(
         "employees/schedule/update/<int:pk>/", ScheduleUpdateView.as_view()
     ),  # storage/employees/schedule/update/<int:pk>/
+    path(
+        "employees/destroy/<int:pk>/", EmployeeDestroyView.as_view()
+    ),  # storage/employees/destroy/<int:pk>/
     path(
         "ingredients/create/", CreateIngredientView.as_view()
     ),  # storage/ingredients/create/

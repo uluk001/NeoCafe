@@ -17,6 +17,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """
     Category serializer.
     """
+
     class Meta:
         model = Category
         fields = "__all__"
@@ -29,15 +30,24 @@ class EmployeeWorkdaysSerializer(serializers.ModelSerializer):
     """
     EmployeeWorkdays serializer.
     """
+
     class Meta:
         model = EmployeeWorkdays
         fields = ["id", "workday", "start_time", "end_time"]
+
+    def create(self, validated_data):
+        """
+        Create employee workdays.
+        """
+        employee_workdays = EmployeeWorkdays.objects.create(**validated_data)
+        return employee_workdays
 
 
 class EmployeeScheduleSerializer(serializers.ModelSerializer):
     """
     EmployeeSchedule serializer for EmployeeSerializer and ScheduleUpdateSerializer.
     """
+
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
     class Meta:
@@ -49,6 +59,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
     """
     Employee serializer.
     """
+
     schedule = EmployeeScheduleSerializer()
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
@@ -80,6 +91,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
     """
     Employee create serializer.
     """
+
     workdays = EmployeeWorkdaysSerializer(many=True, read_only=True)
 
     class Meta:
@@ -115,11 +127,12 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 
         if "workdays" in self.initial_data:
             workdays_data = self.initial_data["workdays"]
-            print(workdays_data)
             for workday_data in workdays_data:
                 workday_serializer = EmployeeWorkdaysSerializer(data=workday_data)
                 if workday_serializer.is_valid(raise_exception=True):
                     workday_serializer.save(schedule=schedule)
+
+        return CustomUser.objects.get(username=validated_data["username"])
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer):
@@ -154,11 +167,12 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
     """
     Schedule update serializer.
     """
+
     workdays = EmployeeWorkdaysSerializer(many=True)
 
     class Meta:
         model = EmployeeSchedule
-        fields = ["title", "workdays"]
+        fields = ["workdays"]
 
     def update(self, instance, validated_data):
         """
@@ -168,7 +182,7 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.get(id=user_id)
         schedule = user.schedule
 
-        schedule.title = validated_data.get("title", schedule.title)
+        schedule.title = f"{user.first_name}'s schedule"
         schedule.save()
 
         schedule.workdays.all().delete()
@@ -190,6 +204,7 @@ class CreateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
     """
     CreateAvailableAtTheBranch serializer.
     """
+
     class Meta:
         model = AvailableAtTheBranch
         fields = ["id", "branch", "quantity"]
@@ -199,6 +214,7 @@ class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
     """
     AvailableAtTheBranch serializer.
     """
+
     branch = serializers.StringRelatedField()
     ingredient = serializers.StringRelatedField()
 
@@ -226,6 +242,7 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
     """
     CreateIngredient serializer.
     """
+
     available_at_branches = CreateAvailableAtTheBranchSerializer(
         many=True, write_only=True
     )
@@ -269,6 +286,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     """
     Ingredient serializer.
     """
+
     class Meta:
         model = Ingredient
         fields = [
@@ -284,9 +302,9 @@ class IngredientSerializer(serializers.ModelSerializer):
         Change quantity to kg or l if measurement unit is kg or l.
         """
         representation = super().to_representation(instance)
-        total_quantity = AvailableAtTheBranch.objects.filter(ingredient=instance).aggregate(
-            total_quantity=models.Sum("quantity")
-        )["total_quantity"]
+        total_quantity = AvailableAtTheBranch.objects.filter(
+            ingredient=instance
+        ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
         if total_quantity is not None:
             representation["total_quantity"] = round(total_quantity / 1000, 2)
         else:
@@ -304,6 +322,7 @@ class UpdateIngredientSerializer(serializers.ModelSerializer):
     """
     UpdateIngredient serializer.
     """
+
     class Meta:
         model = Ingredient
         fields = [
@@ -318,6 +337,7 @@ class UpdateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
     """
     UpdateAvailableAtTheBranch serializer.
     """
+
     class Meta:
         model = AvailableAtTheBranch
         fields = ["id", "quantity"]
@@ -359,6 +379,7 @@ class CompositionSerializer(serializers.ModelSerializer):
     """
     Composition serializer.
     """
+
     class Meta:
         model = Composition
         fields = ["id", "ingredient", "quantity"]
@@ -368,6 +389,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
     """
     CreateItem serializer.
     """
+
     composition = CompositionSerializer(many=True, write_only=True)
 
     class Meta:
@@ -408,6 +430,7 @@ class ItemSerializer(serializers.ModelSerializer):
     """
     Item serializer.
     """
+
     category = CategorySerializer(read_only=True)
     compositions = CompositionSerializer(many=True, read_only=True)
 
@@ -429,6 +452,7 @@ class UpdateItemSerializer(serializers.ModelSerializer):
     """
     UpdateItem serializer.
     """
+
     composition = CompositionSerializer(many=True)
 
     class Meta:
@@ -463,6 +487,7 @@ class PutImageToItemSerializer(serializers.ModelSerializer):
     """
     PutImageToItem serializer for ItemImageUpdateView
     """
+
     class Meta:
         model = Item
         fields = ["image"]
@@ -475,6 +500,7 @@ class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer
     """
     ReadyMadeProductAvailableAtTheBranch serializer.
     """
+
     ready_made_product = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -486,6 +512,7 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
     """
     CreateReadyMadeProduct serializer.
     """
+
     available_at_branches = ReadyMadeProductAvailableAtTheBranchSerializer(
         many=True, write_only=True
     )
@@ -524,6 +551,12 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
             ),
             many=True,
         ).data
+        representation["total_quantity"] = (
+            ReadyMadeProductAvailableAtTheBranch.objects.filter(
+                ready_made_product=instance
+            ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
+            or 0
+        )
         return representation
 
 
@@ -531,6 +564,7 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
     """
     ReadyMadeProduct serializer.
     """
+
     class Meta:
         model = ReadyMadeProduct
         fields = [

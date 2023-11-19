@@ -1,7 +1,7 @@
-from apps.accounts.models import CustomUser
+from apps.accounts.models import CustomUser, EmployeeSchedule
 
-from .models import (AvailableAtTheBranch, Category, Ingredient,
-                     Item, ReadyMadeProduct)
+from .models import (AvailableAtTheBranch, Category, Ingredient, Item,
+                     ReadyMadeProduct)
 
 
 def get_employees():
@@ -50,3 +50,14 @@ def get_ready_made_products():
     """Get all ready made products"""
     ready_made_products = ReadyMadeProduct.objects.all()
     return ready_made_products
+
+
+def delete_employee_schedule_by_employee(employee):
+    """Delete employee schedule by employee"""
+    title = f"{employee.first_name}'s schedule"
+    try:
+        employee_schedule = EmployeeSchedule.objects.filter(title=title).first()
+        employee_schedule.delete()
+        return employee_schedule
+    except AttributeError:
+        return None
