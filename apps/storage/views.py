@@ -973,6 +973,38 @@ class PutImageToItemView(generics.UpdateAPIView):
         return super().put(request, *args, **kwargs)
 
 
+class ItemDestroyView(generics.DestroyAPIView):
+    """
+    Delete item view.
+    """
+
+    queryset = get_items()
+    serializer_class = ItemSerializer
+    lookup_field = "pk"
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "message": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Delete item",
+        operation_description="Use this method to delete an item. Only admins can delete items",
+        responses={
+            200: openapi.Response("Item deleted successfully", manual_response_schema)
+        },
+    )
+    def delete(self, request, pk):
+        """
+        Delete item method.
+        """
+        item = get_items().filter(pk=pk).first()
+        item.delete()
+        return Response({"message": "Item deleted successfully"}, status=200)
+
+
 # =====================================================================
 # READY MADE PRODUCTS VIEWS
 # =====================================================================
@@ -1034,3 +1066,13 @@ class ReadyMadeProductListView(generics.ListAPIView):
 
     queryset = get_ready_made_products()
     serializer_class = ReadyMadeProductSerializer
+
+
+class ReadyMadeProductDestroyView(generics.DestroyAPIView):
+    """
+    Delete ready made product view.
+    """
+
+    queryset = get_ready_made_products()
+    serializer_class = ReadyMadeProductSerializer
+    lookup_field = "pk"

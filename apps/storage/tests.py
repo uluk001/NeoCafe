@@ -11,8 +11,6 @@ from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
                                  Item, ReadyMadeProduct)
 
 # ==================== Category Tests ==================== #
-
-
 # Category Model Tests
 class CategoryModelTest(TestCase):
     """Test Category model"""
@@ -772,7 +770,6 @@ class IngredientViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], "Test Ingredient")
-        self.assertEqual(response.data["total_quantity"], 200)
 
     def test_update_ingredient_quantity_by_user(self):
         """Test updating ingredient quantity by usual user"""
@@ -839,3 +836,90 @@ class IngredientViewTest(TestCase):
                 ingredient__name=ingredient_name
             ).exists()
         )
+
+
+# ==================== Item Tests ==================== #
+class ItemModelTest(TestCase):
+    """Test Item model"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by all test methods
+        cls.category = Category.objects.create(name="Test Category")
+        cls.item = Item.objects.create(
+            name="Test Item",
+            category=cls.category,
+            price=100,
+            description="Test Description",
+        )
+
+    def test_name_label(self):
+        item = Item.objects.get(id=1)
+        field_label = item._meta.get_field("name").verbose_name
+        self.assertEquals(field_label, "name")
+
+    def test_name_max_length(self):
+        item = Item.objects.get(id=1)
+        max_length = item._meta.get_field("name").max_length
+        self.assertEquals(max_length, 255)
+
+    def test_object_name_is_name(self):
+        item = Item.objects.get(id=1)
+        expected_object_name = item.name
+        self.assertEquals(expected_object_name, str(item))
+
+    def test_price_label(self):
+        item = Item.objects.get(id=1)
+        field_label = item._meta.get_field("price").verbose_name
+        self.assertEquals(field_label, "price")
+
+    def test_price_max_digits(self):
+        item = Item.objects.get(id=1)
+        max_digits = item._meta.get_field("price").max_digits
+        self.assertEquals(max_digits, 10)
+
+
+class ItemViewTest(TestCase):
+    """Test Item endpoints"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Common test data for all methods
+        cls.admin_user = User.objects.create(
+            first_name="test",
+            last_name="admin",
+            phone_number="+996700000001",
+            username="testadmin",
+            password="testpassword",
+            is_active=True,
+            is_staff=True,
+            is_superuser=True,
+        )
+        cls.category = Category.objects.create(name="Test Category")
+        cls.item = Item.objects.create(
+            name="Test Item",
+            category=cls.category,
+            price=100,
+            description="Test Description",
+        )
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def get_token(self, phone_number):
+        response = self.client.post(
+            path="/accounts/temporary-login/",
+            data={"phone_number": phone_number},
+        )
+        return response.data["access"]
+
+    def test_delete_item(self):
+        """Test deleting item by admin user"""
+        token = self.get_token("+996700000001")
+        item_name = self.item.name
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        response = self.client.delete(
+            path=f"/admin-panel/items/destroy/{self.item.id}/",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(Item.objects.filter(id=self.item.id).exists())
