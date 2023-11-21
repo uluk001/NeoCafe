@@ -306,7 +306,7 @@ class IngredientSerializer(serializers.ModelSerializer):
             ingredient=instance
         ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
         if total_quantity is not None:
-            representation["total_quantity"] = round(total_quantity / 1000, 2)
+            representation["total_quantity"] = round(total_quantity / 1000, 2) if instance.measurement_unit in ["kg", "l"] else total_quantity
         else:
             representation["total_quantity"] = 0
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
@@ -357,7 +357,7 @@ class IngredientDetailSerializer(serializers.ModelSerializer):
             ingredient=instance
         ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
         if total_quantity is not None:
-            representation["total_quantity"] = round(total_quantity / 1000, 2)
+            representation["total_quantity"] = round(total_quantity / 1000, 2) if instance.measurement_unit in ["kg", "l"] else total_quantity
         else:
             representation["total_quantity"] = 0
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
