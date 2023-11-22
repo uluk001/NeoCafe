@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "apps.storage",
     "apps.branches",
     "apps.accounts",
-    "menu"
+    "apps.menu"
 ]
 
 MIDDLEWARE = [
