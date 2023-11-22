@@ -15,7 +15,7 @@ class Menu(models.Model):
     # Добавьте другие поля и методы по мере необходимости
 
     def __str__(self):
-        return f"{self.branch.name} - {self.category.name} - {self.item.name} - {self.ingredient.name}"
+        return f"{self.branch.name_of_shop} - {self.category.name} - {self.item.name} - {self.ingredient.name}"
 
     def get_recommendations(self):
         # Логика для получения рекомендаций, например, на основе схожих ингредиентов или категорий

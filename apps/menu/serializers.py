@@ -36,3 +36,7 @@ class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer
     class Meta:
         model = ReadyMadeProductAvailableAtTheBranch
         fields = "__all__"
+
+
+class ChangeBranchSerializer(serializers.Serializer):
+    branch_id = serializers.IntegerField(required=True)

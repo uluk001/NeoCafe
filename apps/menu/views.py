@@ -1,5 +1,5 @@
 from django.db.models import Sum, F
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,13 +8,22 @@ from apps.branches.serializers import BranchSerializer
 from apps.storage.models import Item, Category, Composition, AvailableAtTheBranch
 from apps.storage.serializers import ItemSerializer, CategorySerializer, CompositionSerializer
 import random
+from apps.accounts.models import CustomUser
+
+from .serializers import ChangeBranchSerializer
 
 
 class ChooseBranchView(APIView):
-    def get(self, request):
-        branches = Branch.objects.all()
-        serializer = BranchSerializer(branches, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangeBranchSerializer
+
+    def post(self, request):
+        user = request.user
+        branch_id = request.data["branch_id"]
+        user = CustomUser.objects.get(id=user.id)
+        user.branch = Branch.objects.filter(id=branch_id).first()
+        user.save()
+        return Response({'message':f'{user.branch.name_of_shop}'})
 
 
 class SearchProductsView(generics.ListAPIView):
