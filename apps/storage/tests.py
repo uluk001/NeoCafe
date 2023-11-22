@@ -902,6 +902,12 @@ class ItemViewTest(TestCase):
             price=100,
             description="Test Description",
         )
+        cls.ingredient = Ingredient.objects.create(
+            name="Test Ingredient", measurement_unit="g", minimal_limit=100
+        )
+        cls.ingredient2 = Ingredient.objects.create(
+            name="Test Ingredient 2", measurement_unit="g", minimal_limit=100
+        )
 
     def setUp(self):
         self.client = APIClient()
@@ -923,3 +929,61 @@ class ItemViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(Item.objects.filter(id=self.item.id).exists())
+
+    def test_get_item_list(self):
+        """Test getting item list by admin user"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        response = self.client.get(path="/admin-panel/items/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_create_item(self):
+        """Test creating item by admin user"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        data = {
+            "category": "1",
+            "name": "new item",
+            "description": "Test Description",
+            "price": 100,
+            "is_available": True,
+            "composition": [
+                {"ingredient": "1", "quantity": 100},
+                {"ingredient": "2", "quantity": 100},
+            ],
+        }
+        response = self.client.post(
+            path="/admin-panel/items/create/",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Item.objects.count(), 2)
+        self.assertTrue(Item.objects.filter(name="new item").exists())
+        self.assertEqual(
+            Item.objects.filter(name="new item").first().compositions.count(), 2
+        )
+
+    def test_update_item(self):
+        """Test updating item by admin user"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        data = {
+            "category_id": "1",
+            "name": "new item",
+            "description": "Test Description",
+            "price": 100,
+            "is_available": True,
+            "compositions": [
+                {"ingredient": "1", "quantity": 100},
+                {"ingredient": "2", "quantity": 100},
+            ],
+        }
+        response = self.client.put(
+            path=f"/admin-panel/items/update/{self.item.id}/",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Item.objects.filter(name="new item").count(), 1)

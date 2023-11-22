@@ -490,6 +490,7 @@ class UpdateItemSerializer(serializers.ModelSerializer):
     """
 
     compositions = CompositionSerializer(many=True)
+    category_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Item
@@ -501,6 +502,7 @@ class UpdateItemSerializer(serializers.ModelSerializer):
             "image",
             "compositions",
             "is_available",
+            "category_id",
         ]
 
     def update(self, instance, validated_data):
@@ -512,13 +514,10 @@ class UpdateItemSerializer(serializers.ModelSerializer):
         instance.price = validated_data.get("price", instance.price)
         instance.image = validated_data.get("image", instance.image)
         instance.is_available = validated_data.get("is_available", instance.is_available)
+        instance.category = Category.objects.get(
+            id=validated_data.get("category_id", instance.category.id)
+        )
         instance.save()
-
-        compositions_data = validated_data.pop("compositions", [])
-        instance.compositions.all().delete()
-        for composition in compositions_data:
-            Composition.objects.create(item=instance, **composition)
-
         return instance
 
 
