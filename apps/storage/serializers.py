@@ -120,6 +120,12 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         """
         Create employee.
         """
+
+        if CustomUser.objects.filter(username=validated_data["username"]).exists():
+            raise serializers.ValidationError(
+                {"username": "User with this username already exists."}
+            )
+
         schedule_data = {"title": f"{validated_data['first_name']}'s schedule"}
 
         schedule = EmployeeSchedule.objects.create(**schedule_data)
