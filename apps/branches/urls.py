@@ -6,6 +6,7 @@ from .views import (
     BranchListView,
     BranchUpdateView,
     PutImageBranchView,
+    BranchDetailView,
     )
 
 urlpatterns = [
@@ -14,4 +15,5 @@ urlpatterns = [
     path("update/<int:id>/", BranchUpdateView.as_view()),  # /branches/update/1/
     path("delete/<int:id>/", BranchDeleteView.as_view()),  # /branches/delete/1/
     path("image/<int:id>/", PutImageBranchView.as_view()),  # /branches/image/1/
+    path("<int:id>/", BranchDetailView.as_view()),  # /branches/1/
 ]
