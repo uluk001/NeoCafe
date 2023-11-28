@@ -496,20 +496,36 @@ class CreateIngredientView(generics.CreateAPIView):
                 type=openapi.TYPE_STRING,
                 enum=["g", "ml", "l", "kg"],
             ),
-            "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
             "available_at_branches": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        "branch": openapi.Schema(type=openapi.TYPE_STRING),
+                        "branch": openapi.Schema(type=openapi.TYPE_INTEGER),
                         "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+                        "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
                     },
                 ),
             ),
         },
     )
 
+    @swagger_auto_schema(
+        operation_summary="Create ingredient",
+        operation_description="Use this method to create an ingredient. Only admins can create ingredients",
+        request_body=manual_request_schema,
+        responses={201: "Ingredient created successfully"},
+    )
+
+    def post(self, request):
+        """
+        Create ingredient method.
+        """
+        serializer = CreateIngredientSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Ingredient created successfully"}, status=201)
+        return Response(serializer.errors, status=400)
 
 class UpdateIngredientView(generics.UpdateAPIView):
     """
@@ -528,17 +544,6 @@ class UpdateIngredientView(generics.UpdateAPIView):
             "measurement_unit": openapi.Schema(
                 type=openapi.TYPE_STRING,
                 enum=["g", "ml", "l", "kg"],
-            ),
-            "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
-            "available_at_branches": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "branch": openapi.Schema(type=openapi.TYPE_STRING),
-                        "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
-                    },
-                ),
             ),
         },
     )
@@ -1022,9 +1027,6 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
             "name": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Product name"
             ),
-            "minimal_limit": openapi.Schema(
-                type=openapi.TYPE_NUMBER, description="Minimal limit"
-            ),
             "available_at_branches": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
@@ -1036,12 +1038,15 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
                         "quantity": openapi.Schema(
                             type=openapi.TYPE_NUMBER, description="Quantity"
                         ),
+                        "minimal_limit": openapi.Schema(
+                            type=openapi.TYPE_NUMBER, description="Minimal limit"
+                        ),
                     },
                 ),
                 description="List of branches where the product is available",
             ),
         },
-        required=["name", "minimal_limit", "available_at_branches"],
+        required=["name", "available_at_branches"],
     )
 
     @swagger_auto_schema(request_body=manual_request_schema)

@@ -7,7 +7,8 @@ from rest_framework import serializers
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
                                  Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+                                 ReadyMadeProductAvailableAtTheBranch,
+                                 MinimalLimitReached)
 
 
 # =====================================================================
@@ -206,16 +207,6 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
 # =====================================================================
 # INGREDIENT SERIALIZERS
 # =====================================================================
-class CreateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
-    """
-    CreateAvailableAtTheBranch serializer.
-    """
-
-    class Meta:
-        model = AvailableAtTheBranch
-        fields = ["id", "branch", "quantity"]
-
-
 class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
     """
     AvailableAtTheBranch serializer.
@@ -244,9 +235,32 @@ class AvailableAtTheBranchSerializer(serializers.ModelSerializer):
         return representation
 
 
+class CreateAvailableAtTheBranchSerializer(serializers.ModelSerializer):
+    """
+    CreateAvailableAtTheBranch serializer.
+    """
+    minimal_limit = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ["id", "branch", "quantity", "minimal_limit"]
+
+    def create(self, validated_data):
+        """
+        Create available at the branch.
+        """
+        available_at_the_branch = AvailableAtTheBranch.objects.create(**validated_data)
+        MinimalLimitReached.objects.create(
+            branch=available_at_the_branch.branch,
+            ingredient=available_at_the_branch.ingredient,
+            quantity=validated_data["quantity"],
+        )
+        return available_at_the_branch
+
+
 class CreateIngredientSerializer(serializers.ModelSerializer):
     """
-    CreateIngredient serializer.
+    Create Ingredient serializer.
     """
 
     available_at_branches = CreateAvailableAtTheBranchSerializer(
@@ -259,7 +273,6 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "measurement_unit",
-            "minimal_limit",
             "available_at_branches",
         ]
 
@@ -270,21 +283,50 @@ class CreateIngredientSerializer(serializers.ModelSerializer):
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         ingredient = Ingredient.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
+            branch = available_at_branch_data.pop("branch")
+            minimal_limit = available_at_branch_data.pop("minimal_limit")
+            quantity = available_at_branch_data["quantity"]
             if ingredient.measurement_unit in ["kg", "l"]:
-                available_at_branch_data["quantity"] *= 1000
+                quantity *= 1000
             AvailableAtTheBranch.objects.create(
-                ingredient=ingredient, **available_at_branch_data
+                ingredient=ingredient, branch=branch, quantity=quantity
+            )
+            MinimalLimitReached.objects.create(
+                branch=branch, ingredient=ingredient, quantity=minimal_limit
             )
         return ingredient
+
+
+class AvailableAtTheBranchForIngredientSerializer(serializers.ModelSerializer):
+    """
+    AvailableAtTheBranchForIngredient serializer for IngredientDetailSerializer with minimal limit.
+    """
+
+    branch = serializers.StringRelatedField()
+    minimal_limit = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AvailableAtTheBranch
+        fields = ["id", "branch", "quantity", "minimal_limit"]
+
+    def get_minimal_limit(self, obj):
+        if MinimalLimitReached.objects.filter(branch=obj.branch, ingredient=obj.ingredient).exists():
+            return MinimalLimitReached.objects.get(branch=obj.branch, ingredient=obj.ingredient).quantity
+        else:
+            return 0
 
     def to_representation(self, instance):
         """
         Change quantity to kg or l if measurement unit is kg or l.
         """
         representation = super().to_representation(instance)
-        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
-            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
-        ).data
+        representation["branch"] = instance.branch.name_of_shop
+        quantity = (
+            round(instance.quantity / 1000, 2)
+            if instance.ingredient.measurement_unit in ["kg", "l"]
+            else instance.quantity
+        )
+        representation["quantity"] = quantity
         return representation
 
 
@@ -293,15 +335,20 @@ class IngredientSerializer(serializers.ModelSerializer):
     Ingredient serializer.
     """
 
+    available_at_branches = serializers.SerializerMethodField()
+
     class Meta:
         model = Ingredient
         fields = [
             "id",
             "name",
             "measurement_unit",
-            "minimal_limit",
             "date_of_arrival",
+            "available_at_branches",
         ]
+
+    def get_available_at_branches(self, obj):
+        return AvailableAtTheBranchForIngredientSerializer(AvailableAtTheBranch.objects.filter(ingredient=obj), many=True).data
 
     def to_representation(self, instance):
         """
@@ -318,9 +365,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
             "%Y-%m-%d"
         )
-        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
-            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
-        ).data
         return representation
 
 
@@ -335,14 +379,23 @@ class UpdateIngredientSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "measurement_unit",
-            "minimal_limit",
         ]
 
+    def update(self, instance, validated_data):
+        if "measurement_unit" in validated_data and validated_data["measurement_unit"] != instance.measurement_unit:
+            if AvailableAtTheBranch.objects.filter(ingredient=instance).exists():
+                for available_at_the_branch in AvailableAtTheBranch.objects.filter(ingredient=instance):
+                    if instance.measurement_unit in ["kg", "l"]:
+                        available_at_the_branch.quantity *= 1000
+                    available_at_the_branch.save()
+        return super().update(instance, validated_data)
 
 class IngredientDetailSerializer(serializers.ModelSerializer):
     """
     IngredientDetail serializer.
     """
+
+    available_at_branches = serializers.SerializerMethodField()
 
     class Meta:
         model = Ingredient
@@ -350,9 +403,12 @@ class IngredientDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "measurement_unit",
-            "minimal_limit",
             "date_of_arrival",
+            "available_at_branches",
         ]
+
+    def get_available_at_branches(self, obj):
+        return AvailableAtTheBranchForIngredientSerializer(AvailableAtTheBranch.objects.filter(ingredient=obj), many=True).data
 
     def to_representation(self, instance):
         """
@@ -369,9 +425,6 @@ class IngredientDetailSerializer(serializers.ModelSerializer):
         representation["date_of_arrival"] = instance.date_of_arrival.strftime(
             "%Y-%m-%d"
         )
-        representation["available_at_branches"] = AvailableAtTheBranchSerializer(
-            AvailableAtTheBranch.objects.filter(ingredient=instance), many=True
-        ).data
         return representation
 
 
@@ -546,10 +599,11 @@ class ReadyMadeProductAvailableAtTheBranchSerializer(serializers.ModelSerializer
     """
 
     ready_made_product = serializers.PrimaryKeyRelatedField(read_only=True)
+    minimal_limit = serializers.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         model = ReadyMadeProductAvailableAtTheBranch
-        fields = ["id", "branch", "ready_made_product", "quantity"]
+        fields = ["id", "branch", "ready_made_product", "quantity", "minimal_limit"]
 
 
 class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
@@ -566,7 +620,6 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "minimal_limit",
             "available_at_branches",
         ]
 
@@ -577,8 +630,14 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         product = ReadyMadeProduct.objects.create(**validated_data)
         for available_at_branch_data in available_at_branches_data:
+            branch = available_at_branch_data.pop("branch")
+            minimal_limit = available_at_branch_data.pop("minimal_limit")
+            quantity = available_at_branch_data["quantity"]
             ReadyMadeProductAvailableAtTheBranch.objects.create(
-                ready_made_product=product, **available_at_branch_data
+                ready_made_product=product, branch=branch, quantity=quantity
+            )
+            MinimalLimitReached.objects.create(
+                branch=branch, ready_made_product=product, quantity=minimal_limit
             )
         return product
 
@@ -609,13 +668,17 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
     ReadyMadeProduct serializer.
     """
 
+    available_at_branches = ReadyMadeProductAvailableAtTheBranchSerializer(
+        source='minimal_limit_reached', many=True, read_only=True
+    )
+
     class Meta:
         model = ReadyMadeProduct
         fields = [
             "id",
             "name",
-            "minimal_limit",
             "date_of_arrival",
+            "available_at_branches",
         ]
 
     def to_representation(self, instance):
@@ -623,14 +686,6 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
         Create ready-made product and available at the branch representation.
         """
         representation = super().to_representation(instance)
-        representation[
-            "available_at_branches"
-        ] = ReadyMadeProductAvailableAtTheBranchSerializer(
-            ReadyMadeProductAvailableAtTheBranch.objects.filter(
-                ready_made_product=instance
-            ),
-            many=True,
-        ).data
         representation["total_quantity"] = (
             ReadyMadeProductAvailableAtTheBranch.objects.filter(
                 ready_made_product=instance
@@ -642,6 +697,7 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
         )
         return representation
 
+
 class UpdateReadyMadeProductSerializer(serializers.ModelSerializer):
     """
     EditReadyMadeProduct serializer.
@@ -652,5 +708,4 @@ class UpdateReadyMadeProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "minimal_limit",
         ]

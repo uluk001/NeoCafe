@@ -1,6 +1,7 @@
 import json
 
 from django.test import TestCase
+from regex import P
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -8,7 +9,9 @@ from apps.accounts.models import CustomUser as User
 from apps.accounts.models import EmployeeSchedule, EmployeeWorkdays
 from apps.branches.models import Branch, Schedule, Workdays
 from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
-                                 Item, ReadyMadeProduct)
+                                 Item, ReadyMadeProduct,
+                                 MinimalLimitReached,)
+
 
 # ==================== Category Tests ==================== #
 # Category Model Tests
@@ -532,7 +535,18 @@ class IngredientModelTest(TestCase):
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods
         cls.ingredient = Ingredient.objects.create(
-            name="Test Ingredient", measurement_unit="g", minimal_limit=100
+            name="Test Ingredient", measurement_unit="g"
+        )
+        cls.branch_schedule = Schedule.objects.create(title="Test Schedule")
+        cls.branch = Branch.objects.create(
+            schedule=cls.branch_schedule,
+            name_of_shop="Test Branch",
+            address="Test Address",
+            phone_number="+996700000000",
+            link_to_map="https://test.link",
+        )
+        cls.minimal_limit = MinimalLimitReached.objects.create(
+            branch=cls.branch, ingredient=cls.ingredient, quantity=100
         )
 
     def test_name_label(self):
@@ -554,6 +568,10 @@ class IngredientModelTest(TestCase):
         ingredient = Ingredient.objects.get(id=1)
         field_label = ingredient._meta.get_field("measurement_unit").verbose_name
         self.assertEquals(field_label, "measurement unit")
+
+    def test_minimal_limit(self):
+        minimal_limit = MinimalLimitReached.objects.get(id=1)
+        self.assertEquals(minimal_limit.quantity, 100)
 
 
 # Ingredient View Tests
@@ -581,29 +599,22 @@ class IngredientViewTest(TestCase):
             is_staff=True,
             is_superuser=True,
         )
-        cls.ingredient = Ingredient.objects.create(
-            name="Test Ingredient", measurement_unit="g", minimal_limit=100
-        )
-        cls.branch_schedule = Schedule.objects.create(title="Test Schedule")
+        cls.schedule = Schedule.objects.create(title="Test Schedule")
         cls.branch = Branch.objects.create(
-            schedule=cls.branch_schedule,
+            schedule=cls.schedule,
             name_of_shop="Test Branch",
             address="Test Address",
             phone_number="+996700000000",
             link_to_map="https://test.link",
         )
-        cls.branch2 = Branch.objects.create(
-            schedule=cls.branch_schedule,
-            name_of_shop="Test Branch 2",
-            address="Test Address 2",
-            phone_number="+996700000000",
-            link_to_map="https://test.link",
+        cls.ingredient = Ingredient.objects.create(
+            name="Test Ingredient", measurement_unit="g"
         )
         cls.available_at_the_branch = AvailableAtTheBranch.objects.create(
-            ingredient=cls.ingredient, branch=cls.branch, quantity=100000
+            branch=cls.branch, ingredient=cls.ingredient, quantity=100000
         )
-        cls.available_at_the_branch2 = AvailableAtTheBranch.objects.create(
-            ingredient=cls.ingredient, branch=cls.branch2, quantity=100000
+        cls.minimal_limit = MinimalLimitReached.objects.create(
+            branch=cls.branch, ingredient=cls.ingredient, quantity=100
         )
 
     def setUp(self):
@@ -616,140 +627,160 @@ class IngredientViewTest(TestCase):
         )
         return response.data["access"]
 
-    def test_get_ingredient_list_by_user(self):
-        """Test getting ingredient list by usual user"""
+    def test_create_ingredient_by_user(self):
+        """Test creating ingredient by usual user"""
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.get(path="/admin-panel/ingredients/")
+        response = self.client.post(
+            path="/admin-panel/ingredients/",
+            data={
+                "name": "New Ingredient",
+                "measurement_unit": "g",
+                "available_at_branches": [
+                    {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+                ],
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_get_ingredient_list_by_admin(self):
-        """Test getting ingredient list by admin user"""
+    def test_create_ingredient_by_admin(self):
+        """Test creating ingredient by admin user"""
         token = self.get_token("+996700000001")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.get(path="/admin-panel/ingredients/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        response = self.client.post(
+            path="/admin-panel/ingredients/",
+            data={
+                "name": "New Ingredient",
+                "measurement_unit": "g",
+                "available_at_branches": [
+                    {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+                ],
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["name"], "New Ingredient")
+        self.assertEqual(response.data["measurement_unit"], "g")
+        self.assertEqual(response.data["available_at_branches"][0]["quantity"], 100000)
+        self.assertEqual(response.data["available_at_branches"][0]["minimal_limit"], 100)
 
     def test_create_ingredient_by_user(self):
         """Test creating ingredient by usual user"""
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        data = {
-            "name": "new ingredient",
-            "measurement_unit": "kg",
-            "minimal_limit": 100,
-            "available_at_the_branch": [
-                {"branch": 1, "quantity": 100},
-                {"branch": 2, "quantity": 100},
-            ],
-        }
         response = self.client.post(
-            path="/admin-panel/ingredients/create/",
-            data=json.dumps(data),
-            content_type="application/json",
+            path="/admin-panel/ingredients/",
+            data={
+                "name": "New Ingredient",
+                "measurement_unit": "g",
+                "available_at_branches": [
+                    {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+                ],
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(Ingredient.objects.count(), 1)
 
     def test_create_ingredient_by_admin(self):
         """Test creating ingredient by admin user"""
         token = self.get_token("+996700000001")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
         data = {
-            "name": "new ingredient",
-            "measurement_unit": "kg",
-            "minimal_limit": 100,
+            "name": "New Ingredient",
+            "measurement_unit": "g",
             "available_at_branches": [
-                {"branch": 1, "quantity": 100},
-                {"branch": 2, "quantity": 100},
+                {"branch": f"{self.branch.id}", "quantity": "100000", "minimal_limit": "100"}
             ],
         }
         response = self.client.post(
             path="/admin-panel/ingredients/create/",
             data=json.dumps(data),
-            content_type="application/json",
+            content_type='application/json',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Ingredient.objects.count(), 2)
-        self.assertTrue(Ingredient.objects.filter(name="new ingredient").exists())
+        self.assertEqual(
+            Ingredient.objects.filter(name="New Ingredient").count(), 1
+        )
         self.assertEqual(
             AvailableAtTheBranch.objects.filter(
-                ingredient__name="new ingredient"
+                ingredient__name="New Ingredient"
             ).count(),
-            2,
+            1,
         )
         self.assertEqual(
-            AvailableAtTheBranch.objects.filter(
-                ingredient__name="new ingredient", branch__id=1
-            )
-            .first()
-            .quantity,
-            100000,
+            MinimalLimitReached.objects.filter(
+                ingredient__name="New Ingredient"
+            ).count(),
+            1,
         )
+
+    def test_create_ingredient_by_admin_with_existing_name(self):
+        """Test creating ingredient by admin user with existing name"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        response = self.client.post(
+            path="/admin-panel/ingredients/create/",
+            data={
+                "name": "Test Ingredient",
+                "measurement_unit": "g",
+                "available_at_branches": [
+                    {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+                ],
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_update_ingredient_by_user(self):
         """Test updating ingredient by usual user"""
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        data = {
-            "name": "new ingredient",
-            "measurement_unit": "kg",
-            "minimal_limit": 100,
-        }
         response = self.client.put(
-            path=f"/admin-panel/ingredients/update/{self.ingredient.id}/",
-            data=json.dumps(data),
-            content_type="application/json",
+            path=f"/admin-panel/ingredients/{self.ingredient.id}/",
+            data={
+                "name": "Updated Ingredient",
+                "measurement_unit": "kg",
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(
-            Ingredient.objects.get(id=self.ingredient.id).name, "Test Ingredient"
-        )
 
     def test_update_ingredient_by_admin(self):
         """Test updating ingredient by admin user"""
         token = self.get_token("+996700000001")
+        ingredient_name = self.ingredient.name
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        data = {
-            "name": "new ingredient",
-            "measurement_unit": "kg",
-            "minimal_limit": 100,
-        }
         response = self.client.put(
             path=f"/admin-panel/ingredients/update/{self.ingredient.id}/",
-            data=json.dumps(data),
-            content_type="application/json",
+            data={
+                "name": "Updated Ingredient",
+                "measurement_unit": "kg",
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            Ingredient.objects.get(id=self.ingredient.id).name, "new ingredient"
-        )
+        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
 
     def test_delete_ingredient_by_user(self):
         """Test deleting ingredient by usual user"""
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.delete(
-            path=f"/admin-panel/ingredients/destroy/{self.ingredient.id}/",
-        )
+        response = self.client.delete(path=f"/admin-panel/ingredients/{self.ingredient.id}/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Ingredient.objects.filter(id=self.ingredient.id).exists())
+        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
 
     def test_delete_ingredient_by_admin(self):
         """Test deleting ingredient by admin user"""
         token = self.get_token("+996700000001")
         ingredient_name = self.ingredient.name
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.delete(
-            path=f"/admin-panel/ingredients/destroy/{self.ingredient.id}/",
-        )
+        response = self.client.delete(path=f"/admin-panel/ingredients/destroy/{self.ingredient.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(Ingredient.objects.filter(id=self.ingredient.id).exists())
         self.assertFalse(
             AvailableAtTheBranch.objects.filter(
                 ingredient__name=ingredient_name
             ).exists()
+        )
+        self.assertFalse(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertEqual(
+            MinimalLimitReached.objects.filter(branch=self.branch).count(), 0
         )
 
     def test_get_ingredient_by_user(self):
@@ -770,6 +801,9 @@ class IngredientViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], "Test Ingredient")
+        self.assertEqual(response.data["measurement_unit"], "g")
+        self.assertEqual(response.data["available_at_branches"][0]["quantity"], 100000)
+        self.assertEqual(response.data["available_at_branches"][0]["minimal_limit"], 100)
 
     def test_update_ingredient_quantity_by_user(self):
         """Test updating ingredient quantity by usual user"""
@@ -789,6 +823,10 @@ class IngredientViewTest(TestCase):
             .first()
             .quantity,
             100000,
+        )
+        self.assertEqual(
+            MinimalLimitReached.objects.get(ingredient=self.ingredient, branch=self.branch).quantity,
+            100,
         )
 
     def test_update_ingredient_quantity_by_admin(self):
@@ -810,6 +848,10 @@ class IngredientViewTest(TestCase):
             .quantity,
             100,
         )
+        self.assertEqual(
+            MinimalLimitReached.objects.get(ingredient=self.ingredient, branch=self.branch).quantity,
+            100,
+        )
 
     def test_delete_ingredient_from_branch_by_user(self):
         """Test deleting ingredient from branch by usual user"""
@@ -820,6 +862,7 @@ class IngredientViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Ingredient.objects.filter(id=self.ingredient.id).exists())
+        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
 
     def test_delete_ingredient_from_branch_by_admin(self):
         """Test deleting ingredient from branch by admin user"""
@@ -836,6 +879,7 @@ class IngredientViewTest(TestCase):
                 ingredient__name=ingredient_name
             ).exists()
         )
+        self.assertFalse(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
 
 
 # ==================== Item Tests ==================== #
@@ -903,10 +947,10 @@ class ItemViewTest(TestCase):
             description="Test Description",
         )
         cls.ingredient = Ingredient.objects.create(
-            name="Test Ingredient", measurement_unit="g", minimal_limit=100
+            name="Test Ingredient", measurement_unit="g"
         )
         cls.ingredient2 = Ingredient.objects.create(
-            name="Test Ingredient 2", measurement_unit="g", minimal_limit=100
+            name="Test Ingredient 2", measurement_unit="g"
         )
 
     def setUp(self):

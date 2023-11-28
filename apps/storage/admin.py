@@ -5,7 +5,17 @@ from django.contrib import admin
 
 from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
                                  Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+                                 ReadyMadeProductAvailableAtTheBranch,
+                                 MinimalLimitReached,)
+
+
+class MinimalLimitReachedInline(admin.TabularInline):
+    """
+    MinimalLimitReached inline admin panel configuration.
+    """
+
+    model = MinimalLimitReached
+    extra = 1
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -31,9 +41,10 @@ class IngredientAdmin(admin.ModelAdmin):
     Ingredient admin panel configuration.
     """
 
-    list_display = ("name", "measurement_unit", "minimal_limit")
+    list_display = ("name", "measurement_unit")
     list_filter = ("measurement_unit",)
     search_fields = ("name",)
+    inlines = [MinimalLimitReachedInline]
 
 
 class CompositionAdmin(admin.ModelAdmin):
@@ -51,8 +62,9 @@ class ReadyMadeProductAdmin(admin.ModelAdmin):
     ReadyMadeProduct admin panel configuration.
     """
 
-    list_display = ("name", "image", "minimal_limit")
+    list_display = ("name",)
     search_fields = ("name",)
+    inlines = [MinimalLimitReachedInline]
 
 
 class AvailableAtTheBranchAdmin(admin.ModelAdmin):

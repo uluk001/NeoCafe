@@ -66,3 +66,19 @@ def delete_employee_schedule_by_employee(employee):
         return employee_schedule
     except AttributeError:
         return None
+
+
+def convert_measurement_unit(value, from_unit, to_unit):
+    """Convert measurement unit"""
+    conversion_factors = {
+        ("g", "kg"): 0.001,
+        ("ml", "l"): 0.001,
+        ("kg", "g"): 1000,
+        ("l", "ml"): 1000,
+    }
+
+    conversion_factor = conversion_factors.get((from_unit, to_unit))
+    if conversion_factor is not None:
+        return value * conversion_factor
+    else:
+        return value
