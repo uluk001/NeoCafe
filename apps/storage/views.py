@@ -38,7 +38,9 @@ from apps.storage.services import (
     get_items,
     get_ready_made_products,
     get_specific_category,
-    get_specific_employee
+    get_specific_employee,
+    get_a_list_of_ingredients_and_their_quantities_in_specific_branch,
+    get_low_stock_ingredients_in_branch,
 )
 
 
@@ -666,6 +668,110 @@ class InredientDestroyFromBranchView(generics.DestroyAPIView):
         ingredient = get_available_at_the_branch().filter(pk=pk).first()
         ingredient.delete()
         return Response({"message": "Ingredient deleted successfully"}, status=200)
+
+
+class IngredientQuantityInBranchView(generics.ListAPIView):
+    """
+    Class for getting ingredient quantity in branch.
+    """
+
+    queryset = get_available_at_the_branch()
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "ingredient": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                    "measurement_unit": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        enum=["g", "ml", "l", "kg"],
+                    ),
+                    "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    "date_of_arrival": openapi.Schema(
+                        type=openapi.TYPE_STRING, format="date"
+                    ),
+                },
+            ),
+            "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+        },
+    )
+
+    list_response_schema = openapi.Schema(
+        type=openapi.TYPE_ARRAY, items=manual_response_schema
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get ingredient quantity in branch",
+        operation_description="Use this method to get ingredient quantity in branch",
+        responses={
+            200: openapi.Response(
+                "Ingredient quantity in branch", list_response_schema
+            )
+        },
+    )
+    def get(self, request, pk):
+        """
+        Get ingredient quantity in branch method.
+        """
+        ingredients = get_a_list_of_ingredients_and_their_quantities_in_specific_branch(
+            branch_id=pk
+        )
+        return Response(ingredients, status=200)
+
+
+class LowStockIngredientBranchView(generics.ListAPIView):
+    """
+    Class for getting low stock ingredients in branch.
+    """
+
+    queryset = get_available_at_the_branch()
+    permission_classes = [permissions.IsAdminUser]
+
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "ingredient": openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "name": openapi.Schema(type=openapi.TYPE_STRING),
+                    "measurement_unit": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        enum=["g", "ml", "l", "kg"],
+                    ),
+                    "minimal_limit": openapi.Schema(type=openapi.TYPE_NUMBER),
+                    "date_of_arrival": openapi.Schema(
+                        type=openapi.TYPE_STRING, format="date"
+                    ),
+                },
+            ),
+            "quantity": openapi.Schema(type=openapi.TYPE_NUMBER),
+        },
+    )
+
+    list_response_schema = openapi.Schema(
+        type=openapi.TYPE_ARRAY, items=manual_response_schema
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Get low stock ingredients in branch",
+        operation_description="Use this method to get low stock ingredients in branch",
+        responses={
+            200: openapi.Response(
+                "Low stock ingredients in branch", list_response_schema
+            )
+        },
+    )
+    def get(self, request, pk):
+        """
+        Get low stock ingredients in branch method.
+        """
+        ingredients = get_low_stock_ingredients_in_branch(branch_id=pk)
+        return Response(ingredients, status=200)
 
 
 # =====================================================================

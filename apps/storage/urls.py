@@ -30,6 +30,8 @@ from apps.storage.views import (
     ReadyMadeProductDetailView,
     ReadyMadeProductUpdateView,
     ReadyMadeProductQuantityUpdateView,
+    IngredientQuantityInBranchView,
+    LowStockIngredientBranchView,
 )
 
 # Category URLs
@@ -59,6 +61,8 @@ urlpatterns += [
     path("ingredients/", IngredientListView.as_view()),
     path("ingredient-quantity-update/<int:id>/", IngredientQuantityUpdateView.as_view()),
     path("ingredient-destroy-from-branch/<int:pk>/", InredientDestroyFromBranchView.as_view()),
+    path("ingredient-quantity-in-branch/<int:pk>/", IngredientQuantityInBranchView.as_view()),
+    path("low-stock-ingredient-branch/<int:pk>/", LowStockIngredientBranchView.as_view()),
 ]
 
 # Item URLs

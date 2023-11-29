@@ -102,7 +102,7 @@ class AvailableAtTheBranch(models.Model):
     """
 
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, null=True, blank=True, related_name="available_at_the_branch")
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -115,8 +115,8 @@ class MinimalLimitReached(models.Model):
     """
 
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, null=True, blank=True, related_name="minimal_limit_reached")
-    ready_made_product = models.ForeignKey(ReadyMadeProduct, on_delete=models.CASCADE, null=True, blank=True, related_name="minimal_limit_reached")
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, null=True, blank=True, related_name="minimal_limit")
+    ready_made_product = models.ForeignKey(ReadyMadeProduct, on_delete=models.CASCADE, null=True, blank=True, related_name="minimal_limit")
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):

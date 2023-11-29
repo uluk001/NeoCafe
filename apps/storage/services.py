@@ -1,4 +1,5 @@
 from apps.accounts.models import CustomUser, EmployeeSchedule
+from django.db.models import F
 
 from .models import (
     AvailableAtTheBranch,
@@ -6,6 +7,10 @@ from .models import (
     Ingredient,
     Item,
     ReadyMadeProduct,
+)
+from .serializers import (
+    IngredientSerializer,
+    AvailableAtTheBranchSerializer,
 )
 
 
@@ -82,3 +87,21 @@ def convert_measurement_unit(value, from_unit, to_unit):
         return value * conversion_factor
     else:
         return value
+
+
+def get_a_list_of_ingredients_and_their_quantities_in_specific_branch(branch_id):
+    """Get a list of ingredients and their quantities in specific branch"""
+    available_at_the_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ingredient")
+    serializer = AvailableAtTheBranchSerializer(available_at_the_branch, many=True)
+    return serializer.data
+
+
+def get_low_stock_ingredients_in_branch(branch_id):
+    """Get low stock ingredients in branch"""
+    low_stock_ingredients = AvailableAtTheBranch.objects.filter(
+        branch_id=branch_id,
+        quantity__lt=F('ingredient__minimal_limit')
+    ).select_related('ingredient').distinct()
+    
+    serializer = AvailableAtTheBranchSerializer(low_stock_ingredients, many=True)
+    return serializer.data
