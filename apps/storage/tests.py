@@ -1,7 +1,6 @@
 import json
 
 from django.test import TestCase
-from regex import P
 from rest_framework import status
 from rest_framework.test import APIClient
 

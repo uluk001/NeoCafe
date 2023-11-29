@@ -5,7 +5,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 
 from .models import Branch
-from .serializers import BranchCreateSerializer, BranchSerializer, PutImageSerializer
+from .serializers import BranchCreateSerializer, BranchSerializer, PutImageSerializer, BranchUpdateSerializer
 
 
 class BranchListView(ListAPIView):
@@ -92,52 +92,6 @@ class BranchCreateView(CreateAPIView):
         return super().post(request, *args, **kwargs)
 
 
-class BranchUpdateView(UpdateAPIView):
-    queryset = Branch.objects.all()
-    serializer_class = BranchSerializer
-    lookup_field = "id"
-
-    manual_request_schema = openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "image": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Path to image"
-            ),
-            "schedule": openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "title": openapi.Schema(type=openapi.TYPE_STRING),
-                    "description": openapi.Schema(type=openapi.TYPE_STRING),
-                },
-            ),
-            "address": openapi.Schema(type=openapi.TYPE_STRING),
-            "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
-            "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
-            "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
-            "workdays": openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "workday": openapi.Schema(type=openapi.TYPE_INTEGER),
-                        "start_time": openapi.Schema(type=openapi.TYPE_STRING),
-                        "end_time": openapi.Schema(type=openapi.TYPE_STRING),
-                    },
-                ),
-            ),
-        },
-    )
-
-    @swagger_auto_schema(
-        operation_summary="Update branch",
-        operation_description="Use this method to update a branch",
-        request_body=manual_request_schema,
-        responses={200: BranchSerializer},
-    )
-    def put(self, request, *args, **kwargs):
-        return super().put(request, *args, **kwargs)
-
-
 class BranchDeleteView(generics.DestroyAPIView):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
@@ -201,6 +155,42 @@ class PutImageBranchView(UpdateAPIView):
         operation_description="Use this method to put image to branch",
         request_body=manual_request_schema,
         responses={200: PutImageSerializer},
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+
+class BranchUpdateView(generics.UpdateAPIView):
+    queryset = Branch.objects.all()
+    serializer_class = BranchUpdateSerializer
+    lookup_field = "id"
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
+            "address": openapi.Schema(type=openapi.TYPE_STRING),
+            "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
+            "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
+            "workdays": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "workday": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "start_time": openapi.Schema(type=openapi.TYPE_STRING),
+                        "end_time": openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            ),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Update branch",
+        operation_description="Use this method to update a branch",
+        request_body=manual_request_schema,
+        responses={200: BranchUpdateSerializer},
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
