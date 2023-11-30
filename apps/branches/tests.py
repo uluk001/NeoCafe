@@ -177,7 +177,6 @@ class BranchViewTestCase(TestCase):
         }
 
         response = self.client.put("/branches/update/1/", data=json.dumps(data), content_type="application/json")
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name_of_shop"], "Test name 5")
         self.assertEqual(response.data["address"], "Test address 5")

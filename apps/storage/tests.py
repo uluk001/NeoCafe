@@ -9,7 +9,8 @@ from apps.accounts.models import EmployeeSchedule, EmployeeWorkdays
 from apps.branches.models import Branch, Schedule, Workdays
 from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
                                  Item, ReadyMadeProduct,
-                                 MinimalLimitReached,)
+                                 MinimalLimitReached,
+                                 ReadyMadeProductAvailableAtTheBranch,)
 
 
 # ==================== Category Tests ==================== #
@@ -1030,3 +1031,117 @@ class ItemViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Item.objects.filter(name="new item").count(), 1)
+
+
+# ==================== Ready Made Product Tests ==================== #
+class ReadyMadeProductModelTest(TestCase):
+    """Test ReadyMadeProduct model"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by all test methods
+        cls.ready_made_product = ReadyMadeProduct.objects.create(
+            name="Test Ready Made Product"
+        )
+
+    def test_name_label(self):
+        ready_made_product = ReadyMadeProduct.objects.get(id=1)
+        field_label = ready_made_product._meta.get_field("name").verbose_name
+        self.assertEquals(field_label, "name")
+
+    def test_name_max_length(self):
+        ready_made_product = ReadyMadeProduct.objects.get(id=1)
+        max_length = ready_made_product._meta.get_field("name").max_length
+        self.assertEquals(max_length, 255)
+
+
+#  Ready Made Product View Tests
+class ReadyMadeProductViewTest(TestCase):
+    """Test ReadyMadeProduct endpoints"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Common test data for all methods
+        cls.admin_user = User.objects.create(
+            first_name="test",
+            last_name="admin",
+            phone_number="+996700000001",
+            username="testadmin",
+            password="testpassword",
+            is_active=True,
+            is_staff=True,
+            is_superuser=True,
+        )
+        cls.ready_made_product = ReadyMadeProduct.objects.create(
+            name="Test Ready Made Product"
+        )
+        cls.ready_made_product2 = ReadyMadeProduct.objects.create(
+            name="Test Ready Made Product 2"
+        )
+        cls.schedule = Schedule.objects.create(title="Test Schedule")
+        cls.branch = Branch.objects.create(
+            schedule=cls.schedule,
+            name_of_shop="Test Branch",
+            address="Test Address",
+            phone_number="+996700000000",
+            link_to_map="https://test.link",
+        )
+        cls.minimal_limit = MinimalLimitReached.objects.create(
+            branch=cls.branch, ready_made_product=cls.ready_made_product, quantity=100
+        )
+        cls.minimal_limit2 = MinimalLimitReached.objects.create(
+            branch=cls.branch, ready_made_product=cls.ready_made_product2, quantity=100
+        )
+        cls.available_at_the_branch = ReadyMadeProductAvailableAtTheBranch.objects.create(
+            branch=cls.branch,
+            ready_made_product=cls.ready_made_product,
+            quantity=100000,
+        )
+        cls.available_at_the_branch2 = ReadyMadeProductAvailableAtTheBranch.objects.create(
+            branch=cls.branch,
+            ready_made_product=cls.ready_made_product2,
+            quantity=100000,
+        )
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def get_token(self, phone_number):
+        response = self.client.post(
+            path="/accounts/temporary-login/",
+            data={"phone_number": phone_number},
+        )
+        return response.data["access"]
+
+    def test_create_ready_made_product_by_user(self):
+        """Test creating ready made product by usual user"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        response = self.client.post(
+            path="/admin-panel/ready-made-products/create/",
+            data={
+                "name": "New Ready Made Product",
+                "available_at_branches": [
+                    {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+                ],
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReadyMadeProduct.objects.count(), 3)
+        self.assertTrue(ReadyMadeProduct.objects.filter(name="New Ready Made Product").exists())
+        self.assertEqual(
+            ReadyMadeProductAvailableAtTheBranch.objects.filter(
+                ready_made_product__name="New Ready Made Product"
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            MinimalLimitReached.objects.filter(
+                ready_made_product__name="New Ready Made Product"
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            MinimalLimitReached.objects.filter(branch=self.branch).count(), 3
+        )

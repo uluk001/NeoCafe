@@ -3,6 +3,7 @@ Serializers for storage app.
 """
 from django.db import models
 from rest_framework import serializers
+from django.db import transaction
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
 from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
@@ -629,38 +630,29 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
         """
         available_at_branches_data = validated_data.pop("available_at_branches", [])
         product = ReadyMadeProduct.objects.create(**validated_data)
+        ready_made_product_list = []
+        minimal_limit_list = []
         for available_at_branch_data in available_at_branches_data:
-            branch = available_at_branch_data.pop("branch")
-            minimal_limit = available_at_branch_data.pop("minimal_limit")
-            quantity = available_at_branch_data["quantity"]
-            ReadyMadeProductAvailableAtTheBranch.objects.create(
-                ready_made_product=product, branch=branch, quantity=quantity
+            try:
+                branch = available_at_branch_data.pop("branch")
+                minimal_limit = available_at_branch_data.pop("minimal_limit")
+                quantity = available_at_branch_data["quantity"]
+            except KeyError:
+                raise serializers.ValidationError("Branch, minimal_limit and quantity are required.")
+            ready_made_product_list.append(
+                ReadyMadeProductAvailableAtTheBranch(
+                    ready_made_product=product, branch=branch, quantity=quantity
+                )
             )
-            MinimalLimitReached.objects.create(
-                branch=branch, ready_made_product=product, quantity=minimal_limit
+            minimal_limit_list.append(
+                MinimalLimitReached(
+                    branch=branch, ready_made_product=product, quantity=minimal_limit
+                )
             )
+        with transaction.atomic():
+            ReadyMadeProductAvailableAtTheBranch.objects.bulk_create(ready_made_product_list)
+            MinimalLimitReached.objects.bulk_create(minimal_limit_list)
         return product
-
-    def to_representation(self, instance):
-        """
-        Create ready-made product and available at the branch representation.
-        """
-        representation = super().to_representation(instance)
-        representation[
-            "available_at_branches"
-        ] = ReadyMadeProductAvailableAtTheBranchSerializer(
-            ReadyMadeProductAvailableAtTheBranch.objects.filter(
-                ready_made_product=instance
-            ),
-            many=True,
-        ).data
-        representation["total_quantity"] = (
-            ReadyMadeProductAvailableAtTheBranch.objects.filter(
-                ready_made_product=instance
-            ).aggregate(total_quantity=models.Sum("quantity"))["total_quantity"]
-            or 0
-        )
-        return representation
 
 
 class ReadyMadeProductSerializer(serializers.ModelSerializer):
