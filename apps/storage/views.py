@@ -5,6 +5,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
@@ -28,6 +30,12 @@ from apps.storage.serializers import (
     UpdateItemSerializer,
     UpdateReadyMadeProductSerializer,
     ReadyMadeProductAvailableAtTheBranchSerializer,
+)
+from apps.storage.filters import (
+    ItemFilter,
+    IngredientFilter,
+    ReadyMadeProductFilter,
+    EmployeeFilter,
 )
 from apps.storage.services import (
     delete_employee_schedule_by_employee,
@@ -300,12 +308,14 @@ class EmployeeDestroyView(generics.DestroyAPIView):
 
 class EmployeeListView(generics.ListAPIView):
     """
-    List employee view.
+    List employee view. Only admins can get employees. You can filter employees by name. Example: /storage/employees/?name=Alixandro
     """
 
     queryset = get_employees()
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAdminUser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = EmployeeFilter
 
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -571,10 +581,12 @@ class UpdateIngredientView(generics.UpdateAPIView):
 
 class IngredientListView(APIView):
     """
-    List ingredient view.
+    List ingredient view. You can filter ingredients by name. Example: /storage/ingredients/?name=Молоко
     """
 
     permission_classes = [permissions.IsAdminUser]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = IngredientFilter
 
     def get(self, request):
         """
@@ -882,11 +894,13 @@ class CreateItemView(generics.CreateAPIView):
 
 class ItemListView(generics.ListAPIView):
     """
-    List item view.
+    List item view. You can filter items by name. Example: /storage/items/?name=Капучино
     """
 
     queryset = get_items()
     serializer_class = ItemSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ItemFilter
 
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -1172,11 +1186,13 @@ class ReadyMadeProductUpdateView(generics.UpdateAPIView):
 
 class ReadyMadeProductListView(generics.ListAPIView):
     """
-    List ready made product view.
+    List ready made product view. You can filter ready made products by name. Example: /storage/ready-made-products/?name=Круассан
     """
 
     queryset = get_ready_made_products()
     serializer_class = ReadyMadeProductSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ReadyMadeProductFilter
 
 
 class ReadyMadeProductDestroyView(generics.DestroyAPIView):

@@ -7,5 +7,5 @@ from .views import (
 )
 
 urlpatterns = [
-    path("menu/", Menu.as_view()),
+    path("", Menu.as_view()),
 ]
