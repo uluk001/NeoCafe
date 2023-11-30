@@ -7,6 +7,7 @@ from django.utils.crypto import get_random_string
 from phonenumbers import NumberParseException, is_valid_number
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from apps.branches.models import Branch
 
 User = get_user_model()
 
@@ -62,6 +63,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.birth_date = birth_date
         user.is_active = True
         user.token_auth = get_random_string(64)
+        default_branch = Branch.objects.all().first()
+        user.branch = default_branch
         user.save()
 
         refresh = RefreshToken.for_user(user)
