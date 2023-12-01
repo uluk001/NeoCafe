@@ -4,6 +4,7 @@ from django.conf import settings
 BASE_URL = settings.BASE_URL_INFOBIP
 API_KEY = settings.API_KEY_INFOBIP
 
+
 def send_verification_phone_number(code, phone_number):
     channel = SMSChannel.from_auth_params(
         {

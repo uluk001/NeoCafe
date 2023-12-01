@@ -1,6 +1,7 @@
 from apps.branches.models import Branch
 from apps.storage.models import Ingredient, Item, Composition, AvailableAtTheBranch
 
+
 def get_available_ingredients_with_quantity(branch_id):
     """
     Returns a list of available ingredients with quantity.

@@ -13,6 +13,9 @@ from drf_yasg.utils import swagger_auto_schema
 from .services import get_branch_name_and_id_list
 
 
+# =============================================================
+# Menu Views
+# =============================================================
 class Menu(APIView):
     """
     View for getting items that can be made.
@@ -26,7 +29,6 @@ class Menu(APIView):
             200: openapi.Response("Items that can be made"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get items that can be made.
@@ -37,6 +39,9 @@ class Menu(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# =============================================================
+# Branch Views
+# =============================================================
 class ChangeBranchView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChangeBranchSerializer
@@ -50,7 +55,6 @@ class ChangeBranchView(APIView):
             400: openapi.Response("Invalid data"),
         },
     )
-
     def post(self, request, format=None):
         """
         Change branch.
@@ -81,7 +85,6 @@ class BranchesView(ListAPIView):
             200: openapi.Response("Branches"),
         },
     )
-
     def get(self, request):
         """
         Get all branches.

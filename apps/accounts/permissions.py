@@ -10,3 +10,14 @@ class IsPhoneNumberVerified(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.is_verified
+
+
+class IsWaiter(BasePermission):
+    """
+    Allows access only to waiters.
+    """
+
+    message = "Вы не являетесь официантом"
+
+    def has_permission(self, request, view):
+        return request.user.position == "waiter"

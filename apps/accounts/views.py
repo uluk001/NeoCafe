@@ -11,11 +11,13 @@ from utils.phone_number_verification import (generate_pre_2fa_token,
                                              send_phone_number_verification)
 
 from .models import CustomUser, PhoneNumberVerification
-from .permissions import IsPhoneNumberVerified
+from .permissions import IsPhoneNumberVerified, IsWaiter
 from .serializers import (AdminLoginSerializer, ClientBirthDateSerializer,
                           ClientConfirmPhoneNumberSerializer,
                           ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginForClientSerializer, LoginSerializer)
+                          LoginForClientSerializer, LoginSerializer,
+                          WaiterLoginSerializer,
+                          )
 
 User = get_user_model()
 
@@ -561,4 +563,130 @@ class LoginForClientView(generics.GenericAPIView):
             return Response(
                 {"detail": "Пользователь не подтвержде"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class WaiterLoginView(generics.GenericAPIView):
+    serializer_class = WaiterLoginSerializer
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "username": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Login",
+                example="Hasbik",
+            ),
+            "password": openapi.Schema(
+                type=openapi.TYPE_STRING, description="password", example="Has6ig007"
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "pre_token": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Pre token for 2fa"
+            ),
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Login",
+        operation_description="Use this method to log the user in. The endpoint will return a temporary token to confirm two-factor authentication. To confirm, use this token in the 'Authorization' header and navigate to the following endpoint '/confirm-login/'",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
+    def post(self, request):
+
+        username = request.data["username"]
+        password = request.data["password"]
+        try:
+            user = CustomUser.objects.get(
+                username=username
+            )
+            if user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+                token_auth = str(refresh.access_token)
+                user.token_auth = token_auth
+                login(request, user)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if user.is_verified:
+            send_phone_number_verification(user.id)
+            pre_token = generate_pre_2fa_token(user)
+            return Response(
+                {
+                    "pre_token": pre_token,
+                    "detail": f"Введите 4-х значный код, отправленный на номер {user.username}",
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "Пользователь не подтвержден"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class WaiterTemporaryLoginView(generics.GenericAPIView):
+    serializer_class = WaiterLoginSerializer
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "username": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Login",
+                example="Hasbik",
+            ),
+            "password": openapi.Schema(
+                type=openapi.TYPE_STRING, description="password", example="Has6ig007"
+            ),
+        },
+    )
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "refresh": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Refresh token"
+            ),
+            "access": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Access token"
+            ),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Login",
+        operation_description="Use this method to log the user in. The endpoint will return a temporary token to confirm two-factor authentication. To confirm, use this token in the 'Authorization' header and navigate to the following endpoint '/confirm-login/'",
+        request_body=manual_request_schema,
+        responses={200: manual_response_schema},
+    )
+    def post(self, request):
+
+        username = request.data["username"]
+        password = request.data["password"]
+        try:
+            user = CustomUser.objects.get(
+                username=username
+            )
+            if user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+                token_auth = str(refresh.access_token)
+                user.token_auth = token_auth
+                login(request, user)
+                return Response(
+                    {
+                        "phone_number": str(user.phone_number),
+                        "refresh": str(refresh),
+                        "access": user.token_auth,
+                        "detail": "Вы успешно авторизованы",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
             )

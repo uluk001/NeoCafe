@@ -26,6 +26,9 @@ def validate_phone_number(value):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user
+    """
     phone_number = serializers.CharField(
         required=True, validators=[validate_phone_number]
     )
@@ -72,14 +75,23 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class ClientConfirmPhoneNumberSerializer(serializers.Serializer):
+    """
+    Serializer for confirming phone number
+    """
     code = serializers.CharField(required=True)
 
 
 class ClientBirthDateSerializer(serializers.Serializer):
+    """
+    Serializer for birth date
+    """
     birth_date = serializers.DateField(required=True)
 
 
 class ClientEditProfileSerializer(serializers.Serializer):
+    """
+    Serializer for editing profile
+    """
     first_name = serializers.CharField(required=True)
     phone_number = serializers.CharField(
         required=True, validators=[validate_phone_number]
@@ -88,29 +100,55 @@ class ClientEditProfileSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    """
+    Serializer for login
+    """
     phone_number = serializers.CharField(required=True)
     first_name = serializers.CharField(required=False)
 
 
 class ChangePhoneNumberSerializer(serializers.Serializer):
+    """
+    Serializer for changing phone number
+    """
     phone_number = serializers.CharField(required=True)
     code = serializers.CharField(required=True)
 
 
 class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for reset password
+    """
     user_id = serializers.IntegerField(required=True)
     new_password = serializers.CharField(required=True)
     new_password2 = serializers.CharField(required=True)
 
 
 class SendVerificationCodeForResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for sending verification code for reset password
+    """
     phone_number = serializers.CharField(required=True)
 
 
 class AdminLoginSerializer(serializers.Serializer):
+    """
+    Serializer for admin login
+    """
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
 
 class LoginForClientSerializer(serializers.Serializer):
+    """
+    Serializer for client login
+    """
     phone_number = serializers.CharField(required=True)
+
+
+class WaiterLoginSerializer(serializers.Serializer):
+    """
+    Serializer for waiter login
+    """
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
