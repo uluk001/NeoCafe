@@ -691,5 +691,30 @@ class WaiterTemporaryLoginView(generics.GenericAPIView):
                 )
         except CustomUser.DoesNotExist:
             return Response(
-                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
-            )
+                {"detail": "Пользователь не найден"},
+                status=status.HTTP_404_NOT_FOUND)
+
+
+class ResendCodeWithPerTokenView(generics.GenericAPIView):
+    serializer_class = serializers.Serializer
+    permission_classes = [permissions.IsAuthenticated]
+    manual_response_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "detail": openapi.Schema(type=openapi.TYPE_STRING, description="Detail"),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Resend code",
+        operation_description="Use this method to resend code",
+        responses={200: manual_response_schema},
+    )
+    def get(self, request):
+        user = request.user
+        pre_token = request.headers.get("Authorization")
+        user = get_user_by_token(pre_token)
+        send_phone_number_verification(user.id)
+        return Response(
+            {"detail": "Код был отправлен заново"}, status=status.HTTP_200_OK
+        )

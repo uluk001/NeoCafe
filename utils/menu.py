@@ -39,5 +39,8 @@ def get_items_that_can_be_made(branch_id):
 
 
 def get_available_ingredients_with_quantity(branch_id):
+    """
+    Returns a list of available ingredients with quantity.
+    """
     available_at_the_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related('ingredient')
     return [{"ingredient": item.ingredient, "quantity": item.quantity} for item in available_at_the_branch]
