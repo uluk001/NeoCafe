@@ -152,3 +152,17 @@ class WaiterLoginSerializer(serializers.Serializer):
     """
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for profile
+    """
+    class Meta:
+        model = User
+        fields = (
+            "phone_number",
+            "first_name",
+            "birth_date",
+            "bonus",
+        )

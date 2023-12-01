@@ -16,7 +16,7 @@ from .serializers import (AdminLoginSerializer, ClientBirthDateSerializer,
                           ClientConfirmPhoneNumberSerializer,
                           ClientEditProfileSerializer, CustomUserSerializer,
                           LoginForClientSerializer, LoginSerializer,
-                          WaiterLoginSerializer,
+                          WaiterLoginSerializer, ProfileSerializer,
                           )
 
 User = get_user_model()
@@ -407,7 +407,7 @@ class ClientConfirmLoginView(generics.GenericAPIView):
 
 
 class ClientUserProfileView(generics.GenericAPIView):
-    serializer_class = CustomUserSerializer
+    serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated, IsPhoneNumberVerified]
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -421,6 +421,9 @@ class ClientUserProfileView(generics.GenericAPIView):
             "birth_date": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Birth date"
             ),
+            "bonus": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Bonus points"
+            ),
         },
     )
 
@@ -431,7 +434,7 @@ class ClientUserProfileView(generics.GenericAPIView):
     )
     def get(self, request):
         user = request.user
-        serializer = CustomUserSerializer(user)
+        serializer = ProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
