@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (CreateAPIView, DestroyAPIView,
                                      GenericAPIView, ListAPIView,
                                      RetrieveAPIView, UpdateAPIView)
@@ -9,12 +10,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.branches.models import Branch
-from apps.storage.serializers import ItemSerializer
+from apps.storage.serializers import ItemSerializer, CategorySerializer
 from utils.menu import (get_compatibles, get_items_that_can_be_made,
                         get_popular_items)
 
 from .serializers import BranchListSerializer, ChangeBranchSerializer
 from .services import get_branch_name_and_id_list
+from .filters import MenuFilter
+from apps.storage.models import Item
 
 
 # =============================================================
@@ -26,6 +29,8 @@ class Menu(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter, OrderingFilter]
+    filterset_class = MenuFilter
 
     @swagger_auto_schema(
         operation_summary="Get menu",
@@ -39,8 +44,9 @@ class Menu(APIView):
         Get items that can be made.
         """
         user = request.user
-        items = get_items_that_can_be_made(user.branch)
-        serializer = ItemSerializer(items, many=True)
+        items = Item.objects.all()
+        filtered_items = self.filterset_class(request.GET, queryset=items)
+        serializer = ItemSerializer(filtered_items.qs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -89,6 +95,31 @@ class CompatibleItemsView(APIView):
         user = request.user
         items = get_compatibles(item_id, user.branch)
         serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryListView(ListAPIView):
+    """
+    View for getting categories.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CategorySerializer
+    queryset = Item.objects.all()
+
+    @swagger_auto_schema(
+        operation_summary="Get categories",
+        operation_description="Use this endpoint to get categories.",
+        responses={
+            200: openapi.Response("Categories"),
+        },
+    )
+    def get(self, request):
+        """
+        Get categories.
+        """
+        queryset = Item.objects.all()
+        serializer = CategorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
