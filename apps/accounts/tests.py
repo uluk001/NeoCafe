@@ -1,11 +1,10 @@
 """
 Module for testing accounts app.
 """
-from apps.accounts.views import (
-    WaiterLoginView
-)
 from django.test import TestCase
+
 from apps.accounts.models import CustomUser as User
+from apps.accounts.views import WaiterLoginView
 from apps.branches.models import Branch, Schedule
 
 

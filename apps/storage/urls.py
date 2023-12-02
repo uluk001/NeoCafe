@@ -1,38 +1,24 @@
 from django.urls import path
 
-from apps.storage.views import (
-    ListCategoryView,
-    CreateCategoryView,
-    CreateEmployeeView,
-    CreateIngredientView,
-    CreateItemView,
-    DestroyCategoryView,
-    EmployeeDestroyView,
-    EmployeeDetailView,
-    EmployeeListView,
-    EmployeeUpdateView,
-    IngredientDestroyView,
-    IngredientDetailView,
-    IngredientListView,
-    IngredientQuantityUpdateView,
-    InredientDestroyFromBranchView,
-    ItemDetailView,
-    ItemListView,
-    ItemUpdateView,
-    ItemDestroyView,
-    PutImageToItemView,
-    ScheduleUpdateView,
-    UpdateCategoryView,
-    UpdateIngredientView,
-    ReadyMadeProductCreateView,
-    ReadyMadeProductDestroyView,
-    ReadyMadeProductListView,
-    ReadyMadeProductDetailView,
-    ReadyMadeProductUpdateView,
-    ReadyMadeProductQuantityUpdateView,
-    IngredientQuantityInBranchView,
-    LowStockIngredientBranchView,
-)
+from apps.storage.views import (CreateCategoryView, CreateEmployeeView,
+                                CreateIngredientView, CreateItemView,
+                                DestroyCategoryView, EmployeeDestroyView,
+                                EmployeeDetailView, EmployeeListView,
+                                EmployeeUpdateView, IngredientDestroyView,
+                                IngredientDetailView, IngredientListView,
+                                IngredientQuantityInBranchView,
+                                IngredientQuantityUpdateView,
+                                InredientDestroyFromBranchView,
+                                ItemDestroyView, ItemDetailView, ItemListView,
+                                ItemUpdateView, ListCategoryView,
+                                LowStockIngredientBranchView,
+                                PutImageToItemView, ReadyMadeProductCreateView,
+                                ReadyMadeProductDestroyView,
+                                ReadyMadeProductDetailView,
+                                ReadyMadeProductListView,
+                                ReadyMadeProductQuantityUpdateView,
+                                ReadyMadeProductUpdateView, ScheduleUpdateView,
+                                UpdateCategoryView, UpdateIngredientView)
 
 # Category URLs
 urlpatterns = [
@@ -59,10 +45,20 @@ urlpatterns += [
     path("ingredients/<int:pk>/", IngredientDetailView.as_view()),
     path("ingredients/destroy/<int:pk>/", IngredientDestroyView.as_view()),
     path("ingredients/", IngredientListView.as_view()),
-    path("ingredient-quantity-update/<int:id>/", IngredientQuantityUpdateView.as_view()),
-    path("ingredient-destroy-from-branch/<int:pk>/", InredientDestroyFromBranchView.as_view()),
-    path("ingredient-quantity-in-branch/<int:pk>/", IngredientQuantityInBranchView.as_view()),
-    path("low-stock-ingredient-branch/<int:pk>/", LowStockIngredientBranchView.as_view()),
+    path(
+        "ingredient-quantity-update/<int:id>/", IngredientQuantityUpdateView.as_view()
+    ),
+    path(
+        "ingredient-destroy-from-branch/<int:pk>/",
+        InredientDestroyFromBranchView.as_view(),
+    ),
+    path(
+        "ingredient-quantity-in-branch/<int:pk>/",
+        IngredientQuantityInBranchView.as_view(),
+    ),
+    path(
+        "low-stock-ingredient-branch/<int:pk>/", LowStockIngredientBranchView.as_view()
+    ),
 ]
 
 # Item URLs
@@ -80,8 +76,13 @@ urlpatterns += [
     path("ready-made-products/create/", ReadyMadeProductCreateView.as_view()),
     path("ready-made-products/", ReadyMadeProductListView.as_view()),
     path("ready-made-products/<int:pk>/", ReadyMadeProductListView.as_view()),
-    path("ready-made-products/destroy/<int:pk>/", ReadyMadeProductDestroyView.as_view()),
+    path(
+        "ready-made-products/destroy/<int:pk>/", ReadyMadeProductDestroyView.as_view()
+    ),
     path("ready-made-products/update/<int:pk>/", ReadyMadeProductUpdateView.as_view()),
-    path("ready-made-products/quantity-update/<int:id>/", ReadyMadeProductQuantityUpdateView.as_view()),
+    path(
+        "ready-made-products/quantity-update/<int:id>/",
+        ReadyMadeProductQuantityUpdateView.as_view(),
+    ),
     path("ready-made-products/<int:pk>/", ReadyMadeProductDetailView.as_view()),
 ]

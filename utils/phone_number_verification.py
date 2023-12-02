@@ -8,9 +8,9 @@ import jwt
 from django.conf import settings
 from django.utils import timezone
 from twilio.rest import Client
-from utils.infobip import send_verification_phone_number
 
 from apps.accounts.models import CustomUser, PhoneNumberVerification
+from utils.infobip import send_verification_phone_number
 
 
 def send_phone_number_verification(user_id):

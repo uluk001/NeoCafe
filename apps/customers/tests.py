@@ -1,18 +1,14 @@
 """
 Module for testing customers app.
 """
-from utils.menu import get_items_that_can_be_made, get_available_ingredients_with_quantity
 from django.test import TestCase
+
 from apps.accounts.models import CustomUser as User
 from apps.branches.models import Branch, Schedule
-from apps.storage.models import (
-    Ingredient,
-    Item,
-    AvailableAtTheBranch,
-    Composition,
-    Category,
-    MinimalLimitReached,
-)
+from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
+                                 Ingredient, Item, MinimalLimitReached)
+from utils.menu import (get_available_ingredients_with_quantity,
+                        get_items_that_can_be_made)
 
 
 class TestMenu(TestCase):

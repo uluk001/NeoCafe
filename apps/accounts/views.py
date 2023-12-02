@@ -16,8 +16,7 @@ from .serializers import (AdminLoginSerializer, ClientBirthDateSerializer,
                           ClientConfirmPhoneNumberSerializer,
                           ClientEditProfileSerializer, CustomUserSerializer,
                           LoginForClientSerializer, LoginSerializer,
-                          WaiterLoginSerializer, ProfileSerializer,
-                          )
+                          ProfileSerializer, WaiterLoginSerializer)
 
 User = get_user_model()
 
@@ -601,13 +600,10 @@ class WaiterLoginView(generics.GenericAPIView):
         responses={200: manual_response_schema},
     )
     def post(self, request):
-
         username = request.data["username"]
         password = request.data["password"]
         try:
-            user = CustomUser.objects.get(
-                username=username
-            )
+            user = CustomUser.objects.get(username=username)
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
                 token_auth = str(refresh.access_token)
@@ -668,13 +664,10 @@ class WaiterTemporaryLoginView(generics.GenericAPIView):
         responses={200: manual_response_schema},
     )
     def post(self, request):
-
         username = request.data["username"]
         password = request.data["password"]
         try:
-            user = CustomUser.objects.get(
-                username=username
-            )
+            user = CustomUser.objects.get(username=username)
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
                 token_auth = str(refresh.access_token)
@@ -691,11 +684,11 @@ class WaiterTemporaryLoginView(generics.GenericAPIView):
                 )
         except CustomUser.DoesNotExist:
             return Response(
-                {"detail": "Пользователь не найден"},
-                status=status.HTTP_404_NOT_FOUND)
+                {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
-class ResendCodeWithPerTokenView(generics.GenericAPIView):
+class ResendCodeWithPreTokenView(generics.GenericAPIView):
     serializer_class = serializers.Serializer
     permission_classes = [permissions.IsAuthenticated]
     manual_response_schema = openapi.Schema(

@@ -1,5 +1,8 @@
+import random
+
 from apps.branches.models import Branch
-from apps.storage.models import Ingredient, Item, Composition, AvailableAtTheBranch
+from apps.storage.models import (AvailableAtTheBranch, Composition, Ingredient,
+                                 Item)
 
 
 def get_available_ingredients_with_quantity(branch_id):
@@ -42,5 +45,26 @@ def get_available_ingredients_with_quantity(branch_id):
     """
     Returns a list of available ingredients with quantity.
     """
-    available_at_the_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related('ingredient')
-    return [{"ingredient": item.ingredient, "quantity": item.quantity} for item in available_at_the_branch]
+    available_at_the_branch = AvailableAtTheBranch.objects.filter(
+        branch_id=branch_id
+    ).select_related("ingredient")
+    return [
+        {"ingredient": item.ingredient, "quantity": item.quantity}
+        for item in available_at_the_branch
+    ]
+
+
+def get_popular_items(branch_id):
+    """
+    Returns a list of popular items. Temporary solution is to return random items that can be made.
+    """
+    items_that_can_be_made = get_items_that_can_be_made(branch_id)
+    return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
+
+
+def get_compatibles(item_id, branch_id):
+    """
+    Returns a list of compatible items. Temporary solution is to return random items.
+    """
+    items_that_can_be_made = get_items_that_can_be_made(branch_id)
+    return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))

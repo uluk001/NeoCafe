@@ -4,13 +4,16 @@ Module for testing branches app.
 import json
 
 from django.test import TestCase
-from apps.branches.models import Branch, Schedule, Workdays
-from apps.accounts.models import CustomUser as User
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from apps.accounts.models import CustomUser as User
+from apps.branches.models import Branch, Schedule, Workdays
+
 # ==================== Branch Test ==================== #
 # Branch Model Test
+
+
 class BranchTestCase(TestCase):
     """
     Class for testing branches app.
@@ -147,12 +150,17 @@ class BranchViewTestCase(TestCase):
             ],
         }
 
-        response = self.client.post("/branches/create/", data=json.dumps(data), content_type="application/json")
+        response = self.client.post(
+            "/branches/create/", data=json.dumps(data), content_type="application/json"
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name_of_shop"], "Test name")
         self.assertEqual(response.data["address"], "Test address")
         self.assertEqual(response.data["phone_number"], "+996700000001")
-        self.assertEqual(response.data["link_to_map"], "https://www.google.com/maps/place/42.874722,74.612222")
+        self.assertEqual(
+            response.data["link_to_map"],
+            "https://www.google.com/maps/place/42.874722,74.612222",
+        )
         self.assertEqual(response.data["workdays"][0]["workday"], 1)
         self.assertEqual(response.data["workdays"][0]["start_time"], "10:00:00")
         self.assertEqual(response.data["workdays"][0]["end_time"], "20:00:00")
@@ -176,12 +184,19 @@ class BranchViewTestCase(TestCase):
             ],
         }
 
-        response = self.client.put("/branches/update/1/", data=json.dumps(data), content_type="application/json")
+        response = self.client.put(
+            "/branches/update/1/",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name_of_shop"], "Test name 5")
         self.assertEqual(response.data["address"], "Test address 5")
         self.assertEqual(response.data["phone_number"], "+996700000001")
-        self.assertEqual(response.data["link_to_map"], "https://www.ggoogle.com/maps/place/42.874722,74.612222")
+        self.assertEqual(
+            response.data["link_to_map"],
+            "https://www.ggoogle.com/maps/place/42.874722,74.612222",
+        )
         self.assertEqual(response.data["workdays"][0]["workday"], 1)
         self.assertEqual(response.data["workdays"][0]["start_time"], "10:00:00")
         self.assertEqual(response.data["workdays"][0]["end_time"], "20:00:00")

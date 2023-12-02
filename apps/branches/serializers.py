@@ -134,10 +134,16 @@ class BranchUpdateSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             schedule = instance.schedule
 
-            instance.name_of_shop = validated_data.get('name_of_shop', instance.name_of_shop)
-            instance.address = validated_data.get('address', instance.address)
-            instance.phone_number = validated_data.get('phone_number', instance.phone_number)
-            instance.link_to_map = validated_data.get('link_to_map', instance.link_to_map)
+            instance.name_of_shop = validated_data.get(
+                "name_of_shop", instance.name_of_shop
+            )
+            instance.address = validated_data.get("address", instance.address)
+            instance.phone_number = validated_data.get(
+                "phone_number", instance.phone_number
+            )
+            instance.link_to_map = validated_data.get(
+                "link_to_map", instance.link_to_map
+            )
             instance.save()
 
             if "workdays" in self.initial_data:

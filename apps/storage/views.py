@@ -1,55 +1,33 @@
 """
 Views for storage app
 """
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
+from apps.storage.filters import (EmployeeFilter, IngredientFilter, ItemFilter,
+                                  ReadyMadeProductFilter)
 from apps.storage.serializers import (
-    AvailableAtTheBranchSerializer,
-    CategorySerializer,
-    CreateIngredientSerializer,
-    CreateItemSerializer,
-    CreateReadyMadeProductSerializer,
-    EmployeeCreateSerializer,
-    EmployeeSerializer,
-    EmployeeUpdateSerializer,
-    IngredientDetailSerializer,
-    IngredientQuantityUpdateSerializer,
-    IngredientSerializer,
-    ItemSerializer,
-    PutImageToItemSerializer,
-    ReadyMadeProductSerializer,
-    ScheduleUpdateSerializer,
-    UpdateIngredientSerializer,
-    UpdateItemSerializer,
-    UpdateReadyMadeProductSerializer,
-    ReadyMadeProductAvailableAtTheBranchSerializer,
-)
-from apps.storage.filters import (
-    ItemFilter,
-    IngredientFilter,
-    ReadyMadeProductFilter,
-    EmployeeFilter,
-)
+    AvailableAtTheBranchSerializer, CategorySerializer,
+    CreateIngredientSerializer, CreateItemSerializer,
+    CreateReadyMadeProductSerializer, EmployeeCreateSerializer,
+    EmployeeSerializer, EmployeeUpdateSerializer, IngredientDetailSerializer,
+    IngredientQuantityUpdateSerializer, IngredientSerializer, ItemSerializer,
+    PutImageToItemSerializer, ReadyMadeProductAvailableAtTheBranchSerializer,
+    ReadyMadeProductSerializer, ScheduleUpdateSerializer,
+    UpdateIngredientSerializer, UpdateItemSerializer,
+    UpdateReadyMadeProductSerializer)
 from apps.storage.services import (
     delete_employee_schedule_by_employee,
-    get_available_at_the_branch,
-    get_categories,
-    get_employees,
-    get_ingrediants,
-    get_items,
-    get_ready_made_products,
-    get_specific_category,
-    get_specific_employee,
     get_a_list_of_ingredients_and_their_quantities_in_specific_branch,
-    get_low_stock_ingredients_in_branch,
-)
+    get_available_at_the_branch, get_categories, get_employees,
+    get_ingrediants, get_items, get_low_stock_ingredients_in_branch,
+    get_ready_made_products, get_specific_category, get_specific_employee)
 
 
 # =====================================================================
@@ -528,7 +506,6 @@ class CreateIngredientView(generics.CreateAPIView):
         request_body=manual_request_schema,
         responses={201: "Ingredient created successfully"},
     )
-
     def post(self, request):
         """
         Create ingredient method.
@@ -538,6 +515,7 @@ class CreateIngredientView(generics.CreateAPIView):
             serializer.save()
             return Response({"message": "Ingredient created successfully"}, status=201)
         return Response(serializer.errors, status=400)
+
 
 class UpdateIngredientView(generics.UpdateAPIView):
     """
@@ -720,9 +698,7 @@ class IngredientQuantityInBranchView(generics.ListAPIView):
         operation_summary="Get ingredient quantity in branch",
         operation_description="Use this method to get ingredient quantity in branch",
         responses={
-            200: openapi.Response(
-                "Ingredient quantity in branch", list_response_schema
-            )
+            200: openapi.Response("Ingredient quantity in branch", list_response_schema)
         },
     )
     def get(self, request, pk):
@@ -1061,10 +1037,12 @@ class ItemUpdateView(generics.UpdateAPIView):
         request_body=UpdateItemSerializer,
         manual_parameters=[
             openapi.Parameter(
-                'id', openapi.IN_PATH, description="ID of the item to be updated",
-                type=openapi.TYPE_INTEGER
+                "id",
+                openapi.IN_PATH,
+                description="ID of the item to be updated",
+                type=openapi.TYPE_INTEGER,
             ),
-        ]
+        ],
     )
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
@@ -1219,7 +1197,7 @@ class ReadyMadeProductDetailView(generics.RetrieveAPIView):
     """
     Ready made product detail view.
     """
-    
+
     queryset = get_ready_made_products()
     serializer_class = ReadyMadeProductSerializer
     lookup_field = "pk"

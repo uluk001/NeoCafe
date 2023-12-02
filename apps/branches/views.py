@@ -5,7 +5,8 @@ from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
 
 from .models import Branch
-from .serializers import BranchCreateSerializer, BranchSerializer, PutImageSerializer, BranchUpdateSerializer
+from .serializers import (BranchCreateSerializer, BranchSerializer,
+                          BranchUpdateSerializer, PutImageSerializer)
 
 
 class BranchListView(ListAPIView):

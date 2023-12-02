@@ -4,9 +4,9 @@ Module for admin panel configuration for storage app.
 from django.contrib import admin
 
 from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch,
-                                 MinimalLimitReached,)
+                                 Ingredient, Item, MinimalLimitReached,
+                                 ReadyMadeProduct,
+                                 ReadyMadeProductAvailableAtTheBranch)
 
 
 class MinimalLimitReachedInline(admin.TabularInline):

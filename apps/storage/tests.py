@@ -8,9 +8,8 @@ from apps.accounts.models import CustomUser as User
 from apps.accounts.models import EmployeeSchedule, EmployeeWorkdays
 from apps.branches.models import Branch, Schedule, Workdays
 from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
-                                 Item, ReadyMadeProduct,
-                                 MinimalLimitReached,
-                                 ReadyMadeProductAvailableAtTheBranch,)
+                                 Item, MinimalLimitReached, ReadyMadeProduct,
+                                 ReadyMadeProductAvailableAtTheBranch)
 
 
 # ==================== Category Tests ==================== #
@@ -661,7 +660,9 @@ class IngredientViewTest(TestCase):
         self.assertEqual(response.data["name"], "New Ingredient")
         self.assertEqual(response.data["measurement_unit"], "g")
         self.assertEqual(response.data["available_at_branches"][0]["quantity"], 100000)
-        self.assertEqual(response.data["available_at_branches"][0]["minimal_limit"], 100)
+        self.assertEqual(
+            response.data["available_at_branches"][0]["minimal_limit"], 100
+        )
 
     def test_create_ingredient_by_user(self):
         """Test creating ingredient by usual user"""
@@ -687,18 +688,20 @@ class IngredientViewTest(TestCase):
             "name": "New Ingredient",
             "measurement_unit": "g",
             "available_at_branches": [
-                {"branch": f"{self.branch.id}", "quantity": "100000", "minimal_limit": "100"}
+                {
+                    "branch": f"{self.branch.id}",
+                    "quantity": "100000",
+                    "minimal_limit": "100",
+                }
             ],
         }
         response = self.client.post(
             path="/admin-panel/ingredients/create/",
             data=json.dumps(data),
-            content_type='application/json',
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            Ingredient.objects.filter(name="New Ingredient").count(), 1
-        )
+        self.assertEqual(Ingredient.objects.filter(name="New Ingredient").count(), 1)
         self.assertEqual(
             AvailableAtTheBranch.objects.filter(
                 ingredient__name="New Ingredient"
@@ -754,23 +757,35 @@ class IngredientViewTest(TestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertTrue(
+            MinimalLimitReached.objects.filter(
+                ingredient=self.ingredient, branch=self.branch
+            ).exists()
+        )
 
     def test_delete_ingredient_by_user(self):
         """Test deleting ingredient by usual user"""
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.delete(path=f"/admin-panel/ingredients/{self.ingredient.id}/")
+        response = self.client.delete(
+            path=f"/admin-panel/ingredients/{self.ingredient.id}/"
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Ingredient.objects.filter(id=self.ingredient.id).exists())
-        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertTrue(
+            MinimalLimitReached.objects.filter(
+                ingredient=self.ingredient, branch=self.branch
+            ).exists()
+        )
 
     def test_delete_ingredient_by_admin(self):
         """Test deleting ingredient by admin user"""
         token = self.get_token("+996700000001")
         ingredient_name = self.ingredient.name
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
-        response = self.client.delete(path=f"/admin-panel/ingredients/destroy/{self.ingredient.id}/")
+        response = self.client.delete(
+            path=f"/admin-panel/ingredients/destroy/{self.ingredient.id}/"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(Ingredient.objects.filter(id=self.ingredient.id).exists())
         self.assertFalse(
@@ -778,7 +793,11 @@ class IngredientViewTest(TestCase):
                 ingredient__name=ingredient_name
             ).exists()
         )
-        self.assertFalse(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertFalse(
+            MinimalLimitReached.objects.filter(
+                ingredient=self.ingredient, branch=self.branch
+            ).exists()
+        )
         self.assertEqual(
             MinimalLimitReached.objects.filter(branch=self.branch).count(), 0
         )
@@ -803,7 +822,9 @@ class IngredientViewTest(TestCase):
         self.assertEqual(response.data["name"], "Test Ingredient")
         self.assertEqual(response.data["measurement_unit"], "g")
         self.assertEqual(response.data["available_at_branches"][0]["quantity"], 100000)
-        self.assertEqual(response.data["available_at_branches"][0]["minimal_limit"], 100)
+        self.assertEqual(
+            response.data["available_at_branches"][0]["minimal_limit"], 100
+        )
 
     def test_update_ingredient_quantity_by_user(self):
         """Test updating ingredient quantity by usual user"""
@@ -825,7 +846,9 @@ class IngredientViewTest(TestCase):
             100000,
         )
         self.assertEqual(
-            MinimalLimitReached.objects.get(ingredient=self.ingredient, branch=self.branch).quantity,
+            MinimalLimitReached.objects.get(
+                ingredient=self.ingredient, branch=self.branch
+            ).quantity,
             100,
         )
 
@@ -849,7 +872,9 @@ class IngredientViewTest(TestCase):
             100,
         )
         self.assertEqual(
-            MinimalLimitReached.objects.get(ingredient=self.ingredient, branch=self.branch).quantity,
+            MinimalLimitReached.objects.get(
+                ingredient=self.ingredient, branch=self.branch
+            ).quantity,
             100,
         )
 
@@ -862,7 +887,11 @@ class IngredientViewTest(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Ingredient.objects.filter(id=self.ingredient.id).exists())
-        self.assertTrue(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertTrue(
+            MinimalLimitReached.objects.filter(
+                ingredient=self.ingredient, branch=self.branch
+            ).exists()
+        )
 
     def test_delete_ingredient_from_branch_by_admin(self):
         """Test deleting ingredient from branch by admin user"""
@@ -879,7 +908,11 @@ class IngredientViewTest(TestCase):
                 ingredient__name=ingredient_name
             ).exists()
         )
-        self.assertFalse(MinimalLimitReached.objects.filter(ingredient=self.ingredient, branch=self.branch).exists())
+        self.assertFalse(
+            MinimalLimitReached.objects.filter(
+                ingredient=self.ingredient, branch=self.branch
+            ).exists()
+        )
 
 
 # ==================== Item Tests ==================== #
@@ -1092,15 +1125,19 @@ class ReadyMadeProductViewTest(TestCase):
         cls.minimal_limit2 = MinimalLimitReached.objects.create(
             branch=cls.branch, ready_made_product=cls.ready_made_product2, quantity=100
         )
-        cls.available_at_the_branch = ReadyMadeProductAvailableAtTheBranch.objects.create(
-            branch=cls.branch,
-            ready_made_product=cls.ready_made_product,
-            quantity=100000,
+        cls.available_at_the_branch = (
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch,
+                ready_made_product=cls.ready_made_product,
+                quantity=100000,
+            )
         )
-        cls.available_at_the_branch2 = ReadyMadeProductAvailableAtTheBranch.objects.create(
-            branch=cls.branch,
-            ready_made_product=cls.ready_made_product2,
-            quantity=100000,
+        cls.available_at_the_branch2 = (
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch,
+                ready_made_product=cls.ready_made_product2,
+                quantity=100000,
+            )
         )
 
     def setUp(self):
@@ -1125,11 +1162,13 @@ class ReadyMadeProductViewTest(TestCase):
                     {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
                 ],
             },
-            format='json'
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ReadyMadeProduct.objects.count(), 3)
-        self.assertTrue(ReadyMadeProduct.objects.filter(name="New Ready Made Product").exists())
+        self.assertTrue(
+            ReadyMadeProduct.objects.filter(name="New Ready Made Product").exists()
+        )
         self.assertEqual(
             ReadyMadeProductAvailableAtTheBranch.objects.filter(
                 ready_made_product__name="New Ready Made Product"

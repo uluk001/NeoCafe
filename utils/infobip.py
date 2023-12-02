@@ -1,5 +1,5 @@
-from infobip_channels.sms.channel import SMSChannel
 from django.conf import settings
+from infobip_channels.sms.channel import SMSChannel
 
 BASE_URL = settings.BASE_URL_INFOBIP
 API_KEY = settings.API_KEY_INFOBIP

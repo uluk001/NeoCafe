@@ -6,10 +6,9 @@ from apps.accounts.views import (AdminLoginView, ClientBirthDateView,
                                  ClientConfirmPhoneNumberView,
                                  ClientEditProfileView, ClientUserProfileView,
                                  LoginForClientView, LoginView, RegisterView,
-                                 ResendCodeView, TemporaryLoginView,
-                                 WaiterLoginView, WaiterTemporaryLoginView,
-                                 ResendCodeWithPerTokenView,
-                                 )
+                                 ResendCodeView, ResendCodeWithPreTokenView,
+                                 TemporaryLoginView, WaiterLoginView,
+                                 WaiterTemporaryLoginView)
 
 urlpatterns = [
     path("refresh/", TokenRefreshView.as_view()),  # accounts/refresh/
@@ -20,7 +19,9 @@ urlpatterns = [
     path("birth-date/", ClientBirthDateView.as_view()),  # accounts/birth-date/
     path("edit-profile/", ClientEditProfileView.as_view()),  # accounts/edit-profile/
     path("resend-code/", ResendCodeView.as_view()),  # accounts/resend-code/
-    path("resend-code-with-per-token/", ResendCodeWithPerTokenView.as_view()),  # accounts/resend-code-with-per-token/
+    path(
+        "resend-code-with-pre-token/", ResendCodeWithPreTokenView.as_view()
+    ),  # accounts/resend-code-with-per-token/
     path("my-profile/", ClientUserProfileView.as_view()),  # accounts/my-profile/
     path("confirm-login/", ClientConfirmLoginView.as_view()),  # accounts/confirm-login/
     path("admin-login/", AdminLoginView.as_view()),  # accounts/admin-login/
