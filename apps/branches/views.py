@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAdminUser
 
 from .models import Branch
 from .serializers import (BranchCreateSerializer, BranchSerializer,
-                          BranchUpdateSerializer, PutImageSerializer)
+                          BranchUpdateSerializer, PutImageSerializer,
+                          BranchScheduleUpdateSerializer)
 
 
 class BranchListView(ListAPIView):
@@ -193,5 +194,35 @@ class BranchUpdateView(generics.UpdateAPIView):
         request_body=manual_request_schema,
         responses={200: BranchUpdateSerializer},
     )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+
+class BranchScheduleUpdateView(generics.UpdateAPIView):
+    """
+    Update schedule of branch
+    """
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "workdays": openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "workday": openapi.Schema(type=openapi.TYPE_INTEGER),
+                        "start_time": openapi.Schema(type=openapi.TYPE_STRING),
+                        "end_time": openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            ),
+        },
+    )
+
+    queryset = Branch.objects.all()
+    serializer_class = BranchScheduleUpdateSerializer
+    lookup_field = "id"
+
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
