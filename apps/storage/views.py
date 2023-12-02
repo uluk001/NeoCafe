@@ -571,7 +571,8 @@ class IngredientListView(APIView):
         Get ingredients method.
         """
         ingredients = get_ingrediants()
-        serializer = IngredientSerializer(ingredients, many=True)
+        filtered_ingredients = self.filterset_class(request.GET, queryset=ingredients)
+        serializer = IngredientSerializer(filtered_ingredients.qs, many=True)
         return Response(serializer.data)
 
 
