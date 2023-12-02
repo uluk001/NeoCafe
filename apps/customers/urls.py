@@ -5,6 +5,7 @@ from django.urls import path
 
 from .views import (BranchesView, ChangeBranchView, CompatibleItemsView, Menu,
                     PopularItemsView)
+from apps.storage.views import ItemDetailView
 
 urlpatterns = [
     path("", Menu.as_view()),  # customers/
@@ -15,4 +16,8 @@ urlpatterns = [
         "compatible-items/<int:item_id>/",
         CompatibleItemsView.as_view(),
     ),  # customers/compatible-items/<item_id>/
+    path(
+        "<int:pk>/",
+        ItemDetailView.as_view(),
+    ),  # customers/items/<item_id>/
 ]
