@@ -41,7 +41,7 @@ class Workdays(models.Model):
 class Branch(models.Model):
     image = models.ImageField(upload_to="branches", blank=True, null=True)
     schedule = models.ForeignKey(
-        Schedule, on_delete=models.CASCADE, related_name="branches"
+        Schedule, on_delete=models.CASCADE, related_name="branch"
     )
     name_of_shop = models.CharField(max_length=100, default="NeoCafe Dzerzhinka")
     address = models.TextField()

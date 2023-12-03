@@ -203,6 +203,10 @@ class BranchScheduleUpdateView(generics.UpdateAPIView):
     Update schedule of branch
     """
 
+    queryset = Branch.objects.all()
+    serializer_class = BranchScheduleUpdateSerializer
+    lookup_field = "id"
+
     manual_request_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -220,9 +224,9 @@ class BranchScheduleUpdateView(generics.UpdateAPIView):
         },
     )
 
-    queryset = Branch.objects.all()
-    serializer_class = BranchScheduleUpdateSerializer
-    lookup_field = "id"
-
+    @swagger_auto_schema(
+        request_body=manual_request_schema,
+        responses={200: BranchScheduleUpdateSerializer}
+    )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)

@@ -161,7 +161,7 @@ class BranchScheduleUpdateSerializer(serializers.ModelSerializer):
     Schedule update serializer.
     """
 
-    workdays = WorkdaysSerializer(many=True, read_only=True)
+    workdays = WorkdaysSerializer(many=True, read_only=False)
 
     class Meta:
         model = Schedule
@@ -171,18 +171,17 @@ class BranchScheduleUpdateSerializer(serializers.ModelSerializer):
         """
         Update schedule.
         """
-        schedule = instance
+        branch = instance
+        branch.schedule.title = f"{branch.name_of_shop}'s schedule"
+        branch.schedule.save()
 
-        schedule.title = f"{schedule.branch.name_of_shop}'s schedule"
-        schedule.save()
-
-        schedule.workdays.all().delete()
+        branch.schedule.workdays.all().delete()
 
         workdays_data = validated_data.pop("workdays", [])
 
         for workday_data in workdays_data:
             workday_serializer = WorkdaysSerializer(data=workday_data)
             if workday_serializer.is_valid(raise_exception=True):
-                workday_serializer.save(schedule=schedule)
+                workday_serializer.save(schedule=branch.schedule)
 
-        return schedule
+        return branch.schedule
