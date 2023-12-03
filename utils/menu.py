@@ -1,62 +1,47 @@
 import random
 
 from apps.branches.models import Branch
-from apps.storage.models import (AvailableAtTheBranch, Composition, Ingredient,
-                                 Item)
+from apps.storage.models import (
+    AvailableAtTheBranch, Composition,
+    Ingredient, Item, ReadyMadeProduct
+)
 
 
 def get_available_ingredients_with_quantity(branch_id):
     """
-    Returns a list of available ingredients with quantity.
+    Returns list of available ingredients with their quantities at the branch.
     """
-    available_ingredients = []
-    available_at_the_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id)
-    for item in available_at_the_branch:
-        available_ingredients.append(
-            {
-                "ingredient": item.ingredient,
-                "quantity": item.quantity,
-            }
-        )
-    return available_ingredients
+    return [
+        {"ingredient": item.ingredient, "quantity": item.quantity}
+        for item in AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ingredient")
+    ]
 
 
 def get_items_that_can_be_made(branch_id):
     """
-    Returns a list of items that can be made.
+    Returns list of items that can be made at the branch.
     """
     available_ingredients = get_available_ingredients_with_quantity(branch_id)
+    available_ingredient_ids = [ingredient['ingredient'].id for ingredient in available_ingredients]
+    
+    items = Item.objects.prefetch_related('compositions__ingredient').filter(compositions__ingredient__id__in=available_ingredient_ids)
+    
     items_that_can_be_made = []
-    for item in Item.objects.all():
-        can_be_made = True
-        for composition in item.compositions.all():
-            for available_ingredient in available_ingredients:
-                if (
-                    composition.ingredient == available_ingredient["ingredient"]
-                    and composition.quantity > available_ingredient["quantity"]
-                ):
-                    can_be_made = False
+    for item in items:
+        can_be_made = all(
+            composition.quantity <= available_ingredients[composition.ingredient.id]['quantity']
+            for composition in item.compositions.all()
+            if composition.ingredient.id in available_ingredient_ids
+        )
         if can_be_made:
             items_that_can_be_made.append(item)
+    
     return items_that_can_be_made
-
-
-def get_available_ingredients_with_quantity(branch_id):
-    """
-    Returns a list of available ingredients with quantity.
-    """
-    available_at_the_branch = AvailableAtTheBranch.objects.filter(
-        branch_id=branch_id
-    ).select_related("ingredient")
-    return [
-        {"ingredient": item.ingredient, "quantity": item.quantity}
-        for item in available_at_the_branch
-    ]
 
 
 def get_popular_items(branch_id):
     """
-    Returns a list of popular items. Temporary solution is to return random items that can be made.
+    Returns list of popular items at the branch.
     """
     items_that_can_be_made = get_items_that_can_be_made(branch_id)
     return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
@@ -64,7 +49,33 @@ def get_popular_items(branch_id):
 
 def get_compatibles(item_id, branch_id):
     """
-    Returns a list of compatible items. Temporary solution is to return random items.
+    Returns list of compatible items with the item at the branch.
     """
     items_that_can_be_made = get_items_that_can_be_made(branch_id)
     return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
+
+
+def check_if_items_can_be_made(item_id, branch_id, quantity):
+    """
+    Checks if the item can be made at the branch.
+    """
+    available_ingredients = get_available_ingredients_with_quantity(branch_id)
+    available_ingredient_ids = {ingredient['ingredient'].id: ingredient['quantity'] for ingredient in available_ingredients}
+    
+    item = Item.objects.prefetch_related('compositions__ingredient').filter(id=item_id).first()
+    
+    return all(
+        composition.quantity * quantity <= available_ingredient_ids.get(composition.ingredient.id, 0)
+        for composition in item.compositions.all()
+        if composition.ingredient.id in available_ingredient_ids
+    )
+
+
+def get_available_ready_made_products_with_quantity(branch_id):
+    """
+    Returns list of available ready made products with their quantities at the branch.
+    """
+    return [
+        {"ready_made_product": item.ready_made_product, "quantity": item.quantity}
+        for item in AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ready_made_product")
+    ]
