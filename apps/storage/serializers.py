@@ -490,6 +490,15 @@ class IngredientQuantityUpdateSerializer(serializers.ModelSerializer):
         return representation
 
 
+class LowStockIngredientSerializer(serializers.Serializer):
+    """
+    LowStockIngredient serializer.
+    """
+    name_of_shop = serializers.CharField()
+    ingredient_name = serializers.CharField()
+    quantity = serializers.DecimalField(max_digits=10, decimal_places=2)
+    min_limit = serializers.DecimalField(max_digits=10, decimal_places=2)
+
 # =====================================================================
 # ITEM SERIALIZERS
 # =====================================================================

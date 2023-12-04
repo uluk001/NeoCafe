@@ -1,10 +1,15 @@
 from django.db.models import F
+from django.db import models
 
 from apps.accounts.models import CustomUser, EmployeeSchedule
 
-from .models import (AvailableAtTheBranch, Category, Ingredient, Item,
-                     ReadyMadeProduct)
-from .serializers import AvailableAtTheBranchSerializer, IngredientSerializer
+from .models import (
+    AvailableAtTheBranch, Category, Ingredient,
+    Item, ReadyMadeProduct, MinimalLimitReached
+)
+from .serializers import (
+    AvailableAtTheBranchSerializer, LowStockIngredientSerializer
+)
 
 
 def get_employees():
@@ -92,14 +97,24 @@ def get_a_list_of_ingredients_and_their_quantities_in_specific_branch(branch_id)
 
 
 def get_low_stock_ingredients_in_branch(branch_id):
-    """Get low stock ingredients in branch"""
+    """Get low stock ingredients quantity and their minimal limit in specific branch"""
     low_stock_ingredients = (
-        AvailableAtTheBranch.objects.filter(
-            branch_id=branch_id, quantity__lt=F("ingredient__minimal_limit")
+        AvailableAtTheBranch.objects
+        .select_related('ingredient', 'branch')
+        .annotate(
+            min_limit=models.Subquery(
+                MinimalLimitReached.objects
+                .filter(
+                    branch=models.OuterRef('branch'),
+                    ingredient=models.OuterRef('ingredient')
+                )
+                .values('quantity')[:1]
+            ),
+            name_of_shop=models.F('branch__name_of_shop'),
+            ingredient_name=models.F('ingredient__name')
         )
-        .select_related("ingredient")
-        .distinct()
+        .filter(quantity__lt=models.F('min_limit'))
+        .values('name_of_shop', 'ingredient_name', 'quantity', 'min_limit')
     )
-
-    serializer = AvailableAtTheBranchSerializer(low_stock_ingredients, many=True)
+    serializer = LowStockIngredientSerializer(low_stock_ingredients, many=True)
     return serializer.data
