@@ -1,4 +1,5 @@
 import random
+from django.db import transaction
 
 from apps.branches.models import Branch
 from apps.storage.models import (
@@ -23,9 +24,9 @@ def get_items_that_can_be_made(branch_id):
     """
     available_ingredients = get_available_ingredients_with_quantity(branch_id)
     available_ingredient_ids = [ingredient['ingredient'].id for ingredient in available_ingredients]
-    
+
     items = Item.objects.prefetch_related('compositions__ingredient').filter(compositions__ingredient__id__in=available_ingredient_ids)
-    
+
     items_that_can_be_made = []
     for item in items:
         can_be_made = all(
@@ -35,7 +36,7 @@ def get_items_that_can_be_made(branch_id):
         )
         if can_be_made:
             items_that_can_be_made.append(item)
-    
+
     return items_that_can_be_made
 
 
@@ -79,3 +80,26 @@ def get_available_ready_made_products_with_quantity(branch_id):
         {"ready_made_product": item.ready_made_product, "quantity": item.quantity}
         for item in AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ready_made_product")
     ]
+
+
+def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
+    """
+    Updates ingredient stock on cooking.
+    """
+    try:
+        with transaction.atomic():
+            compositions = Composition.objects.filter(item_id=item_id).select_related('ingredient')
+            ingredients_to_update = []
+
+            for composition in compositions:
+                available_ingredient = AvailableAtTheBranch.objects.get(
+                    branch_id=branch_id,
+                    ingredient_id=composition.ingredient_id
+                )
+                available_ingredient.quantity -= composition.quantity * quantity
+                ingredients_to_update.append(available_ingredient)
+
+            AvailableAtTheBranch.objects.bulk_update(ingredients_to_update, ['quantity'])
+            return "Updated successfully."
+    except Exception as e:
+        raise e

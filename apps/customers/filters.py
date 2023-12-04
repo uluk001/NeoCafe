@@ -22,6 +22,5 @@ class MenuFilter(filters.FilterSet):
 
     def filter_can_be_made(self, queryset, name, value):
         if value:
-            print("value", value)
             return queryset.filter(id__in=get_items_that_can_be_made(self.request.user.branch.id))
         return queryset

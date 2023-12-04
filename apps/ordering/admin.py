@@ -22,7 +22,6 @@ class OrderAdmin(admin.ModelAdmin):
         "customer",
         "created_at",
         "total_price",
-        "total_price_with_discount",
     ]
     list_filter = ["created_at"]
     search_fields = ["customer__user__username"]

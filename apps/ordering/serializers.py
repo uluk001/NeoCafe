@@ -3,14 +3,29 @@ Module for ordering serializers.
 """
 from rest_framework import serializers
 from apps.ordering.models import Order, OrderItem
-from apps.accounts.models import CustomUser
-from apps.storage.models import Item
 
 
-class TestSerializer(serializers.Serializer):
+class OrderItemSerializer(serializers.ModelSerializer):
     """
-    Serializer for testing.
+    Serializer for OrderItem model.
     """
-    id = serializers.IntegerField()
-    branch_id = serializers.IntegerField()
-    quantity = serializers.IntegerField()
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'item', 'quantity',]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Order model.
+    """
+    items = OrderItemSerializer(many=True, required=False)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'total_price',
+            'spent_bonus_points',
+            'items',
+            ]

@@ -46,5 +46,4 @@ class TestLoginWaiterView(TestCase):
                 "password": "testpassword",
             },
         )
-        print(response.data)
         self.assertEqual(response.status_code, 200)

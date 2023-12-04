@@ -52,10 +52,9 @@ class Order(models.Model):
         decimal_places=2,
         verbose_name="Total price",
     )
-    total_price_with_discount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="Total price with discount",
+    spent_bonus_points = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Spent bonus points",
     )
 
     def __str__(self):
@@ -86,16 +85,6 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(
         default=1,
         verbose_name="Quantity",
-    )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="Price",
-    )
-    total_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="Total price",
     )
 
     def __str__(self):
