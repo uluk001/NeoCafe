@@ -2,17 +2,21 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import (CreateAPIView, DestroyAPIView,
-                                     GenericAPIView, ListAPIView,
-                                     RetrieveAPIView, UpdateAPIView)
+from rest_framework.generics import (
+    CreateAPIView, DestroyAPIView,
+    GenericAPIView, ListAPIView,
+    RetrieveAPIView, UpdateAPIView
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.branches.models import Branch
 from apps.storage.serializers import ItemSerializer, CategorySerializer
-from utils.menu import (get_compatibles, get_items_that_can_be_made,
-                        get_popular_items)
+from utils.menu import (
+    get_compatibles, get_items_that_can_be_made,
+    get_popular_items
+)
 
 from .serializers import BranchListSerializer, ChangeBranchSerializer
 from .services import get_branch_name_and_id_list
@@ -154,28 +158,3 @@ class ChangeBranchView(APIView):
                 {"message": "Branch changed successfully."}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class BranchesView(ListAPIView):
-    """
-    View for getting all branches.
-    """
-
-    permission_classes = [IsAuthenticated]
-    serializer_class = BranchListSerializer
-    queryset = get_branch_name_and_id_list()
-
-    @swagger_auto_schema(
-        operation_summary="Get branches",
-        operation_description="Use this endpoint to get all branches.",
-        responses={
-            200: openapi.Response("Branches"),
-        },
-    )
-    def get(self, request):
-        """
-        Get all branches.
-        """
-        queryset = get_branch_name_and_id_list()
-        serializer = BranchListSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)

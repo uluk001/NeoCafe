@@ -3,9 +3,12 @@ Customers URL Configuration
 """
 from django.urls import path
 
-from .views import (BranchesView, ChangeBranchView, CompatibleItemsView, Menu,
-                    PopularItemsView, CategoryListView)
+from .views import (
+    ChangeBranchView, CompatibleItemsView, Menu,
+    PopularItemsView, CategoryListView
+)
 from apps.storage.views import ItemDetailView
+from apps.branches.views import BranchListView
 
 urlpatterns = [
     path("menu", Menu.as_view()),  # customers/
@@ -20,5 +23,5 @@ urlpatterns = [
     path("popular-items/", PopularItemsView.as_view()),  # customers/popular-items/
     path("categories/", CategoryListView.as_view()),  # customers/categories/
     path("change-branch/", ChangeBranchView.as_view()),  # customers/change-branch/
-    path("branches/", BranchesView.as_view()),  # customers/branches/
+    path("branches/", BranchListView.as_view()),  # customers/branches/
 ]
