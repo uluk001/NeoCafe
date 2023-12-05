@@ -20,12 +20,3 @@ class ChangeBranchSerializer(serializers.Serializer):
     """
 
     branch_id = serializers.IntegerField()
-
-
-class BranchListSerializer(serializers.Serializer):
-    """
-    Serializer for list of branches
-    """
-
-    name_of_shop = serializers.CharField()
-    id = serializers.IntegerField()

@@ -18,7 +18,7 @@ from utils.menu import (
     get_popular_items
 )
 
-from .serializers import BranchListSerializer, ChangeBranchSerializer
+from .serializers import ChangeBranchSerializer
 from .services import get_branch_name_and_id_list
 from .filters import MenuFilter
 from apps.storage.models import Item
