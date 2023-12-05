@@ -6,17 +6,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from utils.phone_number_verification import (generate_pre_2fa_token,
-                                             get_user_by_token,
-                                             send_phone_number_verification)
+from utils.phone_number_verification import (
+    generate_pre_2fa_token,
+    get_user_by_token,
+    send_phone_number_verification
+)
 
 from .models import CustomUser, PhoneNumberVerification
 from .permissions import IsPhoneNumberVerified, IsWaiter
-from .serializers import (AdminLoginSerializer, ClientBirthDateSerializer,
-                          ClientConfirmPhoneNumberSerializer,
-                          ClientEditProfileSerializer, CustomUserSerializer,
-                          LoginForClientSerializer, LoginSerializer,
-                          ProfileSerializer, WaiterLoginSerializer)
+from .serializers import (
+    AdminLoginSerializer, ClientBirthDateSerializer,
+    ClientConfirmPhoneNumberSerializer,
+    ClientEditProfileSerializer, CustomUserSerializer,
+    LoginForClientSerializer, LoginSerializer,
+    ProfileSerializer, WaiterLoginSerializer,
+)
 
 User = get_user_model()
 
@@ -681,6 +685,10 @@ class WaiterTemporaryLoginView(generics.GenericAPIView):
                         "detail": "Вы успешно авторизованы",
                     },
                     status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"detail": "Неверный пароль"}, status=status.HTTP_400_BAD_REQUEST
                 )
         except CustomUser.DoesNotExist:
             return Response(
