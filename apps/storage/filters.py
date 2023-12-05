@@ -5,8 +5,10 @@ from django_filters import rest_framework as filters
 
 from apps.accounts.models import CustomUser
 from apps.branches.models import Branch
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, ReadyMadeProduct)
+from apps.storage.models import (
+    AvailableAtTheBranch, Category, Composition,
+    Ingredient, Item, ReadyMadeProduct
+)
 
 from .services import get_employees
 
@@ -57,6 +59,7 @@ class EmployeeFilter(filters.FilterSet):
 
     name = filters.CharFilter(field_name="first_name", lookup_expr="icontains")
     position = filters.CharFilter(field_name="position", lookup_expr="icontains")
+    branch = filters.NumberFilter(field_name="branch__id")
 
     class Meta:
         model = CustomUser
