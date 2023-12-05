@@ -613,24 +613,28 @@ class WaiterLoginView(generics.GenericAPIView):
                 token_auth = str(refresh.access_token)
                 user.token_auth = token_auth
                 login(request, user)
+                if user.is_verified:
+                    send_phone_number_verification(user.id)
+                    pre_token = generate_pre_2fa_token(user)
+                    return Response(
+                        {
+                            "pre_token": pre_token,
+                            "detail": f"Введите 4-х значный код, отправленный на номер {user.username}",
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    return Response(
+                        {"detail": "Пользователь не подтвержден"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                return Response(
+                    {"detail": "Неверный пароль"}, status=status.HTTP_400_BAD_REQUEST
+                )
         except CustomUser.DoesNotExist:
             return Response(
                 {"detail": "Пользователь не найден"}, status=status.HTTP_404_NOT_FOUND
-            )
-        if user.is_verified:
-            send_phone_number_verification(user.id)
-            pre_token = generate_pre_2fa_token(user)
-            return Response(
-                {
-                    "pre_token": pre_token,
-                    "detail": f"Введите 4-х значный код, отправленный на номер {user.username}",
-                },
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {"detail": "Пользователь не подтвержден"},
-                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
