@@ -130,7 +130,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         schedule_data = {"title": f"{validated_data['first_name']}'s schedule"}
 
         schedule = EmployeeSchedule.objects.create(**schedule_data)
-        CustomUser.objects.create(schedule=schedule, **validated_data)
+        password = validated_data.pop('password')
+        user = CustomUser.objects.create(schedule=schedule, **validated_data)
+        user.set_password(password)
+        user.save()
 
         if "workdays" in self.initial_data:
             workdays_data = self.initial_data["workdays"]
