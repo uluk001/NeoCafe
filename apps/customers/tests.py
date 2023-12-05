@@ -7,183 +7,326 @@ from apps.accounts.models import CustomUser as User
 from apps.branches.models import Branch, Schedule
 from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
                                  Ingredient, Item, MinimalLimitReached)
-from utils.menu import (get_available_ingredients_with_quantity,
-                        get_items_that_can_be_made)
+from utils.menu import (
+    items_available_in_branch
+)
 
 
-# class TestMenu(TestCase):
-#     """
-#     Test menu functions
-#     """
+class TestMenu(TestCase):
+    """
+    Test menu functions
+    """
 
-#     @classmethod
-#     def setUpTestData(cls):
-#         cls.user = User.objects.create(
-#             first_name="test",
-#             last_name="user",
-#             phone_number="+996700000000",
-#             username="testuser",
-#             password="testpassword",
-#             is_active=True,
-#         )
-#         cls.schedule = Schedule.objects.create(
-#             title="test schedule",
-#         )
-#         cls.branch = Branch.objects.create(
-#             schedule=cls.schedule,
-#             name_of_shop="A branch where there's nothing",
-#             address="Test Address",
-#             phone_number="+996700000000",
-#             link_to_map="https://test.link",
-#         )
-#         cls.branch2 = Branch.objects.create(
-#             schedule=cls.schedule,
-#             name_of_shop="A branch where there's everything",
-#             address="Test Address",
-#             phone_number="+996700000000",
-#             link_to_map="https://test.link",
-#         )
-#         cls.branch3 = Branch.objects.create(
-#             schedule=cls.schedule,
-#             name_of_shop="A branch where there's something",
-#             address="Test Address",
-#             phone_number="+996700000000",
-#             link_to_map="https://test.link",
-#         )
-#         cls.ingredient = Ingredient.objects.create(
-#             name="Test Ingredient", measurement_unit="g"
-#         )
-#         cls.ingredient2 = Ingredient.objects.create(
-#             name="Test Ingredient 2", measurement_unit="g"
-#         )
-#         cls.ingredient3 = Ingredient.objects.create(
-#             name="Test Ingredient 3", measurement_unit="g"
-#         )
-#         cls.minimal_limits = [
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient, branch=cls.branch, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient2, branch=cls.branch, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient3, branch=cls.branch, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient, branch=cls.branch2, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient2, branch=cls.branch2, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient3, branch=cls.branch2, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient, branch=cls.branch3, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient2, branch=cls.branch3, quantity=100
-#             ),
-#             MinimalLimitReached.objects.create(
-#                 ingredient=cls.ingredient3, branch=cls.branch3, quantity=100
-#             ),
-#         ]
-#         cls.category = Category.objects.create(name="Test Category")
-#         cls.category2 = Category.objects.create(name="Test Category 2")
-#         cls.category3 = Category.objects.create(name="Test Category 3")
-#         cls.item = Item.objects.create(
-#             name="Test Item",
-#             category=cls.category,
-#             price=100,
-#             is_available=True,
-#         )
-#         cls.item2 = Item.objects.create(
-#             name="Test Item 2",
-#             category=cls.category2,
-#             price=100,
-#             is_available=True,
-#         )
-#         cls.item3 = Item.objects.create(
-#             name="Test Item 3",
-#             category=cls.category3,
-#             price=100,
-#             is_available=True,
-#         )
-#         cls.available_at_the_branch = [
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient, branch=cls.branch, quantity=100
-#             ),
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient2, branch=cls.branch, quantity=50
-#             ),
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient3, branch=cls.branch, quantity=0
-#             ),
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient, branch=cls.branch2, quantity=200
-#             ),
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient2, branch=cls.branch2, quantity=150
-#             ),
-#             AvailableAtTheBranch.objects.create(
-#                 ingredient=cls.ingredient3, branch=cls.branch2, quantity=100
-#             ),
-#         ]
-#         cls.compositions = [
-#             Composition.objects.create(
-#                 item=cls.item, ingredient=cls.ingredient, quantity=50
-#             ),
-#             Composition.objects.create(
-#                 item=cls.item, ingredient=cls.ingredient2, quantity=25
-#             ),
-#             Composition.objects.create(
-#                 item=cls.item2, ingredient=cls.ingredient, quantity=150
-#             ),
-#             Composition.objects.create(
-#                 item=cls.item2, ingredient=cls.ingredient2, quantity=75
-#             ),
-#             Composition.objects.create(
-#                 item=cls.item3, ingredient=cls.ingredient, quantity=300
-#             ),
-#             Composition.objects.create(
-#                 item=cls.item3, ingredient=cls.ingredient2, quantity=150
-#             ),
-#         ]
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Set up test data.
+        """
+        cls.schedeule = Schedule.objects.create(
+            title="Test schedule",
+            description="Test description"
+        )
+        cls.branch1 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Branch",
+            address="213 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 509‒01‒09‒05",
+            link_to_map="https://2gis.kg/osh/firm/70000001059486856"
+        )
+        cls.branch2 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Brio",
+            address="211 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 550‒83‒25‒95",
+            link_to_map="https://2gis.kg/osh/firm/70000001030716336?m=72.794608%2C40.52689%2F18"
+        )
+        cls.category1 = Category.objects.create(
+            name="Coffee",
+        )
+        cls.category2 = Category.objects.create(
+            name="Tea",
+        )
+        cls.category3 = Category.objects.create(
+            name="Juice",
+        )
+        cls.ingredients = [
+            Ingredient.objects.create(
+                name="Milk",
+                measurement_unit="ml"
+            ),
+            Ingredient.objects.create(
+                name="Water",
+                measurement_unit="ml"
+            ),
+            Ingredient.objects.create(
+                name="Sugar",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Coffee",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Tea",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Orange",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Apple",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Banana",
+                measurement_unit="g"
+            ),
+            Ingredient.objects.create(
+                name="Pineapple",
+                measurement_unit="g"
+            ),
+        ]
+        cls.item1 = Item.objects.create(
+            name="Americano",
+            description="Americano",
+            category=cls.category1,
+            price=50
+        )
+        cls.item2 = Item.objects.create(
+            name="Latte",
+            description="Latte",
+            category=cls.category1,
+            price=70
+        )
+        cls.item3 = Item.objects.create(
+            name="Green tea",
+            description="Green tea",
+            category=cls.category2,
+            price=60
+        )
+        cls.item4 = Item.objects.create(
+            name="Black tea",
+            description="Black tea",
+            category=cls.category2,
+            price=60
+        )
+        cls.item5 = Item.objects.create(
+            name="Orange juice",
+            description="Orange juice",
+            category=cls.category3,
+            price=80
+        )
+        cls.item6 = Item.objects.create(
+            name="Apple juice",
+            description="Apple juice",
+            category=cls.category3,
+            price=80
+        )
+        cls.item7 = Item.objects.create(
+            name="Banana juice",
+            description="Banana juice",
+            category=cls.category3,
+            price=80
+        )
+        cls.item8 = Item.objects.create(
+            name="Pineapple juice",
+            description="Pineapple juice",
+            category=cls.category3,
+            price=80
+        )
+        cls.compositions = [
+            Composition.objects.create(
+                item=cls.item1,
+                ingredient=cls.ingredients[0],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item1,
+                ingredient=cls.ingredients[1],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item1,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item2,
+                ingredient=cls.ingredients[0],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item2,
+                ingredient=cls.ingredients[1],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item2,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item3,
+                ingredient=cls.ingredients[1],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item3,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item4,
+                ingredient=cls.ingredients[1],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item4,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item5,
+                ingredient=cls.ingredients[5],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item5,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item6,
+                ingredient=cls.ingredients[6],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item6,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item7,
+                ingredient=cls.ingredients[7],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item7,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item8,
+                ingredient=cls.ingredients[8],
+                quantity=1
+            ),
+            Composition.objects.create(
+                item=cls.item8,
+                ingredient=cls.ingredients[2],
+                quantity=1
+            ),
+        ]
+        cls.available_at_the_branches = [
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[0],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[1],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[2],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[3],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[4],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[5],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[6],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[7],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ingredient=cls.ingredients[8],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[0],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[1],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[2],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[3],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[4],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[5],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[6],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls
+                .ingredients[7],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ingredient=cls.ingredients[8],
+                quantity=100
+            ),
+        ]
 
-#     def test_get_available_ingredients_with_quantity(self):
-#         """
-#         Test that get_available_ingredients_with_quantity returns the correct ingredients.
-#         """
-#         ingredients = get_available_ingredients_with_quantity(self.branch.id)
-#         self.assertEqual(len(ingredients), 3)
-#         self.assertEqual(ingredients[0]["ingredient"], self.ingredient)
-#         self.assertEqual(ingredients[0]["quantity"], 100)
-#         self.assertEqual(ingredients[1]["ingredient"], self.ingredient2)
-#         self.assertEqual(ingredients[1]["quantity"], 50)
-#         self.assertEqual(ingredients[2]["ingredient"], self.ingredient3)
-#         self.assertEqual(ingredients[2]["quantity"], 0)
+    def test_setUpData(self):
+        self.assertEqual(len(self.ingredients), 9)
+        self.assertEqual(len(self.compositions), 18)
+        self.assertEqual(len(self.available_at_the_branches), 18)
+        self.assertEqual(len(Item.objects.all()), 8)
 
-#     def test_get_items_that_can_be_made(self):
-#         """
-#         Test that get_items_that_can_be_made returns the correct items.
-#         """
-#         items = get_items_that_can_be_made(self.branch.id)
-#         self.assertEqual(len(items), 1)
-#         self.assertEqual(items[0], self.item)
-
-#         items = get_items_that_can_be_made(self.branch2.id)
-#         self.assertEqual(len(items), 2)
-#         self.assertIn(self.item, items)
-#         self.assertIn(self.item2, items)
-#         self.assertNotIn(self.item3, items)
-
-#     def test_get_items_that_cannot_be_made(self):
-#         """
-#         Test that get_items_that_can_be_made does not return items that cannot be made.
-#         """
-#         items = get_items_that_can_be_made(self.branch.id)
-#         self.assertNotIn(self.item2, items)
-#         self.assertNotIn(self.item3, items)
-
-#         items = get_items_that_can_be_made(self.branch2.id)
-#         self.assertNotIn(self.item3, items)
+    def test_items_available_in_branch(self):
+        branch_id = 3
+        items = items_available_in_branch(branch_id)

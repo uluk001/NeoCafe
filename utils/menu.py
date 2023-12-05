@@ -1,5 +1,6 @@
 import random
 from django.db import transaction
+from django.db.models import Case, IntegerField, Sum, When
 
 from apps.branches.models import Branch
 from apps.storage.models import (
@@ -56,20 +57,20 @@ def get_compatibles(item_id, branch_id):
     return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
 
 
-def check_if_items_can_be_made(item_id, branch_id, quantity):
-    """
-    Checks if the item can be made at the branch.
-    """
-    available_ingredients = get_available_ingredients_with_quantity(branch_id)
-    available_ingredient_ids = {ingredient['ingredient'].id: ingredient['quantity'] for ingredient in available_ingredients}
+# def check_if_items_can_be_made(item_id, branch_id, quantity):
+#     """
+#     Checks if the item can be made at the branch.
+#     """
+#     available_ingredients = get_available_ingredients_with_quantity(branch_id)
+#     available_ingredient_ids = {ingredient['ingredient'].id: ingredient['quantity'] for ingredient in available_ingredients}
     
-    item = Item.objects.prefetch_related('compositions__ingredient').filter(id=item_id).first()
+#     item = Item.objects.prefetch_related('compositions__ingredient').filter(id=item_id).first()
     
-    return all(
-        composition.quantity * quantity <= available_ingredient_ids.get(composition.ingredient.id, 0)
-        for composition in item.compositions.all()
-        if composition.ingredient.id in available_ingredient_ids
-    )
+#     return all(
+#         composition.quantity * quantity <= available_ingredient_ids.get(composition.ingredient.id, 0)
+#         for composition in item.compositions.all()
+#         if composition.ingredient.id in available_ingredient_ids
+#     )
 
 
 def get_available_ready_made_products_with_quantity(branch_id):
@@ -103,3 +104,31 @@ def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
             return "Updated successfully."
     except Exception as e:
         raise e
+
+
+def check_if_items_can_be_made(branch_id):
+    available_items = []
+
+    all_items = Item.objects.all()
+
+    for item in all_items:
+        compositions = Composition.objects.filter(item=item)
+
+        if compositions.exists():
+            item_available = True
+
+            for comp in compositions:
+                required_quantity = comp.quantity
+                available_quantity = AvailableAtTheBranch.objects.filter(
+                    branch_id=branch_id,
+                    ingredient=comp.ingredient
+                ).aggregate(total=Sum('quantity'))['total']
+
+                if not available_quantity or available_quantity < required_quantity:
+                    item_available = False
+                    break
+
+            if item_available:
+                available_items.append(item)
+
+    return available_items
