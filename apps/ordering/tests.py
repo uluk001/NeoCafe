@@ -153,7 +153,7 @@ class CreateOrderViewTest(TestCase):
             is_active=True,
             is_staff=True,
             is_superuser=True,
-            bonus_points=100,
+            bonus=100,
         )
         cls.user2 = CustomUser.objects.create(
             phone_number="+996777777777",
