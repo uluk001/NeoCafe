@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.branches.models import Branch
-from apps.storage.serializers import ItemSerializer, CategorySerializer
+from apps.storage.serializers import ItemSerializer
 from utils.menu import (
     get_compatibles,
     get_popular_items
@@ -99,31 +99,6 @@ class CompatibleItemsView(APIView):
         user = request.user
         items = get_compatibles(item_id, user.branch)
         serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class CategoryListView(ListAPIView):
-    """
-    View for getting categories.
-    """
-
-    permission_classes = [IsAuthenticated]
-    serializer_class = CategorySerializer
-    queryset = Item.objects.all()
-
-    @swagger_auto_schema(
-        operation_summary="Get categories",
-        operation_description="Use this endpoint to get categories.",
-        responses={
-            200: openapi.Response("Categories"),
-        },
-    )
-    def get(self, request):
-        """
-        Get categories.
-        """
-        queryset = Item.objects.all()
-        serializer = CategorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

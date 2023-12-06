@@ -7,7 +7,7 @@ from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
     PopularItemsView, CategoryListView
 )
-from apps.storage.views import ItemDetailView
+from apps.storage.views import ItemDetailView, ListCategoryView
 from apps.branches.views import BranchListView
 
 urlpatterns = [
@@ -21,7 +21,7 @@ urlpatterns = [
         CompatibleItemsView.as_view(),
     ),  # customers/compatible-items/<item_id>/
     path("popular-items/", PopularItemsView.as_view()),  # customers/popular-items/
-    path("categories/", CategoryListView.as_view()),  # customers/categories/
+    path("categories/", ListCategoryView.as_view()),  # customers/categories/
     path("change-branch/", ChangeBranchView.as_view()),  # customers/change-branch/
     path("branches/", BranchListView.as_view()),  # customers/branches/
 ]
