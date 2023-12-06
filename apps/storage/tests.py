@@ -80,7 +80,7 @@ class CategoryViewTest(TestCase):
         token = self.get_token("+996700000000")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
         response = self.client.get(path="/admin-panel/categories/")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_admin_category_list(self):
         """Test getting category list by admin user"""

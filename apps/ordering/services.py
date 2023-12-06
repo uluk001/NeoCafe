@@ -23,6 +23,8 @@ def create_order(user_id, spent_bonus_points, total_price, items):
         )
 
         order_items = []
+        if len(items) == 0:
+            return None
         for item in items:
             if not check_if_items_can_be_made(item_id=item['item'].id, branch_id=user.branch.id, quantity=item['quantity']):
                 return None

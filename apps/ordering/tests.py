@@ -7,6 +7,7 @@ from apps.storage.models import (
     Composition, Item, Category,
 )
 from apps.branches.models import Branch, Schedule
+from apps.ordering.models import Order, OrderItem
 from apps.accounts.models import CustomUser
 
 
@@ -288,13 +289,17 @@ class CreateOrderViewTest(TestCase):
         abdus_token = self.get_token(self.user2.phone_number)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {abdus_token}")
         data = {
-            "total_price": 2.00,
+            "total_price": 4.00,
             "spent_bonus_points": 0,
             "items": [
                 {
                     "item": self.item1.id,
                     "quantity": 1,
                 },
+                {
+                    "item": self.item2.id,
+                    "quantity": 2,
+                }
             ],
         }
         response = self.client.post(
@@ -303,8 +308,8 @@ class CreateOrderViewTest(TestCase):
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data["total_price"], '2.00')
+        self.assertEqual(response.data["total_price"], "4.00")
         self.assertEqual(response.data["spent_bonus_points"], 0)
-        self.assertEqual(len(response.data["items"]), 1)
+        self.assertEqual(len(response.data["items"]), 2)
         self.assertEqual(response.data["items"][0]["item"], self.item1.id)
-
+        self.assertEqual(OrderItem.objects.get(id=response.data["items"][0]["id"]).quantity, 1)

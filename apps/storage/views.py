@@ -135,7 +135,7 @@ class ListCategoryView(generics.ListAPIView):
 
     queryset = get_categories()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class UpdateCategoryView(generics.UpdateAPIView):
