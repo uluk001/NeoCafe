@@ -5,7 +5,7 @@ from django.urls import path
 
 from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
-    PopularItemsView, CategoryListView
+    PopularItemsView
 )
 from apps.storage.views import ItemDetailView, ListCategoryView
 from apps.branches.views import BranchListView
