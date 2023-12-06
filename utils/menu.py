@@ -83,21 +83,6 @@ def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
         raise e
 
 
-# def check_if_items_can_be_made(item_id, branch_id, quantity):
-#     required_ingredients = Composition.objects.filter(item_id=item_id)
-
-#     for ingredient in required_ingredients:
-#         available_quantity = AvailableAtTheBranch.objects.filter(
-#             branch_id=branch_id, 
-#             ingredient_id=ingredient.ingredient_id
-#         ).aggregate(
-#             total_available=F('quantity')
-#         )['total_available']
-
-#         if available_quantity is None or available_quantity < ingredient.quantity * quantity:
-#             return False
-
-#     return True
 def check_if_items_can_be_made(item_id, branch_id, quantity):
     required_ingredients = Composition.objects.filter(item_id=item_id)
 

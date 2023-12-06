@@ -58,6 +58,8 @@ class CreateOrderView(APIView):
                 items=items,
                 spent_bonus_points=spent_bonus_points,
             )
+            if not order:
+                return Response({"items": ["Not enough ingredients."]}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
         else:
