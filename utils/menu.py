@@ -39,8 +39,15 @@ def get_available_items(branch_id):
 def get_popular_items(branch_id):
     item_sales = OrderItem.objects.values('item_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
     best_selling_item_ids = [item['item_id'] for item in item_sales]
-    available_items_in_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id, item_id__in=best_selling_item_ids).values_list('item_id', flat=True)
-    top_selling_available_items = Item.objects.filter(id__in=available_items_in_branch).order_by('-order_items__total_quantity')[:5]
+
+    available_items = []
+    for item_id in best_selling_item_ids:
+        if check_if_items_can_be_made(item_id, branch_id, 1):
+            available_items.append(item_id)
+            if len(available_items) >= 5:
+                break
+
+    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:5]
 
     return top_selling_available_items
 
@@ -76,18 +83,33 @@ def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
         raise e
 
 
+# def check_if_items_can_be_made(item_id, branch_id, quantity):
+#     required_ingredients = Composition.objects.filter(item_id=item_id)
+
+#     for ingredient in required_ingredients:
+#         available_quantity = AvailableAtTheBranch.objects.filter(
+#             branch_id=branch_id, 
+#             ingredient_id=ingredient.ingredient_id
+#         ).aggregate(
+#             total_available=F('quantity')
+#         )['total_available']
+
+#         if available_quantity is None or available_quantity < ingredient.quantity * quantity:
+#             return False
+
+#     return True
 def check_if_items_can_be_made(item_id, branch_id, quantity):
     required_ingredients = Composition.objects.filter(item_id=item_id)
 
     for ingredient in required_ingredients:
-        available_quantity = AvailableAtTheBranch.objects.filter(
+        total_available = AvailableAtTheBranch.objects.filter(
             branch_id=branch_id, 
             ingredient_id=ingredient.ingredient_id
         ).aggregate(
-            total_available=F('quantity')
-        )['total_available']
+            total=Sum('quantity')
+        )['total']
 
-        if available_quantity is None or available_quantity < ingredient.quantity * quantity:
+        if total_available is None or total_available < ingredient.quantity * quantity:
             return False
 
     return True
