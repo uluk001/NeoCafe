@@ -5,10 +5,12 @@ from django.test import TestCase
 
 from apps.accounts.models import CustomUser as User
 from apps.branches.models import Branch, Schedule
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, MinimalLimitReached)
+from apps.storage.models import (
+    AvailableAtTheBranch, Category, Composition,
+    Ingredient, Item, MinimalLimitReached
+)
 from utils.menu import (
-    items_available_in_branch
+    get_available_items,
 )
 
 
@@ -38,6 +40,13 @@ class TestMenu(TestCase):
             name_of_shop="Brio",
             address="211 Kurmanzhana Datka St, Osh, Kyrgyzstan",
             phone_number="+996 550‒83‒25‒95",
+            link_to_map="https://2gis.kg/osh/firm/70000001030716336?m=72.794608%2C40.52689%2F18"
+        )
+        cls.branch3 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Istanbul",
+            address="232 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 555 83 25 95",
             link_to_map="https://2gis.kg/osh/firm/70000001030716336?m=72.794608%2C40.52689%2F18"
         )
         cls.category1 = Category.objects.create(
@@ -319,14 +328,54 @@ class TestMenu(TestCase):
                 ingredient=cls.ingredients[8],
                 quantity=100
             ),
+            # Branch 3
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ingredient=cls.ingredients[5],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ingredient=cls.ingredients[6],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ingredient=cls.ingredients[7],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ingredient=cls.ingredients[8],
+                quantity=100
+            ),
+            AvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ingredient=cls.ingredients[2],
+                quantity=100
+            ),
         ]
 
     def test_setUpData(self):
         self.assertEqual(len(self.ingredients), 9)
         self.assertEqual(len(self.compositions), 18)
-        self.assertEqual(len(self.available_at_the_branches), 18)
+        self.assertEqual(len(self.available_at_the_branches), 23)
         self.assertEqual(len(Item.objects.all()), 8)
 
-    def test_items_available_in_branch(self):
-        branch_id = 3
-        items = items_available_in_branch(branch_id)
+    def test_get_available_items_for_first_branch(self):
+        branch_id = self.branch1.id
+        items_that_can_be_made = get_available_items(branch_id)
+        self.assertEqual(len(items_that_can_be_made), 8)
+        self.assertIn(self.item1, items_that_can_be_made)
+        self.assertIn(self.item2, items_that_can_be_made)
+        self.assertIn(self.item3, items_that_can_be_made)
+        self.assertIn(self.item4, items_that_can_be_made)
+        self.assertIn(self.item5, items_that_can_be_made)
+        self.assertIn(self.item6, items_that_can_be_made)
+        self.assertIn(self.item7, items_that_can_be_made)
+        self.assertIn(self.item8, items_that_can_be_made)
+
+    def test_get_available_items_for_third_branch(self):
+        branch_id = self.branch3.id
+        items_that_can_be_made = get_available_items(branch_id)
+        self.assertEqual(len(items_that_can_be_made), 4)

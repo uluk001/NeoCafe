@@ -1,86 +1,56 @@
 import random
 from django.db import transaction
-from django.db.models import Case, IntegerField, Sum, When
+from django.db.models import Prefetch, Sum, F
+from django.core.exceptions import ObjectDoesNotExist
 
 from apps.branches.models import Branch
 from apps.storage.models import (
     AvailableAtTheBranch, Composition,
     Ingredient, Item, ReadyMadeProduct
 )
+from apps.ordering.models import OrderItem
 
 
-def get_available_ingredients_with_quantity(branch_id):
-    """
-    Returns list of available ingredients with their quantities at the branch.
-    """
-    return [
-        {"ingredient": item.ingredient, "quantity": item.quantity}
-        for item in AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ingredient")
-    ]
+def get_available_items(branch_id):
+    available_ingredients = AvailableAtTheBranch.objects.filter(branch_id=branch_id)
+    ingredient_quantities = {ingredient.ingredient_id: ingredient.quantity for ingredient in available_ingredients}
 
+    compositions_prefetch = Prefetch('compositions', queryset=Composition.objects.all())
+    all_items = Item.objects.prefetch_related(compositions_prefetch).all()
 
-def get_items_that_can_be_made(branch_id):
-    """
-    Returns list of items that can be made at the branch.
-    """
-    available_ingredients = get_available_ingredients_with_quantity(branch_id)
-    available_ingredient_ids = [ingredient['ingredient'].id for ingredient in available_ingredients]
+    available_items = []
+    for item in all_items:
+        can_make = True
+        for composition in item.compositions.all():
+            required_ingredient_id = composition.ingredient_id
+            required_quantity = composition.quantity
 
-    items = Item.objects.prefetch_related('compositions__ingredient').filter(compositions__ingredient__id__in=available_ingredient_ids)
+            if required_ingredient_id not in ingredient_quantities or \
+               ingredient_quantities[required_ingredient_id] < required_quantity:
+                can_make = False
+                break
 
-    items_that_can_be_made = []
-    for item in items:
-        can_be_made = all(
-            composition.quantity <= available_ingredients[composition.ingredient.id]['quantity']
-            for composition in item.compositions.all()
-            if composition.ingredient.id in available_ingredient_ids
-        )
-        if can_be_made:
-            items_that_can_be_made.append(item)
+        if can_make:
+            available_items.append(item)
 
-    return items_that_can_be_made
+    return available_items
 
 
 def get_popular_items(branch_id):
-    """
-    Returns list of popular items at the branch.
-    """
-    items_that_can_be_made = get_items_that_can_be_made(branch_id)
-    return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
+    item_sales = OrderItem.objects.values('item_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    best_selling_item_ids = [item['item_id'] for item in item_sales]
+    available_items_in_branch = AvailableAtTheBranch.objects.filter(branch_id=branch_id, item_id__in=best_selling_item_ids).values_list('item_id', flat=True)
+    top_selling_available_items = Item.objects.filter(id__in=available_items_in_branch).order_by('-order_items__total_quantity')[:5]
+
+    return top_selling_available_items
 
 
 def get_compatibles(item_id, branch_id):
     """
     Returns list of compatible items with the item at the branch.
     """
-    items_that_can_be_made = get_items_that_can_be_made(branch_id)
+    items_that_can_be_made = get_available_items(branch_id)
     return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
-
-
-# def check_if_items_can_be_made(item_id, branch_id, quantity):
-#     """
-#     Checks if the item can be made at the branch.
-#     """
-#     available_ingredients = get_available_ingredients_with_quantity(branch_id)
-#     available_ingredient_ids = {ingredient['ingredient'].id: ingredient['quantity'] for ingredient in available_ingredients}
-    
-#     item = Item.objects.prefetch_related('compositions__ingredient').filter(id=item_id).first()
-    
-#     return all(
-#         composition.quantity * quantity <= available_ingredient_ids.get(composition.ingredient.id, 0)
-#         for composition in item.compositions.all()
-#         if composition.ingredient.id in available_ingredient_ids
-#     )
-
-
-def get_available_ready_made_products_with_quantity(branch_id):
-    """
-    Returns list of available ready made products with their quantities at the branch.
-    """
-    return [
-        {"ready_made_product": item.ready_made_product, "quantity": item.quantity}
-        for item in AvailableAtTheBranch.objects.filter(branch_id=branch_id).select_related("ready_made_product")
-    ]
 
 
 def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
@@ -106,29 +76,18 @@ def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
         raise e
 
 
-def check_if_items_can_be_made(branch_id):
-    available_items = []
+def check_if_items_can_be_made(item_id, branch_id, quantity):
+    required_ingredients = Composition.objects.filter(item_id=item_id)
 
-    all_items = Item.objects.all()
+    for ingredient in required_ingredients:
+        available_quantity = AvailableAtTheBranch.objects.filter(
+            branch_id=branch_id, 
+            ingredient_id=ingredient.ingredient_id
+        ).aggregate(
+            total_available=F('quantity')
+        )['total_available']
 
-    for item in all_items:
-        compositions = Composition.objects.filter(item=item)
+        if available_quantity is None or available_quantity < ingredient.quantity * quantity:
+            return False
 
-        if compositions.exists():
-            item_available = True
-
-            for comp in compositions:
-                required_quantity = comp.quantity
-                available_quantity = AvailableAtTheBranch.objects.filter(
-                    branch_id=branch_id,
-                    ingredient=comp.ingredient
-                ).aggregate(total=Sum('quantity'))['total']
-
-                if not available_quantity or available_quantity < required_quantity:
-                    item_available = False
-                    break
-
-            if item_available:
-                available_items.append(item)
-
-    return available_items
+    return True

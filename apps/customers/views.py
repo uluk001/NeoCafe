@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from apps.branches.models import Branch
 from apps.storage.serializers import ItemSerializer, CategorySerializer
 from utils.menu import (
-    get_compatibles, get_items_that_can_be_made,
+    get_compatibles,
     get_popular_items
 )
 

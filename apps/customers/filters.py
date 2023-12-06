@@ -1,5 +1,5 @@
 from utils.menu import (
-    get_items_that_can_be_made,
+    get_available_items,
 )
 from apps.storage.models import Item
 from django_filters import rest_framework as filters
@@ -22,5 +22,5 @@ class MenuFilter(filters.FilterSet):
 
     def filter_can_be_made(self, queryset, name, value):
         if value:
-            return queryset.filter(id__in=get_items_that_can_be_made(self.request.user.branch.id))
+            return queryset.filter(id__in=get_available_items(self.request.user.branch.id))
         return queryset
