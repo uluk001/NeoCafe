@@ -27,9 +27,11 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
-
 ALLOWED_HOSTS = ["muha-backender.org.kg", "164.92.160.185", "127.0.0.1"]
 
+# Algolia settings.
+ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID')
+ALGOLIA_API_KEY = config('ALGOLIA_API_KEY')
 
 # Application definition
 
@@ -220,3 +222,9 @@ SIMPLE_JWT = {
 CSRF_TRUSTED_ORIGINS = ["https://muha-backender.org.kg"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Algolia settings.
+ALGOLIA = {
+    'APPLICATION_ID': ALGOLIA_APPLICATION_ID,
+    'API_KEY': ALGOLIA_API_KEY,
+}

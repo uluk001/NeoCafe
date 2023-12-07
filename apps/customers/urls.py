@@ -5,7 +5,7 @@ from django.urls import path
 
 from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
-    PopularItemsView
+    PopularItemsView, ItemSearchView
 )
 from apps.storage.views import ItemDetailView, ListCategoryView
 from apps.branches.views import BranchListView
@@ -24,4 +24,5 @@ urlpatterns = [
     path("categories/", ListCategoryView.as_view()),  # customers/categories/
     path("change-branch/", ChangeBranchView.as_view()),  # customers/change-branch/
     path("branches/", BranchListView.as_view()),  # customers/branches/
+    path("search/", ItemSearchView.as_view()),  # customers/search/
 ]

@@ -14,14 +14,15 @@ from rest_framework.views import APIView
 from apps.branches.models import Branch
 from apps.storage.serializers import ItemSerializer
 from utils.menu import (
-    get_compatibles,
-    get_popular_items
+    get_compatibles, item_search,
+    get_popular_items,
 )
 
 from .serializers import ChangeBranchSerializer
 from .services import get_branch_name_and_id_list
 from .filters import MenuFilter
 from apps.storage.models import Item
+from apps.storage.algolia_setup import index_items
 
 
 # =============================================================
@@ -100,6 +101,17 @@ class CompatibleItemsView(APIView):
         items = get_compatibles(item_id, user.branch)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ItemSearchView(APIView):
+    """
+    View to search items.
+    """
+
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        results = item_search(query)
+        return Response(results)
 
 
 # =============================================================

@@ -3,12 +3,19 @@ from django.db import transaction
 from django.db.models import Prefetch, Sum, F
 from django.core.exceptions import ObjectDoesNotExist
 
+from algoliasearch.search_client import SearchClient
+from django.conf import settings
+
 from apps.branches.models import Branch
 from apps.storage.models import (
     AvailableAtTheBranch, Composition,
     Ingredient, Item, ReadyMadeProduct
 )
 from apps.ordering.models import OrderItem
+
+
+client = SearchClient.create(settings.ALGOLIA_APPLICATION_ID, settings.ALGOLIA_API_KEY)
+index = client.init_index('items')
 
 
 def get_available_items(branch_id):
@@ -98,3 +105,11 @@ def check_if_items_can_be_made(item_id, branch_id, quantity):
             return False
 
     return True
+
+
+def item_search(query):
+    """
+    Returns list of items that match the query.
+    """
+    results = index.search(query)
+    return results['hits']
