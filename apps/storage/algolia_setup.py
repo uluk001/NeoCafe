@@ -20,10 +20,10 @@ def index_items():
                 'objectID': item.id,
                 'name': item.name,
                 'price': item.price,
+                'description': item.description,
                 'category': item.category,
                 'is_available': item.is_available,
                 'ingredients': [],
-                'ready_made_products': [],
             }
             for composition in item.compositions.all():
                 ingredient = composition.ingredient
