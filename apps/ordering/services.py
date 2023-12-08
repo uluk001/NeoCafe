@@ -11,7 +11,7 @@ from utils.menu import (
 )
 
 
-def create_order(user_id, spent_bonus_points, total_price, items):
+def create_order(user_id, spent_bonus_points, total_price, items, in_an_institution):
     """
     Creates order.
     """
@@ -20,6 +20,8 @@ def create_order(user_id, spent_bonus_points, total_price, items):
         order = Order.objects.create(
             customer=user,
             total_price=total_price,
+            spent_bonus_points=spent_bonus_points,
+            in_an_institution=in_an_institution,
         )
 
         order_items = []

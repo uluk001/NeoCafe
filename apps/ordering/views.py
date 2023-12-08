@@ -4,7 +4,6 @@ Module for ordering views.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.storage.models import Item
 from apps.ordering.serializers import OrderSerializer
 from apps.ordering.services import create_order
 from drf_yasg import openapi
@@ -24,6 +23,7 @@ class CreateOrderView(APIView):
             properties={
                 'total_price': openapi.Schema(type=openapi.TYPE_NUMBER, description='Total price of the order'),
                 'spent_bonus_points': openapi.Schema(type=openapi.TYPE_INTEGER, description='Bonus points spent on the order'),
+                'in_an_institution': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the order is made in an institution'),
                 'items': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Schema(
@@ -49,6 +49,7 @@ class CreateOrderView(APIView):
             total_price = serializer.validated_data['total_price']
             spent_bonus_points = serializer.validated_data['spent_bonus_points']
             items = serializer.validated_data['items']
+            in_an_institution = serializer.validated_data['in_an_institution']
             if not items:
                 return Response({"items": ["This field must not be empty."]}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -57,6 +58,7 @@ class CreateOrderView(APIView):
                 total_price=total_price,
                 items=items,
                 spent_bonus_points=spent_bonus_points,
+                in_an_institution=in_an_institution,
             )
             if not order:
                 return Response({"items": ["Not enough ingredients."]}, status=status.HTTP_400_BAD_REQUEST)

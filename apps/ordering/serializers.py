@@ -27,5 +27,6 @@ class OrderSerializer(serializers.ModelSerializer):
             'id',
             'total_price',
             'spent_bonus_points',
+            'in_an_institution',
             'items',
             ]

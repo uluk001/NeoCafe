@@ -56,6 +56,10 @@ class Order(models.Model):
         default=0,
         verbose_name="Spent bonus points",
     )
+    in_an_institution = models.BooleanField(
+        default=False,
+        verbose_name="In an institution",
+    )
 
     def __str__(self):
         return f"Order #{self.id} by {self.customer}"

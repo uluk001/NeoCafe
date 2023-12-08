@@ -291,6 +291,7 @@ class CreateOrderViewTest(TestCase):
         data = {
             "total_price": 4.00,
             "spent_bonus_points": 0,
+            "in_an_institution": False,
             "items": [
                 {
                     "item": self.item1.id,
