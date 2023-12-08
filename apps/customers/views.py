@@ -117,8 +117,7 @@ class ItemSearchView(APIView):
         user = request.user
         query = request.GET.get("query")
         items = item_search(query, user.branch.id)
-        response = {"items": items}
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(items, status=status.HTTP_200_OK)
 
 
 # =============================================================

@@ -49,10 +49,10 @@ def index_items():
         return None
 
 
-# @receiver(post_save, sender=Item)
-# def update_algolia(sender, instance, created, **kwargs):
-#     """
-#     Update Algolia index after saving an Item.
-#     """
-#     if created:
-#         index_items()
+@receiver(post_save, sender=Item)
+def update_algolia(sender, instance, created, **kwargs):
+    """
+    Update Algolia index after saving an Item.
+    """
+    if created:
+        index_items()
