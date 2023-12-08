@@ -1112,6 +1112,7 @@ class ReadyMadeProductViewTest(TestCase):
             name="Test Ready Made Product 2"
         )
         cls.schedule = Schedule.objects.create(title="Test Schedule")
+        cls.category = Category.objects.create(name="Test Category")
         cls.branch = Branch.objects.create(
             schedule=cls.schedule,
             name_of_shop="Test Branch",
@@ -1150,7 +1151,7 @@ class ReadyMadeProductViewTest(TestCase):
         )
         return response.data["access"]
 
-    def test_create_ready_made_product_by_user(self):
+    def test_create_ready_made_product(self):
         """Test creating ready made product by usual user"""
         token = self.get_token("+996700000001")
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
@@ -1158,6 +1159,9 @@ class ReadyMadeProductViewTest(TestCase):
             path="/admin-panel/ready-made-products/create/",
             data={
                 "name": "New Ready Made Product",
+                "price": 100,
+                "description": "Test Description 001",
+                "category": self.category.id,
                 "available_at_branches": [
                     {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
                 ],
@@ -1169,6 +1173,7 @@ class ReadyMadeProductViewTest(TestCase):
         self.assertTrue(
             ReadyMadeProduct.objects.filter(name="New Ready Made Product").exists()
         )
+        self.assertEqual(ReadyMadeProduct.objects.filter(description="Test Description 001").count(), 1)
         self.assertEqual(
             ReadyMadeProductAvailableAtTheBranch.objects.filter(
                 ready_made_product__name="New Ready Made Product"
@@ -1183,4 +1188,39 @@ class ReadyMadeProductViewTest(TestCase):
         )
         self.assertEqual(
             MinimalLimitReached.objects.filter(branch=self.branch).count(), 3
+        )
+
+    def test_update_ready_made_product(self):
+        """Test updating ready made product by usual user"""
+        token = self.get_token("+996700000001")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + token)
+        data = {
+            "name": "Updated Ready Made Product",
+            "price": 100,
+            "description": "Test Description 001",
+            "category": self.category.id,
+            "available_at_branches": [
+                {"branch": self.branch.id, "quantity": 100000, "minimal_limit": 100}
+            ],
+        }
+        response = self.client.put(
+            path=f"/admin-panel/ready-made-products/update/{self.ready_made_product.id}/",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            ReadyMadeProduct.objects.filter(name="Updated Ready Made Product").exists()
+        )
+        self.assertEqual(
+            ReadyMadeProductAvailableAtTheBranch.objects.filter(
+                ready_made_product__name="Updated Ready Made Product"
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            MinimalLimitReached.objects.filter(
+                ready_made_product__name="Updated Ready Made Product"
+            ).count(),
+            1,
         )

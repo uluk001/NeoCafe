@@ -100,16 +100,18 @@ def check_if_items_can_be_made(item_id, branch_id, quantity):
         ).aggregate(
             total=Sum('quantity')
         )['total']
-
         if total_available is None or total_available < ingredient.quantity * quantity:
             return False
 
     return True
 
 
-def item_search(query):
+def item_search(query, branch_id):
     """
     Returns list of items that match the query.
     """
-    results = index.search(query)
-    return results['hits']
+    items = index.search(query, {
+        'filters': f'branch_id:{branch_id}'
+    })['hits']
+
+    return items

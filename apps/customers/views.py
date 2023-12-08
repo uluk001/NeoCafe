@@ -108,10 +108,17 @@ class ItemSearchView(APIView):
     View to search items.
     """
 
-    def get(self, request):
-        query = request.query_params.get('query', '')
-        results = item_search(query)
-        return Response(results)
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        """
+        Search items.
+        """
+        user = request.user
+        query = request.GET.get("query")
+        items = item_search(query, user.branch.id)
+        response = {"items": items}
+        return Response(response, status=status.HTTP_200_OK)
 
 
 # =============================================================

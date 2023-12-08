@@ -658,6 +658,10 @@ class CreateReadyMadeProductSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "available_at_branches",
+            "description",
+            "price",
+            "image",
+            "category",
         ]
 
     def create(self, validated_data):
@@ -709,8 +713,12 @@ class ReadyMadeProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "date_of_arrival",
             "available_at_branches",
+            "description",
+            "price",
+            "image",
+            "category",
+            "date_of_arrival",
         ]
 
     def to_representation(self, instance):
@@ -740,4 +748,18 @@ class UpdateReadyMadeProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "description",
+            "price",
+            "image",
+            "category",
         ]
+
+
+class PutImageToReadyMadeProductSerializer(serializers.ModelSerializer):
+    """
+    PutImageToReadyMadeProduct serializer for ReadyMadeProductImageUpdateView
+    """
+
+    class Meta:
+        model = ReadyMadeProduct
+        fields = ["image"]

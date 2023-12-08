@@ -1,24 +1,27 @@
 from django.urls import path
 
-from apps.storage.views import (CreateCategoryView, CreateEmployeeView,
-                                CreateIngredientView, CreateItemView,
-                                DestroyCategoryView, EmployeeDestroyView,
-                                EmployeeDetailView, EmployeeListView,
-                                EmployeeUpdateView, IngredientDestroyView,
-                                IngredientDetailView, IngredientListView,
-                                IngredientQuantityInBranchView,
-                                IngredientQuantityUpdateView,
-                                InredientDestroyFromBranchView,
-                                ItemDestroyView, ItemDetailView, ItemListView,
-                                ItemUpdateView, ListCategoryView,
-                                LowStockIngredientBranchView,
-                                PutImageToItemView, ReadyMadeProductCreateView,
-                                ReadyMadeProductDestroyView,
-                                ReadyMadeProductDetailView,
-                                ReadyMadeProductListView,
-                                ReadyMadeProductQuantityUpdateView,
-                                ReadyMadeProductUpdateView, ScheduleUpdateView,
-                                UpdateCategoryView, UpdateIngredientView)
+from apps.storage.views import (
+    CreateCategoryView, CreateEmployeeView,
+    CreateIngredientView, CreateItemView,
+    DestroyCategoryView, EmployeeDestroyView,
+    EmployeeDetailView, EmployeeListView,
+    EmployeeUpdateView, IngredientDestroyView,
+    IngredientDetailView, IngredientListView,
+    IngredientQuantityInBranchView,
+    IngredientQuantityUpdateView,
+    InredientDestroyFromBranchView,
+    ItemDestroyView, ItemDetailView, ItemListView,
+    ItemUpdateView, ListCategoryView,
+    LowStockIngredientBranchView,
+    PutImageToItemView, ReadyMadeProductCreateView,
+    ReadyMadeProductDestroyView,
+    ReadyMadeProductDetailView,
+    ReadyMadeProductListView,
+    ReadyMadeProductQuantityUpdateView,
+    ReadyMadeProductUpdateView, ScheduleUpdateView,
+    UpdateCategoryView, UpdateIngredientView,
+    PutImageToReadyMadeProductView,
+)
 
 # Category URLs
 urlpatterns = [
@@ -85,4 +88,8 @@ urlpatterns += [
         ReadyMadeProductQuantityUpdateView.as_view(),
     ),
     path("ready-made-products/<int:pk>/", ReadyMadeProductDetailView.as_view()),
+    path(
+        "ready-made-products/put-image-to-item/<int:pk>/",
+        PutImageToReadyMadeProductView.as_view(),
+    ),
 ]

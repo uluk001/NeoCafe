@@ -22,14 +22,14 @@ from apps.storage.serializers import (
     PutImageToItemSerializer, ReadyMadeProductAvailableAtTheBranchSerializer,
     ReadyMadeProductSerializer, ScheduleUpdateSerializer,
     UpdateIngredientSerializer, UpdateItemSerializer,
-    UpdateReadyMadeProductSerializer
+    UpdateReadyMadeProductSerializer, PutImageToReadyMadeProductSerializer,
 )
 from apps.storage.services import (
     delete_employee_schedule_by_employee,
     get_a_list_of_ingredients_and_their_quantities_in_specific_branch,
     get_available_at_the_branch, get_categories, get_employees,
     get_ingrediants, get_items, get_low_stock_ingredients_in_branch,
-    get_ready_made_products, get_specific_category, get_specific_employee
+    get_ready_made_products, get_specific_category, get_specific_employee,
 )
 
 
@@ -1129,6 +1129,18 @@ class ReadyMadeProductCreateView(generics.CreateAPIView):
             "name": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Product name"
             ),
+            "image": openapi.Schema(
+                type=openapi.TYPE_FILE, description="Product image"
+            ),
+            "price": openapi.Schema(
+                type=openapi.TYPE_NUMBER, description="Product price"
+            ),
+            "description": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Product description"
+            ),
+            "category": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Category ID"
+            ),
             "available_at_branches": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
@@ -1216,3 +1228,33 @@ class ReadyMadeProductQuantityUpdateView(generics.UpdateAPIView):
     serializer_class = ReadyMadeProductAvailableAtTheBranchSerializer
     permission_classes = [permissions.IsAdminUser]
     lookup_field = "pk"
+
+
+class PutImageToReadyMadeProductView(generics.UpdateAPIView):
+    """
+    Class for putting image to ready made product by item id.
+    """
+
+    queryset = get_ready_made_products()
+    serializer_class = PutImageToReadyMadeProductSerializer
+    lookup_field = "pk"
+
+    manual_request_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "image": openapi.Schema(type=openapi.TYPE_FILE),
+        },
+    )
+
+    @swagger_auto_schema(
+        operation_summary="Put image to ready made product",
+        operation_description="Use this method to put an image to ready made product",
+        request_body=manual_request_schema,
+        responses={
+            200: openapi.Response(
+                "Image added successfully", PutImageToReadyMadeProductSerializer
+            )
+        },
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)

@@ -3,10 +3,12 @@ Module for admin panel configuration for storage app.
 """
 from django.contrib import admin
 
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, MinimalLimitReached,
-                                 ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch, Category, Composition,
+    Ingredient, Item, MinimalLimitReached,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch
+)
 
 
 class MinimalLimitReachedInline(admin.TabularInline):
@@ -62,7 +64,7 @@ class ReadyMadeProductAdmin(admin.ModelAdmin):
     ReadyMadeProduct admin panel configuration.
     """
 
-    list_display = ("name",)
+    list_display = ("name", "category", "description", "price", "image")
     search_fields = ("name",)
     inlines = [MinimalLimitReachedInline]
 
