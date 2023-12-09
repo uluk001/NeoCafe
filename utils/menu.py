@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Prefetch, Sum, F
+from django.db.models import Prefetch, Sum, Count
 
 from algoliasearch.search_client import SearchClient
 from django.conf import settings
@@ -109,23 +109,29 @@ def get_popular_items(branch_id):
     return top_selling_available_items
 
 
-def get_compatibles(item_id, branch_id):
+def get_compatibles(item_id):
     """
-    Returns list of compatible items with the item at the branch.
-    """
-    item = Item.objects.get(id=item_id)
-    compatible_items = []
-    for composition in item.compositions.all():
-        available_ingredient = AvailableAtTheBranch.objects.get(
-            branch_id=branch_id,
-            ingredient_id=composition.ingredient_id
-        )
-        compatible_items.append({
-            'item': Item.objects.get(id=composition.item_id),
-            'quantity': available_ingredient.quantity // composition.quantity
-        })
+    Function to get items that are often ordered with the given item.
 
-    return compatible_items
+    Args:
+    item_id (int): The ID of the item for which complementary items are sought.
+
+    Returns:
+    list: A list of up to three items most frequently ordered with the given item.
+    """
+    order_ids = OrderItem.objects.filter(item_id=item_id).values_list('order_id', flat=True)
+
+    complementary_items = OrderItem.objects.filter(
+        order__id__in=order_ids
+    ).exclude(
+        item_id=item_id
+    ).values('item_id').annotate(
+        count=Count('item_id')
+    ).order_by('-count')[:3]
+
+    items = Item.objects.filter(id__in=[item['item_id'] for item in complementary_items])
+    return items
+
 
 
 def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):

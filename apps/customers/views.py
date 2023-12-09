@@ -95,7 +95,7 @@ class CompatibleItemsView(APIView):
         Get compatible items.
         """
         user = request.user
-        items = get_compatibles(item_id, user.branch)
+        items = get_compatibles(item_id)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
