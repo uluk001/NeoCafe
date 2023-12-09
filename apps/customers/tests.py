@@ -7,10 +7,12 @@ from apps.accounts.models import CustomUser as User
 from apps.branches.models import Branch, Schedule
 from apps.storage.models import (
     AvailableAtTheBranch, Category, Composition,
-    Ingredient, Item, MinimalLimitReached
+    Ingredient, Item, MinimalLimitReached,
+    ReadyMadeProduct, ReadyMadeProductAvailableAtTheBranch,
 )
 from utils.menu import (
     get_available_items,
+    get_available_ready_made_products,
 )
 
 
@@ -379,3 +381,167 @@ class TestMenu(TestCase):
         branch_id = self.branch3.id
         items_that_can_be_made = get_available_items(branch_id)
         self.assertEqual(len(items_that_can_be_made), 4)
+
+
+# Test for ready made products
+class TestReadyMadeProducts(TestCase):
+    """
+    Test ready made products functions
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Set up test data.
+        """
+        cls.schedeule = Schedule.objects.create(
+            title="Test schedule",
+            description="Test description"
+        )
+        cls.branch1 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Branch",
+            address="213 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 509‒01‒09‒05",
+            link_to_map="https://2gis.kg/osh/firm/70000001059486856"
+        )
+        cls.branch2 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Brio",
+            address="211 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 550‒83‒25‒95",
+            link_to_map="https://2gis.kg/osh/firm/70000001030716336?m=72.794608%2C40.52689%2F18"
+        )
+        cls.branch3 = Branch.objects.create(
+            schedule=cls.schedeule,
+            name_of_shop="Istanbul",
+            address="232 Kurmanzhana Datka St, Osh, Kyrgyzstan",
+            phone_number="+996 555 83 25 95",
+            link_to_map="https://2gis.kg/osh/firm/70000001030716336?m=72.794608%2C40.52689%2F18"
+        )
+        cls.category1 = Category.objects.create(
+            name="Выпечка",
+        )
+        cls.category2 = Category.objects.create(
+            name="Салаты",
+        )
+        cls.category3 = Category.objects.create(
+            name="Напитки",
+        )
+        cls.ready_made_products = [
+            ReadyMadeProduct.objects.create(
+                name="Круассан",
+                description="Круассан",
+                category=cls.category1,
+                price=50
+            ),
+            ReadyMadeProduct.objects.create(
+                name="Салат Цезарь",
+                description="Салат Цезарь",
+                category=cls.category2,
+                price=70
+            ),
+            ReadyMadeProduct.objects.create(
+                name="Салат Греческий",
+                description="Салат Греческий",
+                category=cls.category2,
+                price=60
+            ),
+            ReadyMadeProduct.objects.create(
+                name="Кока-кола",
+                description="Кока-кола",
+                category=cls.category3,
+                price=80
+            ),
+            ReadyMadeProduct.objects.create(
+                name="Фанта",
+                description="Фанта",
+                category=cls.category3,
+                price=80
+            ),
+        ]
+        cls.availables = [
+            # Branch 1
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_products[0],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_products[1],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_products[2],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_products[3],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_products[4],
+                quantity=100
+            ),
+            # Branch 2
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_products[0],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_products[1],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_products[2],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_products[3],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_products[4],
+                quantity=100
+            ),
+            # Branch 3
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ready_made_product=cls.ready_made_products[0],
+                quantity=100
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch3,
+                ready_made_product=cls.ready_made_products[1],
+                quantity=100
+            ),
+        ]
+
+    def test_setUpData(self):
+        self.assertEqual(len(self.ready_made_products), 5)
+        self.assertEqual(len(self.availables), 12)
+        self.assertEqual(len(ReadyMadeProduct.objects.all()), 5)
+
+    def test_get_available_ready_made_products_for_first_branch(self):
+        branch_id = self.branch1.id
+        ready_made_products_that_can_be_made = get_available_ready_made_products(branch_id)
+        self.assertEqual(len(ready_made_products_that_can_be_made), 5)
+        self.assertIn([product for product in ready_made_products_that_can_be_made if product['id'] == self.ready_made_products[0].id][0], ready_made_products_that_can_be_made)
+        self.assertIn([product for product in ready_made_products_that_can_be_made if product['id'] == self.ready_made_products[1].id][0], ready_made_products_that_can_be_made)
+        self.assertIn([product for product in ready_made_products_that_can_be_made if product['id'] == self.ready_made_products[2].id][0], ready_made_products_that_can_be_made)
+        self.assertIn([product for product in ready_made_products_that_can_be_made if product['id'] == self.ready_made_products[3].id][0], ready_made_products_that_can_be_made)
+        self.assertIn([product for product in ready_made_products_that_can_be_made if product['id'] == self.ready_made_products[4].id][0], ready_made_products_that_can_be_made)
+
+    def test_get_available_ready_made_products_for_third_branch(self):
+        branch_id = self.branch3.id
+        ready_made_products_that_can_be_made = get_available_ready_made_products(branch_id)
+        self.assertEqual(len(ready_made_products_that_can_be_made), 2)

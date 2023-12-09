@@ -153,7 +153,7 @@ class ReadyMadeProductAvailableAtTheBranch(models.Model):
     """
 
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    ready_made_product = models.ForeignKey(ReadyMadeProduct, on_delete=models.CASCADE)
+    ready_made_product = models.ForeignKey(ReadyMadeProduct, related_name='availables', on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):

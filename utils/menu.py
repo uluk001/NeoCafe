@@ -9,7 +9,8 @@ from django.conf import settings
 from apps.branches.models import Branch
 from apps.storage.models import (
     AvailableAtTheBranch, Composition,
-    Ingredient, Item, ReadyMadeProduct
+    Ingredient, Item, ReadyMadeProduct,
+    MinimalLimitReached, ReadyMadeProductAvailableAtTheBranch,
 )
 from apps.ordering.models import OrderItem
 
@@ -43,6 +44,47 @@ def get_available_items(branch_id):
     return available_items
 
 
+def get_available_ready_made_products(branch_id):
+    """
+    Returns list of available ready made products at the branch.
+    """
+    available_ready_made_products = ReadyMadeProduct.objects.filter(
+        availables__branch_id=branch_id,
+        availables__quantity__gt=0
+    )
+
+    ready_made_products = []
+    for product in available_ready_made_products:
+        ready_made_products.append({
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": str(product.price),
+            "image": product.image.url if product.image else None,
+            "compositions": [],
+            "is_available": True,
+            "category": {
+                "id": product.category.id,
+                "name": product.category.name,
+                "image": product.category.image.url if product.category.image else None,
+            }
+        })
+
+    return ready_made_products
+
+
+def combine_items_and_ready_made_products(branch_id):
+    """
+    Combines items and ready made products into one list.
+    """
+    available_items = get_available_items(branch_id)
+    available_ready_made_products = get_available_ready_made_products(branch_id)
+
+    combined_list = list(available_items) + list(available_ready_made_products)
+
+    return combined_list
+
+
 def get_popular_items(branch_id):
     item_sales = OrderItem.objects.values('item_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
     best_selling_item_ids = [item['item_id'] for item in item_sales]
@@ -63,8 +105,19 @@ def get_compatibles(item_id, branch_id):
     """
     Returns list of compatible items with the item at the branch.
     """
-    items_that_can_be_made = get_available_items(branch_id)
-    return random.sample(items_that_can_be_made, min(len(items_that_can_be_made), 5))
+    item = Item.objects.get(id=item_id)
+    compatible_items = []
+    for composition in item.compositions.all():
+        available_ingredient = AvailableAtTheBranch.objects.get(
+            branch_id=branch_id,
+            ingredient_id=composition.ingredient_id
+        )
+        compatible_items.append({
+            'item': Item.objects.get(id=composition.item_id),
+            'quantity': available_ingredient.quantity // composition.quantity
+        })
+
+    return compatible_items
 
 
 def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):

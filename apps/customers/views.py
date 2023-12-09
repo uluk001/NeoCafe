@@ -15,14 +15,12 @@ from apps.branches.models import Branch
 from apps.storage.serializers import ItemSerializer
 from utils.menu import (
     get_compatibles, item_search,
-    get_popular_items,
+    get_popular_items, combine_items_and_ready_made_products,
 )
 
 from .serializers import ChangeBranchSerializer
-from .services import get_branch_name_and_id_list
 from .filters import MenuFilter
 from apps.storage.models import Item
-from apps.storage.algolia_setup import index_items
 
 
 # =============================================================
@@ -49,9 +47,8 @@ class Menu(APIView):
         Get items that can be made.
         """
         user = request.user
-        items = Item.objects.all()
-        filtered_items = self.filterset_class(request.GET, queryset=items)
-        serializer = ItemSerializer(filtered_items.qs, many=True)
+        items = combine_items_and_ready_made_products(user.branch.id)
+        serializer = ItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
