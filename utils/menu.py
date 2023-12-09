@@ -1,12 +1,9 @@
-import random
 from django.db import transaction
 from django.db.models import Prefetch, Sum, F
-from django.core.exceptions import ObjectDoesNotExist
 
 from algoliasearch.search_client import SearchClient
 from django.conf import settings
 
-from apps.branches.models import Branch
 from apps.storage.models import (
     AvailableAtTheBranch, Composition,
     Ingredient, Item, ReadyMadeProduct,

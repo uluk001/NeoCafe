@@ -5,7 +5,6 @@ from django.db import transaction
 
 from apps.ordering.models import Order, OrderItem
 from apps.accounts.models import CustomUser
-from apps.storage.algolia_setup import index_items
 from utils.menu import (
     check_if_items_can_be_made,
     update_ingredient_stock_on_cooking,
@@ -30,7 +29,6 @@ def create_order(user_id, spent_bonus_points, total_price, items, in_an_institut
             return None
         for item in items:
             if not check_if_items_can_be_made(item_id=item['item'].id, branch_id=user.branch.id, quantity=item['quantity']):
-                index_items()
                 return None
             order_item = OrderItem(
                 order=order,
