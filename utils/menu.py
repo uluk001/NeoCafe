@@ -81,14 +81,18 @@ def check_if_ready_made_product_can_be_made(product_id, branch_id, quantity):
     ).exists()
 
 
-def combine_items_and_ready_made_products(branch_id):
+def combine_items_and_ready_made_products(branch_id, category_id=None):
     """
     Combines items and ready made products into one list.
     """
     available_items = get_available_items(branch_id)
     available_ready_made_products = get_available_ready_made_products(branch_id)
+    if category_id:
+        available_items = [item for item in available_items if item.category.id == int(category_id)]
+        print(available_items)
+        available_ready_made_products = [product for product in available_ready_made_products if product['category']['id'] == int(category_id)]
 
-    combined_list = list(available_items) + list(available_ready_made_products)
+    combined_list = list(available_items) + available_ready_made_products
 
     return combined_list
 

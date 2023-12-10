@@ -31,10 +31,6 @@ class Menu(APIView):
     View for getting items that can be made.
     """
 
-    permission_classes = [IsAuthenticated]
-    filter_backends = [SearchFilter, OrderingFilter]
-    filterset_class = MenuFilter
-
     @swagger_auto_schema(
         operation_summary="Get menu",
         operation_description="Use this endpoint to get items that can be made.",
@@ -47,7 +43,8 @@ class Menu(APIView):
         Get items that can be made.
         """
         user = request.user
-        items = combine_items_and_ready_made_products(user.branch.id)
+        category_id = request.GET.get("category_id")
+        items = combine_items_and_ready_made_products(user.branch.id, category_id)
         serializer = ItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
