@@ -105,10 +105,10 @@ def get_popular_items(branch_id):
     for item_id in best_selling_item_ids:
         if check_if_items_can_be_made(item_id, branch_id, 1):
             available_items.append(item_id)
-            if len(available_items) >= 5:
+            if len(available_items) >= 3:
                 break
 
-    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:5]
+    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:3]
 
     return top_selling_available_items
 
