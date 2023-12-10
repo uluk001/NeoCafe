@@ -12,14 +12,14 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'item', 'quantity',]
+        fields = ['id', 'item', 'ready_made_product', 'quantity']
 
 
 class OrderSerializer(serializers.ModelSerializer):
     """
     Serializer for Order model.
     """
-    items = OrderItemSerializer(many=True, required=False)
+    items = OrderItemSerializer(many=True, required=False, allow_empty=True)
 
     class Meta:
         model = Order

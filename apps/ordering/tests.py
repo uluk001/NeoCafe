@@ -5,6 +5,8 @@ from utils.menu import update_ingredient_stock_on_cooking
 from apps.storage.models import (
     Ingredient, AvailableAtTheBranch,
     Composition, Item, Category,
+    ReadyMadeProductAvailableAtTheBranch,
+    ReadyMadeProduct,
 )
 from apps.branches.models import Branch, Schedule
 from apps.ordering.models import Order, OrderItem
@@ -228,6 +230,40 @@ class CreateOrderViewTest(TestCase):
             description="Test description",
             price=1.00
         )
+        cls.ready_made_product1 = ReadyMadeProduct.objects.create(
+            name="Кгуассоо",
+            category=cls.category,
+            description="Test description",
+            price=2.00
+        )
+        cls.ready_made_product2 = ReadyMadeProduct.objects.create(
+            name="Хлеб",
+            category=cls.category,
+            description="Test description",
+            price=1.00
+        )
+        cls.available_ready_made_products = [
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_product1,
+                quantity=1000
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch1,
+                ready_made_product=cls.ready_made_product2,
+                quantity=1000
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_product1,
+                quantity=200
+            ),
+            ReadyMadeProductAvailableAtTheBranch.objects.create(
+                branch=cls.branch2,
+                ready_made_product=cls.ready_made_product2,
+                quantity=200
+            ),
+        ]
         cls.compositions = [
             Composition.objects.create(
                 item=cls.item1,
@@ -294,23 +330,28 @@ class CreateOrderViewTest(TestCase):
             "in_an_institution": False,
             "items": [
                 {
+                    "ready_made_product": None,
                     "item": self.item1.id,
                     "quantity": 1,
                 },
                 {
-                    "item": self.item2.id,
+                    "ready_made_product": self.ready_made_product2.id,
+                    "item": None,
                     "quantity": 2,
-                }
-            ],
+                },
+            ]
         }
         response = self.client.post(
             path="/ordering/create-order/",
-            data=json.dumps(data),
-            content_type='application/json',
+            data=data,
+            format='json',
         )
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data["total_price"], "4.00")
-        self.assertEqual(response.data["spent_bonus_points"], 0)
-        self.assertEqual(len(response.data["items"]), 2)
-        self.assertEqual(response.data["items"][0]["item"], self.item1.id)
-        self.assertEqual(OrderItem.objects.get(id=response.data["items"][0]["id"]).quantity, 1)
+        self.assertEqual(Order.objects.count(), 1)
+        self.assertEqual(OrderItem.objects.count(), 2)
+        self.assertEqual(Order.objects.get().total_price, 4.00)
+        self.assertEqual(Order.objects.get().spent_bonus_points, 0)
+        self.assertEqual(Order.objects.get().in_an_institution, False)
+        self.assertEqual(Order.objects.get().customer, self.user2)
+        self.assertEqual(OrderItem.objects.get(id=1).order, Order.objects.get())
+        self.assertEqual(ReadyMadeProductAvailableAtTheBranch.objects.get(id=2).quantity, 998)

@@ -75,12 +75,12 @@ def get_available_ready_made_products(branch_id):
     return ready_made_products
 
 
-def check_if_ready_made_product_can_be_made(product_id, branch_id, quantity):
+def check_if_ready_made_product_can_be_made(ready_made_product, branch_id, quantity):
     """
     Checks if a ready made product can be made.
     """
     return ReadyMadeProductAvailableAtTheBranch.objects.filter(
-        product_id=product_id,
+        ready_made_product=ready_made_product,
         branch_id=branch_id,
         quantity__gte=quantity
     ).exists()
@@ -93,8 +93,8 @@ def combine_items_and_ready_made_products(branch_id, category_id=None):
     available_items = get_available_items(branch_id)
     available_ready_made_products = get_available_ready_made_products(branch_id)
     if category_id:
-        available_items = [item for item in available_items if item['category']['id'] == int(category_id)]
         print(available_items)
+        available_items = [item for item in available_items if item['category'].id == int(category_id)]
         available_ready_made_products = [product for product in available_ready_made_products if product['category']['id'] == int(category_id)]
 
     combined_list = available_items + available_ready_made_products
@@ -161,6 +161,23 @@ def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
                 ingredients_to_update.append(available_ingredient)
 
             AvailableAtTheBranch.objects.bulk_update(ingredients_to_update, ['quantity'])
+            return "Updated successfully."
+    except Exception as e:
+        raise e
+
+
+def update_ready_made_product_stock_on_cooking(ready_made_product, branch_id, quantity):
+    """
+    Updates ready made product stock on cooking.
+    """
+    try:
+        with transaction.atomic():
+            available_product = ReadyMadeProductAvailableAtTheBranch.objects.get(
+                branch_id=branch_id,
+                ready_made_product=ready_made_product
+            )
+            available_product.quantity -= quantity
+            available_product.save()
             return "Updated successfully."
     except Exception as e:
         raise e

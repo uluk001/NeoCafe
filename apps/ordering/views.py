@@ -30,6 +30,7 @@ class CreateOrderView(APIView):
                         type=openapi.TYPE_OBJECT,
                         properties={
                             'item': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the item'),
+                            'ready_made_product': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the ready made product'),
                             'quantity': openapi.Schema(type=openapi.TYPE_INTEGER, description='Quantity of the item'),
                         }
                     ),
@@ -46,6 +47,7 @@ class CreateOrderView(APIView):
         """
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
+            print(serializer.validated_data)
             total_price = serializer.validated_data['total_price']
             spent_bonus_points = serializer.validated_data['spent_bonus_points']
             items = serializer.validated_data['items']

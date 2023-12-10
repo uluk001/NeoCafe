@@ -17,6 +17,14 @@ class Order(models.Model):
         ("cancelled", "Cancelled"),
         ("completed", "Completed"),
     ]
+    branch = models.ForeignKey(
+        "branches.Branch",
+        on_delete=models.CASCADE,
+        related_name="orders",
+        verbose_name="Branch",
+        null=True,
+        blank=True,
+    )
     customer = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -85,6 +93,16 @@ class OrderItem(models.Model):
         on_delete=models.CASCADE,
         related_name="order_items",
         verbose_name="Item",
+        null=True,
+        blank=True,
+    )
+    ready_made_product = models.ForeignKey(
+        "storage.ReadyMadeProduct",
+        on_delete=models.CASCADE,
+        related_name="order_items",
+        verbose_name="Ready made product",
+        null=True,
+        blank=True,
     )
     quantity = models.PositiveIntegerField(
         default=1,
