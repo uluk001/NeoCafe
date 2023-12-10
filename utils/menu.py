@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import Prefetch, Sum, Count
 
+from django.forms.models import model_to_dict
 from algoliasearch.search_client import SearchClient
 from django.conf import settings
 
@@ -36,7 +37,10 @@ def get_available_items(branch_id):
                 break
 
         if can_make:
-            available_items.append(item)
+            item_dict = model_to_dict(item)
+            item_dict['is_ready_made_product'] = False
+            item_dict['category'] = item.category
+            available_items.append(item_dict)
 
     return available_items
 
@@ -60,6 +64,7 @@ def get_available_ready_made_products(branch_id):
             "image": product.image.url if product.image else None,
             "compositions": [],
             "is_available": True,
+            "is_ready_made_product": True,
             "category": {
                 "id": product.category.id,
                 "name": product.category.name,
@@ -88,11 +93,11 @@ def combine_items_and_ready_made_products(branch_id, category_id=None):
     available_items = get_available_items(branch_id)
     available_ready_made_products = get_available_ready_made_products(branch_id)
     if category_id:
-        available_items = [item for item in available_items if item.category.id == int(category_id)]
+        available_items = [item for item in available_items if item['category']['id'] == int(category_id)]
         print(available_items)
         available_ready_made_products = [product for product in available_ready_made_products if product['category']['id'] == int(category_id)]
 
-    combined_list = list(available_items) + available_ready_made_products
+    combined_list = available_items + available_ready_made_products
 
     return combined_list
 

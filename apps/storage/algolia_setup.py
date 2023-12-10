@@ -35,7 +35,8 @@ def index_menu():
                         'category_name': item.category.name,
                         'description': item.description,
                         'branch_id': branch.id,
-                        'ingredients': [{'name': ingredient.name} for ingredient in item.compositions.all()]
+                        'ingredients': [{'name': ingredient.name} for ingredient in item.compositions.all()],
+                        'is_ready_made_product': False,
                     }
                     items_to_index.append(item_to_index)
 
@@ -50,7 +51,8 @@ def index_menu():
                         'category_name': product.category.name,
                         'description': product.description,
                         'branch_id': branch.id,
-                        'ingredients': []
+                        'ingredients': [],
+                        'is_ready_made_product': True,
                     }
                     items_to_index.append(item_to_index)
 

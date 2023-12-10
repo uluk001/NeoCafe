@@ -368,14 +368,15 @@ class TestMenu(TestCase):
         branch_id = self.branch1.id
         items_that_can_be_made = get_available_items(branch_id)
         self.assertEqual(len(items_that_can_be_made), 8)
-        self.assertIn(self.item1, items_that_can_be_made)
-        self.assertIn(self.item2, items_that_can_be_made)
-        self.assertIn(self.item3, items_that_can_be_made)
-        self.assertIn(self.item4, items_that_can_be_made)
-        self.assertIn(self.item5, items_that_can_be_made)
-        self.assertIn(self.item6, items_that_can_be_made)
-        self.assertIn(self.item7, items_that_can_be_made)
-        self.assertIn(self.item8, items_that_can_be_made)
+        item_ids = [item['id'] for item in items_that_can_be_made]
+        self.assertIn(self.item1.id, item_ids)
+        self.assertIn(self.item2.id, item_ids)
+        self.assertIn(self.item3.id, item_ids)
+        self.assertIn(self.item4.id, item_ids)
+        self.assertIn(self.item5.id, item_ids)
+        self.assertIn(self.item6.id, item_ids)
+        self.assertIn(self.item7.id, item_ids)
+        self.assertIn(self.item8.id, item_ids)
 
     def test_get_available_items_for_third_branch(self):
         branch_id = self.branch3.id

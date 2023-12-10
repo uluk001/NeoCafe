@@ -9,12 +9,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.branches.models import Branch
-from apps.storage.serializers import ItemSerializer
 from utils.menu import (
     get_compatibles, item_search,
     get_popular_items, combine_items_and_ready_made_products,
+    check_if_items_can_be_made, check_if_ready_made_product_can_be_made,
 )
-from .serializers import ChangeBranchSerializer
+from apps.storage.serializers import ItemSerializer
+from .serializers import (
+    ChangeBranchSerializer, ExtendedItemSerializer,
+    CheckIfItemCanBeMadeSerializer,
+)
 
 
 # =============================================================
@@ -39,7 +43,7 @@ class Menu(APIView):
         user = request.user
         category_id = request.GET.get("category_id")
         items = combine_items_and_ready_made_products(user.branch.id, category_id)
-        serializer = ItemSerializer(items, many=True)
+        serializer = ExtendedItemSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -106,6 +110,78 @@ class ItemSearchView(APIView):
         query = request.GET.get("query")
         items = item_search(query, user.branch.id)
         return Response(items, status=status.HTTP_200_OK)
+
+
+class CheckIfItemCanBeMadeView(APIView):
+    """
+    View for checking if item can be made.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CheckIfItemCanBeMadeSerializer
+
+    @swagger_auto_schema(
+        operation_summary="Check if item can be made",
+        operation_description="Use this endpoint to check if item can be made.",
+        responses={
+            200: openapi.Response("Item can be made"),
+            400: openapi.Response("Item can't be made"),
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                "item_id",
+                openapi.IN_QUERY,
+                description="Item id",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "quantity",
+                openapi.IN_QUERY,
+                description="Quantity",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "is_ready_made_product",
+                openapi.IN_QUERY,
+                description="Is ready made product",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+    )
+    def post(self, request, format=None):
+        """
+        Check if item can be made.
+        """
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            item_id = serializer.validated_data.get("item_id")
+            quantity = serializer.validated_data.get("quantity")
+            is_ready_made_product = serializer.validated_data.get(
+                "is_ready_made_product"
+            )
+            user = request.user
+            if is_ready_made_product:
+                if check_if_ready_made_product_can_be_made(
+                    item_id, user.branch.id, quantity
+                ):
+                    return Response(
+                        {"message": "Item can be made."},
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(
+                    {"message": "Item can't be made."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if check_if_items_can_be_made(item_id, user.branch.id, quantity):
+                return Response(
+                    {"message": "Item can be made."},
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {"message": "Item can't be made."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # =============================================================
