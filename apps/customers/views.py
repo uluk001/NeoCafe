@@ -1,11 +1,8 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import (
-    CreateAPIView, DestroyAPIView,
-    GenericAPIView, ListAPIView,
-    RetrieveAPIView, UpdateAPIView
+from rest_framework.filters import (
+    OrderingFilter, SearchFilter,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,10 +14,7 @@ from utils.menu import (
     get_compatibles, item_search,
     get_popular_items, combine_items_and_ready_made_products,
 )
-
 from .serializers import ChangeBranchSerializer
-from .filters import MenuFilter
-from apps.storage.models import Item
 
 
 # =============================================================
@@ -145,3 +139,28 @@ class ChangeBranchView(APIView):
                 {"message": "Branch changed successfully."}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# =============================================================
+# Profile Views
+# =============================================================
+class MyBonusesView(APIView):
+    """
+    View for getting user's bonuses.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get bonuses",
+        operation_description="Use this endpoint to get user's bonuses.",
+        responses={
+            200: openapi.Response("User's bonuses"),
+        },
+    )
+    def get(self, request, format=None):
+        """
+        Get user's bonuses.
+        """
+        user = request.user
+        return Response({"bonus": user.bonus}, status=status.HTTP_200_OK)
