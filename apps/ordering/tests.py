@@ -330,13 +330,13 @@ class CreateOrderViewTest(TestCase):
             "in_an_institution": False,
             "items": [
                 {
-                    "ready_made_product": None,
-                    "item": self.item1.id,
+                    "is_ready_made_product": False,
+                    "item_id": self.item1.id,
                     "quantity": 1,
                 },
                 {
-                    "ready_made_product": self.ready_made_product2.id,
-                    "item": None,
+                    "is_ready_made_product": True,
+                    "item_id": self.ready_made_product2.id,
                     "quantity": 2,
                 },
             ]

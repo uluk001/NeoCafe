@@ -30,7 +30,7 @@ class CreateOrderView(APIView):
                         type=openapi.TYPE_OBJECT,
                         properties={
                             'item': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the item'),
-                            'ready_made_product': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the ready made product'),
+                            'is_ready_made_product': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the item is a ready-made product'),
                             'quantity': openapi.Schema(type=openapi.TYPE_INTEGER, description='Quantity of the item'),
                         }
                     ),
@@ -45,26 +45,15 @@ class CreateOrderView(APIView):
         """
         Creates order.
         """
-        serializer = OrderSerializer(data=request.data)
-        if serializer.is_valid():
-            print(serializer.validated_data)
-            total_price = serializer.validated_data['total_price']
-            spent_bonus_points = serializer.validated_data['spent_bonus_points']
-            items = serializer.validated_data['items']
-            in_an_institution = serializer.validated_data['in_an_institution']
-            if not items:
-                return Response({"items": ["This field must not be empty."]}, status=status.HTTP_400_BAD_REQUEST)
-
-            order = create_order(
-                user_id=request.user.id,
-                total_price=total_price,
-                items=items,
-                spent_bonus_points=spent_bonus_points,
-                in_an_institution=in_an_institution,
-            )
-            if not order:
-                return Response({"items": ["Not enough ingredients."]}, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            OrderSerializer(
+                create_order(
+                    user_id=request.user.id,
+                    total_price=request.data['total_price'],
+                    items=request.data['items'],
+                    spent_bonus_points=request.data['spent_bonus_points'],
+                    in_an_institution=request.data['in_an_institution'],
+                )
+            ).data,
+            status=status.HTTP_201_CREATED,
+        )
