@@ -61,7 +61,7 @@ def get_available_ready_made_products(branch_id):
             "name": product.name,
             "description": product.description,
             "price": str(product.price),
-            "image": product.image.url if product.image else None,
+            "image": product.image if product.image else None,
             "compositions": [],
             "is_available": True,
             "is_ready_made_product": True,
@@ -93,7 +93,6 @@ def combine_items_and_ready_made_products(branch_id, category_id=None):
     available_items = get_available_items(branch_id)
     available_ready_made_products = get_available_ready_made_products(branch_id)
     if category_id:
-        print(available_items)
         available_items = [item for item in available_items if item['category'].id == int(category_id)]
         available_ready_made_products = [product for product in available_ready_made_products if product['category']['id'] == int(category_id)]
 
