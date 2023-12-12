@@ -27,14 +27,13 @@ def create_order(user_id, spent_bonus_points, total_price, items, in_an_institut
             in_an_institution=in_an_institution,
             branch=user.branch,
         )
-        new_bonus_points = int(total_price * 0.5)
+        new_bonus_points = int(total_price * 0.05)
         user.bonus += new_bonus_points - spent_bonus_points
         user.save()
 
         order_items = []
         if len(items) == 0:
             return None
-        print(items)
         for item in items:
             is_ready_made_product = item['is_ready_made_product']
             item_id = item['item_id']

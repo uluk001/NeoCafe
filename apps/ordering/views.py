@@ -29,7 +29,7 @@ class CreateOrderView(APIView):
                     items=openapi.Schema(
                         type=openapi.TYPE_OBJECT,
                         properties={
-                            'item': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the item'),
+                            'item_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the item'),
                             'is_ready_made_product': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the item is a ready-made product'),
                             'quantity': openapi.Schema(type=openapi.TYPE_INTEGER, description='Quantity of the item'),
                         }
