@@ -6,6 +6,7 @@ from django.db import transaction
 from apps.ordering.models import Order, OrderItem
 from apps.storage.models import ReadyMadeProduct, Item
 from apps.accounts.models import CustomUser
+from apps.notices.services import create_notification_for_barista
 from utils.menu import (
     check_if_items_can_be_made,
     update_ingredient_stock_on_cooking,
@@ -62,4 +63,38 @@ def create_order(user_id, spent_bonus_points, total_price, items, in_an_institut
                     )
                     update_ingredient_stock_on_cooking(item_instance, user.branch, item['quantity'])
         OrderItem.objects.bulk_create(order_items)
+        order_items_names_and_quantities = get_order_items_names_and_quantities(order_items)
+        order_items_names_and_quantities_str = ', '.join(
+            [f"{order_item['name']} х{order_item['quantity']}" for order_item in order_items_names_and_quantities]
+        )
+        create_notification_for_barista(
+            order_id=order.id,
+            title=f'Заказ №{order.id} в заведении' if in_an_institution else f'Заказ №{order.id} на вынос',
+            body=order_items_names_and_quantities_str,
+            branch=user.branch,
+        )
         return order
+
+
+def get_order_items_names_and_quantities(order_items):
+    """
+    Returns order items names and quantities.
+    """
+    order_items_names_and_quantities = []
+    for order_item in order_items:
+        if order_item.ready_made_product:
+            order_items_names_and_quantities.append(
+                {
+                    'name': order_item.ready_made_product.name,
+                    'quantity': order_item.quantity,
+                }
+            )
+        else:
+            order_items_names_and_quantities.append(
+                {
+                    'name': order_item.item.name,
+                    'quantity': order_item.quantity,
+                }
+            )
+    return order_items_names_and_quantities
+
