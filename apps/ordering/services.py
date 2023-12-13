@@ -6,7 +6,7 @@ from django.db import transaction
 from apps.ordering.models import Order, OrderItem
 from apps.storage.models import ReadyMadeProduct, Item
 from apps.accounts.models import CustomUser
-from apps.notices.services import create_notification_for_barista
+from apps.notices.services import create_notification_for_barista, create_notification_for_client
 from utils.menu import (
     check_if_items_can_be_made,
     update_ingredient_stock_on_cooking,
@@ -67,11 +67,15 @@ def create_order(user_id, spent_bonus_points, total_price, items, in_an_institut
         order_items_names_and_quantities_str = ', '.join(
             [f"{order_item['name']} х{order_item['quantity']}" for order_item in order_items_names_and_quantities]
         )
+        create_notification_for_client(
+            client_id=user.id,
+            title=f'Ваш заказ №{order.id} принят' if in_an_institution else f'Ваш заказ №{order.id} принят',
+            body=order_items_names_and_quantities_str,
+        )
         create_notification_for_barista(
             order_id=order.id,
-            title=f'Заказ №{order.id} в заведении' if in_an_institution else f'Заказ №{order.id} на вынос',
+            title=f'Ваш заказ оформлен',
             body=order_items_names_and_quantities_str,
-            branch=user.branch,
         )
         return order
 
