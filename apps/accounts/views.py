@@ -702,7 +702,6 @@ class WaiterTemporaryLoginView(generics.GenericAPIView):
 
 class ResendCodeWithPreTokenView(generics.GenericAPIView):
     serializer_class = serializers.Serializer
-    permission_classes = [permissions.IsAuthenticated]
     manual_response_schema = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={

@@ -33,6 +33,10 @@ ALLOWED_HOSTS = ["muha-backender.org.kg", "164.92.160.185", "127.0.0.1"]
 ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID')
 ALGOLIA_API_KEY = config('ALGOLIA_API_KEY')
 
+# Redis settings.
+REDIS_HOST = config("REDIS_HOST")
+REDIS_PORT = config("REDIS_PORT")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -123,7 +127,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
     },
 }
