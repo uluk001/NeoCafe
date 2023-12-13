@@ -6,7 +6,7 @@ from django.urls import path
 from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
     PopularItemsView, ItemSearchView, MyBonusesView,
-    CheckIfItemCanBeMadeView,
+    CheckIfItemCanBeMadeView, MyOrdersView, MyOrderDetailView
 )
 from apps.storage.views import (
     ItemDetailView, ListCategoryView,
@@ -33,4 +33,9 @@ urlpatterns = [
         "check-if-item-can-be-made/",
         CheckIfItemCanBeMadeView.as_view(),
     ),  # customers/check-if-item-can-be-made/
+    path("my-orders/", MyOrdersView.as_view()),  # customers/my-orders/
+    path(
+        "my-orders/<int:pk>/",
+        MyOrderDetailView.as_view(),
+    ),  # customers/my-orders/<order_id>/
 ]

@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.filters import (
     OrderingFilter, SearchFilter,
 )
@@ -8,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.ordering.models import Order
 from apps.branches.models import Branch
 from utils.menu import (
     get_compatibles, item_search,
@@ -17,7 +19,9 @@ from utils.menu import (
 from apps.storage.serializers import ItemSerializer
 from .serializers import (
     ChangeBranchSerializer, ExtendedItemSerializer,
-    CheckIfItemCanBeMadeSerializer,
+    CheckIfItemCanBeMadeSerializer, OrderSerializer,
+    OrderItemSerializer, UserOrdersSerializer,
+
 )
 
 
@@ -240,3 +244,35 @@ class MyBonusesView(APIView):
         """
         user = request.user
         return Response({"bonus": user.bonus}, status=status.HTTP_200_OK)
+
+
+# =============================================================
+# Order Views
+# =============================================================
+class MyOrdersView(APIView):
+    """
+    View for getting user's orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get orders",
+        operation_description="Use this endpoint to get user's orders.",
+        responses={
+            200: openapi.Response("User's orders"),
+        },
+    )
+    def get(self, request, format=None):
+        """
+        Get user's orders.
+        """
+        user = request.user
+        serializer = UserOrdersSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MyOrderDetailView(RetrieveAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Order.objects.all()
