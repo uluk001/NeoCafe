@@ -17,6 +17,16 @@ class BaristaNotification(models.Model):
     def __str__(self):
         return self.title
 
+class ClentNotification(models.Model):
+    client_id = models.CharField(max_length=255)
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.client_id} - {self.title}'
+
+
 @receiver(post_save, sender=BaristaNotification)
 def send_notification(sender, instance, created, **kwargs):
     if created:
@@ -39,3 +49,26 @@ def send_notification(sender, instance, **kwargs):
             'type': 'get_notification',
         }
     )
+
+@receiver(post_delete, sender=ClentNotification)
+def send_notification(sender, instance, **kwargs):
+    time.sleep(1)
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'user_{instance.client_id}',
+        {
+            'type': 'get_notification',
+        }
+    )
+
+@receiver(post_save, sender=ClentNotification)
+def send_notification(sender, instance, created, **kwargs):
+    if created:
+        time.sleep(3)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'user_{instance.client_id}',
+            {
+                'type': 'get_notification',
+            }
+        )

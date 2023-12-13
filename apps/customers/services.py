@@ -26,8 +26,6 @@ def get_my_opened_orders_data(user):
         "branch__image",
         "created_at",
     )
-    for order in orders:
-        order.order_items = ', '.join([item.item.name for item in order.items.all()])
 
     return orders
 
@@ -45,8 +43,6 @@ def get_my_closed_orders_data(user):
         "branch__image",
         "created_at",
     )
-    for order in orders:
-        order.order_items = ', '.join([item.item.name for item in order.items.all()])
 
     return orders
 

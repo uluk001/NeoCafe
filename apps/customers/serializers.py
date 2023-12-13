@@ -76,13 +76,20 @@ class OrderSerializer(serializers.ModelSerializer):
 class MyOrdersListSerializer(serializers.ModelSerializer):
     branch_name = serializers.CharField(source='branch.name_of_shop')
     created_at = serializers.SerializerMethodField()
+    branch__image = serializers.ImageField(source='branch.image')
+    order_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'branch_name', 'created_at', 'total_price', 'spent_bonus_points']
+        fields = ['id', 'branch_name', 'created_at', 'total_price', 'spent_bonus_points', 'branch__image', 'order_items']
 
     def get_created_at(self, obj):
         return obj.created_at.strftime("%d.%m.%Y")
+
+    def get_order_items(self, obj):
+        items = ', '.join([item.item.name for item in obj.items.all() if item.item is not None])
+        ready_made_products = ', '.join([item.ready_made_product.name for item in obj.items.all() if item.ready_made_product is not None])
+        return items + ready_made_products
 
 
 class UserOrdersSerializer(serializers.Serializer):
