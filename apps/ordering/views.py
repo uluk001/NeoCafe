@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from apps.ordering.serializers import OrderSerializer
-from apps.ordering.services import create_order
+from apps.ordering.services import create_order, reorder
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -45,15 +45,60 @@ class CreateOrderView(APIView):
         """
         Creates order.
         """
-        return Response(
-            OrderSerializer(
-                create_order(
+        order = create_order(
                     user_id=request.user.id,
                     total_price=request.data['total_price'],
                     items=request.data['items'],
                     spent_bonus_points=request.data['spent_bonus_points'],
                     in_an_institution=request.data['in_an_institution'],
                 )
-            ).data,
-            status=status.HTTP_201_CREATED,
-        )
+        if order:
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {
+                    'message': 'Not enough stock.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class ReorderView(APIView):
+    """
+    View for reordering.
+    """
+
+    @swagger_auto_schema(
+        operation_summary="Reorders order.",
+        operation_description="User must be authenticated.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='order_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='ID of the order',
+            ),
+        ],
+    )
+
+    def get(self, request):
+        """
+        Reorders order.
+        """
+        order = reorder(request.query_params['order_id'])
+        if order:
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {
+                    'message': 'Извините, но в данный момент невозможно сделать заказ. В связи нехваткой ингредиентов.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )

@@ -6,7 +6,8 @@ from django.urls import path
 from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
     PopularItemsView, ItemSearchView, MyBonusesView,
-    CheckIfItemCanBeMadeView, MyOrdersView, MyOrderDetailView
+    CheckIfItemCanBeMadeView, MyOrdersView, MyOrderDetailView,
+    MyIdView,
 )
 from apps.storage.views import (
     ItemDetailView, ListCategoryView,
@@ -29,6 +30,7 @@ urlpatterns = [
     path("branches/", BranchListView.as_view()),  # customers/branches/
     path("search/", ItemSearchView.as_view()),  # customers/search/
     path("my-bonus/", MyBonusesView.as_view()),  # customers/my-bonus/
+    path("my-id/", MyIdView.as_view()),  # customers/my-id/
     path(
         "check-if-item-can-be-made/",
         CheckIfItemCanBeMadeView.as_view(),

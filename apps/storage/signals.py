@@ -19,7 +19,7 @@ for model in models_to_listen:
         Update Algolia index after saving an object.
         """
         if created:
-            index_menu_task()
+            index_menu_task.delay()
 
 for model in models_to_listen:
     @receiver(post_delete, sender=model)
@@ -27,4 +27,4 @@ for model in models_to_listen:
         """
         Update Algolia index after deleting an object.
         """
-        index_menu_task()
+        index_menu_task.delay()

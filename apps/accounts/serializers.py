@@ -176,6 +176,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = (
             "phone_number",
             "first_name",
+            "last_name",
             "birth_date",
             "bonus",
         )

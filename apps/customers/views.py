@@ -246,6 +246,28 @@ class MyBonusesView(APIView):
         return Response({"bonus": user.bonus}, status=status.HTTP_200_OK)
 
 
+class MyIdView(APIView):
+    """
+    View for getting user's id.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get id",
+        operation_description="Use this endpoint to get user's id.",
+        responses={
+            200: openapi.Response("User's id"),
+        },
+    )
+    def get(self, request, format=None):
+        """
+        Get user's id.
+        """
+        user = request.user
+        return Response({"id": user.id}, status=status.HTTP_200_OK)
+
+
 # =============================================================
 # Order Views
 # =============================================================

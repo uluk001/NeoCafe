@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "apps.customers",
     "apps.ordering",
     "apps.notices",
+    "apps.web",
 ]
 
 MIDDLEWARE = [
@@ -122,7 +123,7 @@ DATABASES = {
     }
 }
 
-
+# Channels settings.
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -132,6 +133,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Celery settings.
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

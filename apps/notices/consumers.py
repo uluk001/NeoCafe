@@ -11,7 +11,7 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.branch_id = self.scope['url_route']['kwargs']['branch_id']
         self.branch_group_name = f'branch_{self.branch_id}'
-        # Присоединение к группе
+        # Connect to group
         await self.channel_layer.group_add(
             self.branch_group_name,
             self.channel_name
@@ -21,15 +21,14 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
         await self.get_notification()
 
     async def disconnect(self, close_code):
-        # Отключение от группы
+        # Disconnect from group
         await self.channel_layer.group_discard(
             self.branch_group_name,
             self.channel_name
         )
 
     async def get_notification(self, event=None):
-        # Отправка сообщения баристе
-
+        # Send message to barista
         notifications = await sync_to_async(
             list, thread_sensitive=True
         )(
@@ -42,7 +41,6 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
                 'order_id': notification.order_id,
                 'title': notification.title,
                 'body': notification.body,
-                'is_read': notification.is_read,
                 'exactly_time': notification.created_at.strftime('%H:%M'),
                 'created_at': notification.created_at.strftime('%d.%m.%Y')
             })
@@ -51,16 +49,17 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
         }))
 
     async def get_notification_handler(self, event):
+        print('get_notification_handler')
         await self.get_notification()
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        # Обработка полученных данных, если требуется
+        # Handle received data if needed
 
     async def send_order_notification(self, event):
         order = event['order']
 
-        # Отправка сообщения баристе
+        # Send message to barista
         await self.send(text_data=json.dumps({
             'order': order
         }))
@@ -76,7 +75,7 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user_id = self.scope['url_route']['kwargs']['user_id']
         self.user_group_name = f'user_{self.user_id}'
-        # Присоединение к группе
+        # Connect to group
         await self.channel_layer.group_add(
             self.user_group_name,
             self.channel_name
@@ -86,7 +85,7 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
         await self.get_notification()
 
     async def disconnect(self, close_code):
-        # Отключение от группы
+        # Disconnect from group
 
         await self.channel_layer.group_discard(
             self.user_group_name,
@@ -94,7 +93,7 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
         )
 
     async def get_notification(self, event=None):
-        # Отправка сообщения клиенту
+        # Send message to barista
         notifications = await sync_to_async(
             list, thread_sensitive=True
         )(
@@ -118,12 +117,11 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        # Обработка полученных данных, если требуется
 
     async def send_order_notification(self, event):
         order = event['order']
 
-        # Отправка сообщения клиенту
+        # Send message to barista
         await self.send(text_data=json.dumps({
             'order': order
         }))
