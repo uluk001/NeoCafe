@@ -1,7 +1,7 @@
-from ordering.models import Order, OrderItem
+from apps.ordering.models import Order, OrderItem
 from django.db.models import Sum
 
-def get_orders(branch_id, in_an_institution=True, status=Order.NEW):
+def get_orders(branch_id, in_an_institution=True, status='new'):
     """
     Get new orders for branch.
     """
@@ -46,7 +46,7 @@ def accept_order(order_id):
     """
     order = Order.objects.filter(
         order_id=order_id,
-        status=Order.NEW,
+        status='new',
     )
     if not order:
         return False
