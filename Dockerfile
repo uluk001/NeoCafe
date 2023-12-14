@@ -7,6 +7,8 @@ WORKDIR /app
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
+# Установка supervisord
+RUN apt-get update && apt-get install -y supervisor
 
 COPY . .
 COPY ../.env ./.env
