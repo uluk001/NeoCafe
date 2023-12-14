@@ -76,6 +76,7 @@ def create_order(user_id, spent_bonus_points, total_price, items, in_an_institut
             order_id=order.id,
             title=f'Ваш заказ оформлен',
             body=order_items_names_and_quantities_str,
+            branch=user.branch,
         )
         return order
 
