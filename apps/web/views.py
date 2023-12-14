@@ -29,6 +29,7 @@ class MyBranchIdView(APIView):
             200: openapi.Response("My branch id"),
         },
     )
+
     def get(self, request, format=None):
         """
         Get my branch id.
@@ -51,9 +52,17 @@ class AcceptOrderView(APIView):
     @swagger_auto_schema(
         operation_summary="Accept order",
         operation_description="Use this endpoint to accept order.",
+        manual_parameters=[
+            openapi.Parameter(
+                "order_id",
+                openapi.IN_QUERY,
+                description="Order id",
+                type=openapi.TYPE_STRING,
+            ),
+        ],
         responses={
             200: openapi.Response("Order accepted"),
-            400: openapi.Response("Order not found"),
+            400: openapi.Response("Order id not found"),
         },
     )
 
