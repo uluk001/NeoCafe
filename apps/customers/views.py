@@ -79,7 +79,13 @@ class MenuItemDetailView(APIView):
         """
         is_ready_made_product = request.GET.get("is_ready_made_product", False)
         is_ready_made_product = True if is_ready_made_product == "true" else False
-        item = Item.objects.get(id=item_id) if not is_ready_made_product else ReadyMadeProduct.objects.get(id=item_id)
+        try:
+            item = Item.objects.get(id=item_id) if not is_ready_made_product else ReadyMadeProduct.objects.get(id=item_id)
+        except Item.DoesNotExist:
+            return Response(
+                {"message": "Item does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = MenuItemDetailSerializer(
             item,
             context={"id": item_id, "is_ready_made_product": is_ready_made_product}
