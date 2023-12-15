@@ -55,7 +55,6 @@ def update_notifications_on_client_side(client_id):
     Updates notifications on client side.
     """
     time.sleep(SLEEP_TIME)
-    print('update_notifications_on_client_side')
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         f'user_{client_id}',

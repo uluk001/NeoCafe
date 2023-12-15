@@ -5,7 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from apps.ordering.serializers import OrderSerializer
-from apps.ordering.services import create_order, reorder
+from apps.ordering.services import (
+    create_order, reorder, get_reorder_information,
+)
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -102,3 +104,35 @@ class ReorderView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class ReorderInformationView(APIView):
+    """
+    View for reorder information.
+    """
+    @swagger_auto_schema(
+        operation_summary="Gets reorder information.",
+        operation_description="User must be authenticated.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='order_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='ID of the order',
+            ),
+        ],
+    )
+
+    def get(self, request):
+        """
+        Gets reorder information.
+        """
+        reorder_information = get_reorder_information(request.query_params['order_id'])
+        return Response(
+            {
+                'message': reorder_information['message'],
+                'details': reorder_information['details'],
+            },
+            status=reorder_information['status'],
+        )
