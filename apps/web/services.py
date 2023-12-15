@@ -45,7 +45,7 @@ def get_order_items(order):
     for order_item in order_items:
         items.append({
             'id': order_item.id,
-            'name': order_item.item.name,
+            'name': order_item.item.name if order_item.ready_made_product is None else order_item.ready_made_product.name,
             'quantity': order_item.quantity,
         })
     return items
@@ -60,7 +60,7 @@ def get_order_items(order):
     for order_item in order_items:
         items.append({
             'id': order_item.id,
-            'name': order_item.item.name,
+            'name': order_item.item.name if order_item.ready_made_product is None else order_item.ready_made_product.name,
             'quantity': order_item.quantity,
         })
     return items
