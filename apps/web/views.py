@@ -8,7 +8,12 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .services import (
-    accept_order,
+    accept_order, cancel_order,
+    get_orders,
+)
+from .permissions import IsBarista
+from apps.web.serializers import (
+    OrderSerializer,
 )
 
 
@@ -47,7 +52,6 @@ class AcceptOrderView(APIView):
     View for accepting order.
     """
 
-    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary="Accept order",
@@ -73,6 +77,234 @@ class AcceptOrderView(APIView):
         order_id = request.GET.get("order_id")
         if not order_id:
             return Response(
-                {"message": "Order id not found"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Order id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        result = accept_order(order_id)
+        if not result:
+            return Response(
+                {"error": "Order id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         return Response({"message": "Order accepted"}, status=status.HTTP_200_OK)
+
+
+class CancelOrderView(APIView):
+    """
+    View for canceling order.
+    """
+
+    @swagger_auto_schema(
+        operation_summary="Cancel order",
+        operation_description="Use this endpoint to cancel order.",
+        manual_parameters=[
+            openapi.Parameter(
+                "order_id",
+                openapi.IN_QUERY,
+                description="Order id",
+                type=openapi.TYPE_STRING,
+            ),
+        ],
+        responses={
+            200: openapi.Response("Order canceled"),
+            400: openapi.Response("Order id not found"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Cancel order.
+        """
+        order_id = request.GET.get("order_id")
+        if not order_id:
+            return Response(
+                {"error": "Order id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        result = cancel_order(order_id)
+        if not result:
+            return Response(
+                {"error": "Order id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({"message": "Order canceled"}, status=status.HTTP_200_OK)
+
+
+class GetInProcessTakeawayOrdersView(APIView):
+    """
+    View for getting in process orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get in process orders",
+        operation_description="Use this endpoint to get in process orders.",
+        responses={
+            200: openapi.Response("In process orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get in process orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=False,
+            status="in_progress",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetCanceledTakeawayOrdersView(APIView):
+    """
+    View for getting canceled takeaway orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get canceled takeaway orders",
+        operation_description="Use this endpoint to get canceled takeaway orders.",
+        responses={
+            200: openapi.Response("Canceled takeaway orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get canceled takeaway orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=False,
+            status="canceled",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetCompletedTakeawayOrdersView(APIView):
+    """
+    View for getting completed takeaway orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get completed takeaway orders",
+        operation_description="Use this endpoint to get completed takeaway orders.",
+        responses={
+            200: openapi.Response("Completed takeaway orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get completed takeaway orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=False,
+            status="completed",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetInProcessInstitutionOrdersView(APIView):
+    """
+    View for getting in process institution orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get in process institution orders",
+        operation_description="Use this endpoint to get in process institution orders.",
+        responses={
+            200: openapi.Response("In process institution orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get in process institution orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=True,
+            status="in_progress",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetCanceledInstitutionOrdersView(APIView):
+    """
+    View for getting canceled institution orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get canceled institution orders",
+        operation_description="Use this endpoint to get canceled institution orders.",
+        responses={
+            200: openapi.Response("Canceled institution orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get canceled institution orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=True,
+            status="canceled",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)
+
+
+class GetCompletedInstitutionOrdersView(APIView):
+    """
+    View for getting completed institution orders.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get completed institution orders",
+        operation_description="Use this endpoint to get completed institution orders.",
+        responses={
+            200: openapi.Response("Completed institution orders"),
+        },
+    )
+
+    def get(self, request, format=None):
+        """
+        Get completed institution orders.
+        """
+        user = request.user
+        branch_id = user.branch.id
+        orders = get_orders(
+            branch_id=branch_id,
+            in_an_institution=True,
+            status="completed",
+        )
+        serializer = OrderSerializer(orders, many=True)
+        return Response({"orders": serializer.data}, status=status.HTTP_200_OK)

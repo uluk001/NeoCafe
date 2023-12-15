@@ -14,7 +14,7 @@ class Order(models.Model):
         ("new", "New"),
         ("in_progress", "In progress"),
         ("ready", "Ready"),
-        ("cancelled", "Cancelled"),
+        ("canceled", "Canceled"),
         ("completed", "Completed"),
     ]
     branch = models.ForeignKey(

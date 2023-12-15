@@ -49,7 +49,6 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
         }))
 
     async def get_notification_handler(self, event):
-        print('get_notification_handler')
         await self.get_notification()
 
     async def receive(self, text_data):

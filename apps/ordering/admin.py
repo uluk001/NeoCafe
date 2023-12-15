@@ -23,7 +23,7 @@ class OrderAdmin(admin.ModelAdmin):
         "created_at",
         "total_price",
     ]
-    list_filter = ["created_at"]
+    list_filter = ["created_at", "status"]
     search_fields = ["customer__user__username"]
     inlines = [OrderItemInline]
 
