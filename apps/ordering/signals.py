@@ -3,6 +3,9 @@ from django.dispatch import receiver
 from apps.ordering.tasks import (
     update_new_orders_list_on_barista_side,
 )
+from apps.notices.tasks import (
+    update_notifications_on_barista_side,
+)
 
 from apps.ordering.models import Order, OrderItem
 
@@ -13,6 +16,7 @@ def send_notification(sender, instance, **kwargs):
     Sends notification to barista when new order is updated or created.
     """
     update_new_orders_list_on_barista_side.delay(instance.branch_id)
+    update_notifications_on_barista_side.delay(instance.branch_id)
 
 
 @receiver(post_delete, sender=Order)
@@ -21,3 +25,4 @@ def send_notification(sender, instance, **kwargs):
     Sends notification to barista when new order is deleted.
     """
     update_new_orders_list_on_barista_side.delay(instance.branch_id)
+    update_notifications_on_barista_side.delay(instance.branch_id)

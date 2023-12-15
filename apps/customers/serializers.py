@@ -3,10 +3,12 @@ Module for menu serializers
 """
 from rest_framework import serializers
 from apps.ordering.models import Order, OrderItem
-from apps.storage.serializers import ItemSerializer
+from apps.storage.serializers import ItemSerializer, CategorySerializer
 from apps.customers.services import (
     get_my_opened_orders_data, get_my_closed_orders_data,
 )
+import random
+from apps.storage.models import Item, ReadyMadeProduct
 
 # ==================== Menu Serializers ====================
 class GetCompatibleItemsSerializer(serializers.Serializer):
@@ -34,6 +36,60 @@ class CheckIfItemCanBeMadeSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
 
 
+class MenuItemDetailSerializer(serializers.Serializer):
+
+    ready_made_product_compositions = [
+        "Мед с горы Олимп", "Золотые яблоки из садов Гесперид",
+        "Рис выращенный на полях", "Остролист, собранный эльфами на рассвете",
+        "Пыльца невидимого орхидеи", "Светлячки, пойманные в полночь", "Капля чернил каракатицы",
+        "Отражение первой звезды", "Слеза единорога", "Сердце дракона", "Кровь феникса",
+    ]
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    price = serializers.DecimalField(max_digits=5, decimal_places=2)
+    image = serializers.URLField()
+    compositions = serializers.SerializerMethodField()
+    is_available = serializers.BooleanField(required=False)
+    category = CategorySerializer()
+
+    class Meta:
+        fields = ['id', 'name', 'description', 'price', 'image', 'compositions', 'is_available', 'category']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if isinstance(instance, Item):
+            representation['is_ready_made_product'] = False
+            representation['is_available'] = instance.is_available
+        elif isinstance(instance, ReadyMadeProduct):
+            representation['is_ready_made_product'] = True
+            representation['is_available'] = True
+        return representation
+
+    def get_compositions(self, obj):
+        if isinstance(obj, Item):
+            compositions = obj.compositions.all()
+            compositions_list = []
+            for composition in compositions:
+                compositions_list.append({
+                    'id': composition.id,
+                    'name': composition.ingredient.name,
+                    'quantity': composition.quantity,
+                })
+            return compositions_list
+        elif isinstance(obj, ReadyMadeProduct):
+            random_ingredients = random.sample(self.ready_made_product_compositions, random.randint(1, 5))
+            compositions_list = []
+            for ingredient in random_ingredients:
+                compositions_list.append({
+                    'id': random.randint(1, 100),
+                    'name': ingredient,
+                    'quantity': random.randint(1, 5),
+                })
+            return compositions_list
+
+
 # ==================== Branch Serializers ====================
 class ChangeBranchSerializer(serializers.Serializer):
     """
@@ -45,19 +101,46 @@ class ChangeBranchSerializer(serializers.Serializer):
 
 # ==================== Order Serializers ====================
 class OrderItemSerializer(serializers.ModelSerializer):
-    item_name = serializers.CharField(source='item.name')
-    item_price = serializers.DecimalField(source='item.price', max_digits=5, decimal_places=2)
+    item_name = serializers.SerializerMethodField()
+    item_price = serializers.SerializerMethodField()
     item_total_price = serializers.SerializerMethodField()
-    item_image = serializers.ImageField(source='item.image')
-    item_id = serializers.IntegerField(source='item.id')
-    item_category = serializers.CharField(source='item.category.name')
+    item_image = serializers.SerializerMethodField()
+    item_id = serializers.SerializerMetaclass
+    item_category = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
         fields = ['item_name', 'item_price', 'quantity', 'item_total_price', 'item_image', 'item_id', 'item_category']
 
     def get_item_total_price(self, obj):
-        return obj.item.price * obj.quantity
+        if obj.item is not None:
+            return obj.item.price * obj.quantity
+        return obj.ready_made_product.price * obj.quantity
+
+    def get_item_name(self, obj):
+        if obj.item is not None:
+            return obj.item.name
+        return obj.ready_made_product.name
+
+    def get_item_price(self, obj):
+        if obj.item is not None:
+            return obj.item.price
+        return obj.ready_made_product.price
+
+    def get_item_image(self, obj):
+        if obj.item is not None:
+            return obj.item.image.url
+        return obj.ready_made_product.image.url
+
+    def get_item_id(self, obj):
+        if obj.item is not None:
+            return obj.item.id
+        return obj.ready_made_product.id
+
+    def get_item_category(self, obj):
+        if obj.item is not None:
+            return obj.item.category.name
+        return obj.ready_made_product.category.name
 
 
 class OrderSerializer(serializers.ModelSerializer):

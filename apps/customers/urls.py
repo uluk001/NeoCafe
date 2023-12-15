@@ -7,18 +7,18 @@ from .views import (
     ChangeBranchView, CompatibleItemsView, Menu,
     PopularItemsView, ItemSearchView, MyBonusesView,
     CheckIfItemCanBeMadeView, MyOrdersView, MyOrderDetailView,
-    MyIdView,
+    MyIdView, MenuItemDetailView
 )
 from apps.storage.views import (
-    ItemDetailView, ListCategoryView,
+    ListCategoryView,
 )
 from apps.branches.views import BranchListView
 
 urlpatterns = [
     path("menu", Menu.as_view()),  # customers/
     path(
-        "menu/<int:pk>/",
-        ItemDetailView.as_view(),
+        "menu/<int:item_id>/",
+        MenuItemDetailView.as_view(),
     ),  # customers/items/<item_id>/
     path(
         "compatible-items/<int:item_id>/",

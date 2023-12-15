@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.ordering.models import Order
 from apps.branches.models import Branch
+from apps.storage.models import Item, ReadyMadeProduct
 from utils.menu import (
     get_compatibles, item_search,
     get_popular_items, combine_items_and_ready_made_products,
@@ -21,7 +22,7 @@ from .serializers import (
     ChangeBranchSerializer, ExtendedItemSerializer,
     CheckIfItemCanBeMadeSerializer, OrderSerializer,
     OrderItemSerializer, UserOrdersSerializer,
-
+    MenuItemDetailSerializer,
 )
 
 
@@ -48,6 +49,42 @@ class Menu(APIView):
         category_id = request.GET.get("category_id")
         items = combine_items_and_ready_made_products(user.branch.id, category_id)
         serializer = ExtendedItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MenuItemDetailView(APIView):
+    """
+    View for getting menu item detail.
+    """
+
+    @swagger_auto_schema(
+        operation_summary="Получить детальный список пунктов меню",
+        operation_description="Используйте этот эндпоинт для получения детального списка пунктов меню. Используйте параметр is_ready_made_product для получения детального списка готовых продуктов или обычных пунктов меню, по умолчанию is_ready_made_product = 0 (Готовые продукты) если is_ready_made_product = 1 (Обычные пункты меню).\nНапример:\n/customers/menu/1/?is_ready_made_product=1 - получить детальный список обычных пунктов меню с id = 1\n /customers/menu/1?is_ready_made_product=0 - получить детальный список готовых продуктов с id = 1",
+        responses={
+            200: openapi.Response("Menu item detail"),
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                "is_ready_made_product",
+                openapi.IN_QUERY,
+                description="Is ready made product",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+    )
+
+    def get(self, request, item_id, format=None):
+        """
+        Get menu item detail.
+        """
+        user = request.user
+        is_ready_made_product = bool(int(request.GET.get("is_ready_made_product", 0)))
+        print(is_ready_made_product)
+        item = Item.objects.get(id=item_id) if not is_ready_made_product else ReadyMadeProduct.objects.get(id=item_id)
+        serializer = MenuItemDetailSerializer(
+            item,
+            context={"id": item_id, "is_ready_made_product": is_ready_made_product}
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
