@@ -59,7 +59,7 @@ class MenuItemDetailView(APIView):
 
     @swagger_auto_schema(
         operation_summary="Получить детальный список пунктов меню",
-        operation_description="Используйте этот эндпоинт для получения детального списка пунктов меню. Используйте параметр is_ready_made_product для получения детального списка готовых продуктов или обычных пунктов меню, по умолчанию is_ready_made_product = False. False (Обычные пункты меню) если is_ready_made_product = True (Готовые продукты).\nНапример:\n/customers/menu/1/?is_ready_made_product=True - получить детальный список готовых продуктов с id = 1\n /customers/menu/1?is_ready_made_product=False - получить детальный список обычных пунктов меню с id = 1",
+        operation_description="Используйте этот эндпоинт для получения детального списка пунктов меню. Используйте параметр is_ready_made_product для получения детального списка готовых продуктов или обычных пунктов меню, по умолчанию is_ready_made_product = false. false (Обычные пункты меню) если is_ready_made_product = true (Готовые продукты).\nНапример:\n/customers/menu/1/?is_ready_made_product=true - получить детальный список готовых продуктов с id = 1\n /customers/menu/1?is_ready_made_product=false - получить детальный список обычных пунктов меню с id = 1",
         responses={
             200: openapi.Response("Menu item detail"),
         },
@@ -78,7 +78,7 @@ class MenuItemDetailView(APIView):
         Get menu item detail.
         """
         is_ready_made_product = request.GET.get("is_ready_made_product", False)
-        print(is_ready_made_product)
+        is_ready_made_product = True if is_ready_made_product == "true" else False
         item = Item.objects.get(id=item_id) if not is_ready_made_product else ReadyMadeProduct.objects.get(id=item_id)
         serializer = MenuItemDetailSerializer(
             item,
