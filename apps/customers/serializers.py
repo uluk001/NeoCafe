@@ -49,7 +49,7 @@ class MenuItemDetailSerializer(serializers.Serializer):
     name = serializers.CharField()
     description = serializers.CharField()
     price = serializers.DecimalField(max_digits=5, decimal_places=2)
-    image = serializers.URLField()
+    image = serializers.ImageField()
     compositions = serializers.SerializerMethodField()
     is_available = serializers.BooleanField(required=False)
     category = CategorySerializer()
@@ -62,9 +62,11 @@ class MenuItemDetailSerializer(serializers.Serializer):
         if isinstance(instance, Item):
             representation['is_ready_made_product'] = False
             representation['is_available'] = instance.is_available
+            representation['image'] = instance.image.url
         elif isinstance(instance, ReadyMadeProduct):
             representation['is_ready_made_product'] = True
             representation['is_available'] = True
+            representation['image'] = instance.image.url
         return representation
 
     def get_compositions(self, obj):
