@@ -103,7 +103,10 @@ def combine_items_and_ready_made_products(branch_id, category_id=None):
 
 def get_popular_items(branch_id):
     item_sales = OrderItem.objects.values('item_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    product_sales = OrderItem.objects.values('ready_made_product_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+
     best_selling_item_ids = [item['item_id'] for item in item_sales]
+    best_selling_product_ids = [product['ready_made_product_id'] for product in product_sales]
 
     available_items = []
     for item_id in best_selling_item_ids:
@@ -112,9 +115,17 @@ def get_popular_items(branch_id):
             if len(available_items) >= 3:
                 break
 
-    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:3]
+    available_products = []
+    for product_id in best_selling_product_ids:
+        if check_if_ready_made_product_can_be_made(product_id, branch_id, 1):
+            available_products.append(product_id)
+            if len(available_products) >= 3:
+                break
 
-    return top_selling_available_items
+    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:3]
+    top_selling_available_products = ReadyMadeProduct.objects.filter(id__in=available_products).order_by('-id')[:3]
+
+    return list(top_selling_available_items) + list(top_selling_available_products)
 
 
 def get_complementary_objects(model, exclude_field, item_id, order_ids):
