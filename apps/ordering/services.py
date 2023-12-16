@@ -24,7 +24,7 @@ from utils.menu import (
 # ============================================================
 # Actions
 # ============================================================
-def create_order(user_id, total_price, items, in_an_institution, spent_bonus_points=0):
+def create_order(user_id, total_price, items, in_an_institution, spent_bonus_points=0, pass_check_if_all_items_can_be_made=False):
     """
     Creates order.
     """
@@ -69,7 +69,7 @@ def create_order(user_id, total_price, items, in_an_institution, spent_bonus_poi
                         )
                     )
                     update_ingredient_stock_on_cooking(item_instance, user.branch, item['quantity'])
-        if len(order_items) != len(items):
+        if not pass_check_if_all_items_can_be_made and len(order_items) != len(items):
             return None
         OrderItem.objects.bulk_create(order_items)
         order_items_names_and_quantities = get_order_items_names_and_quantities(order_items)
@@ -120,6 +120,7 @@ def reorder(order_id):
             total_price=order.total_price,
             items=items,
             in_an_institution=order.in_an_institution,
+            pass_check_if_all_items_can_be_made=True,
         )
         return order_create
 

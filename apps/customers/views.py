@@ -124,20 +124,36 @@ class CompatibleItemsView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    # @swagger_auto_schema(
+    #     operation_summary="Get compatible items",
+    #     operation_description="Use this endpoint to get compatible items. In order to get compatible items you need to provide item id and is_ready_made_product parameter. is_ready_made_product = true if item is ready made product, false if item is not ready made product.\nFor example:\n/customers/compatible-items/1/?is_ready_made_product=true - get compatible ready-made products with id = 1\n/customers/compatible-items/1/?is_ready_made_product=false - get compatible regular menu items with id = 1",
+    #     responses={
+    #         200: openapi.Response("Compatible items"),
+    #     },
+    # )
     @swagger_auto_schema(
         operation_summary="Get compatible items",
-        operation_description="Use this endpoint to get compatible items.",
+        operation_description="Use this endpoint to get compatible items. In order to get compatible items you need to provide item id and is_ready_made_product parameter. is_ready_made_product = true if item is ready made product, false if item is not ready made product.\nFor example:\n/customers/compatible-items/1/?is_ready_made_product=true - get compatible ready-made products with id = 1\n/customers/compatible-items/1/?is_ready_made_product=false - get compatible regular menu items with id = 1",
         responses={
             200: openapi.Response("Compatible items"),
         },
+        manual_parameters=[
+            openapi.Parameter(
+                "is_ready_made_product",
+                openapi.IN_QUERY,
+                description="Is ready made product",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
     )
     def get(self, request, item_id, format=None):
         """
         Get compatible items.
         """
-        user = request.user
+        is_ready_made_product = request.GET.get("is_ready_made_product", False)
+        is_ready_made_product = True if is_ready_made_product == "true" else False
         items = get_compatibles(item_id)
-        serializer = ItemSerializer(items, many=True)
+        serializer = MenuItemDetailSerializer(items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

@@ -63,6 +63,9 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
             'order': order
         }))
 
+    async def handle_get_notification(self, event):
+        await self.get_notification()
+
 
 # =============================================================
 # Client Notifications
@@ -124,3 +127,6 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'order': order
         }))
+
+    async def handle_get_notification(self, event):
+        await self.get_notification()

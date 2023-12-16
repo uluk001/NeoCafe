@@ -117,29 +117,39 @@ def get_popular_items(branch_id):
     return top_selling_available_items
 
 
-def get_compatibles(item_id):
-    """
-    Function to get items that are often ordered with the given item.
-
-    Args:
-    item_id (int): The ID of the item for which complementary items are sought.
-
-    Returns:
-    list: A list of up to three items most frequently ordered with the given item.
-    """
-    order_ids = OrderItem.objects.filter(item_id=item_id).values_list('order_id', flat=True)
-
-    complementary_items = OrderItem.objects.filter(
+def get_complementary_objects(model, exclude_field, item_id, order_ids):
+    return model.objects.filter(
         order__id__in=order_ids
     ).exclude(
-        item_id=item_id
-    ).values('item_id').annotate(
-        count=Count('item_id')
+        **{exclude_field: item_id}
+    ).values(
+        exclude_field
+    ).annotate(
+        count=Count(exclude_field)
     ).order_by('-count')[:3]
 
-    items = Item.objects.filter(id__in=[item['item_id'] for item in complementary_items])
-    return items
 
+def get_compatibles(item_id, is_ready_made_product=False):
+    """
+    Function to get items that are often ordered with the given item.
+    """
+    order_ids = OrderItem.objects.filter(
+        **{'item_id' if not is_ready_made_product else 'ready_made_product_id': item_id}
+    ).values_list('order_id', flat=True)
+
+    complementary_items = get_complementary_objects(OrderItem, 'item_id', item_id, order_ids)
+    complementary_ready_made_products = get_complementary_objects(OrderItem, 'ready_made_product_id', item_id, order_ids)
+
+    complementary_items_ids = [item['item_id'] for item in complementary_items]
+    complementary_ready_made_products_ids = [product['ready_made_product_id'] for product in complementary_ready_made_products]
+
+    complementary_items = Item.objects.filter(id__in=complementary_items_ids)
+    complementary_ready_made_products = ReadyMadeProduct.objects.filter(id__in=complementary_ready_made_products_ids)
+
+    if_items_can_be_made = [item for item in complementary_items if check_if_items_can_be_made(item.id, 1, 1)]
+    if_ready_made_products_can_be_made = [product for product in complementary_ready_made_products if check_if_ready_made_product_can_be_made(product.id, 1, 1)]
+
+    return if_items_can_be_made + if_ready_made_products_can_be_made
 
 
 def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):

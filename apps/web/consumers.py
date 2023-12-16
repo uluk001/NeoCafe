@@ -55,3 +55,6 @@ class NewOrdersTakeawayConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'order': order
         }))
+
+    async def handle_get_new_orders(self, event):
+        await self.get_new_orders()
