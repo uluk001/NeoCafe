@@ -58,3 +58,6 @@ class NewOrdersTakeawayConsumer(AsyncWebsocketConsumer):
 
     async def handle_get_new_orders(self, event):
         await self.get_new_orders()
+
+    async def receive_get_new_orders(self, event):
+        await self.get_new_orders()
