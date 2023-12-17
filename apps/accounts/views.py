@@ -12,8 +12,8 @@ from utils.phone_number_verification import (
     send_phone_number_verification
 )
 
-from .models import CustomUser, PhoneNumberVerification
-from .permissions import IsPhoneNumberVerified, IsWaiter
+from .models import CustomUser, PhoneNumberVerification, EmployeeSchedule, EmployeeWorkdays
+from .permissions import IsPhoneNumberVerified, IsWaiter, IsEmployee
 from .serializers import (
     AdminLoginSerializer, ClientBirthDateSerializer,
     ClientConfirmPhoneNumberSerializer,
@@ -21,6 +21,8 @@ from .serializers import (
     LoginForClientSerializer, LoginSerializer,
     ProfileSerializer, WaiterLoginSerializer,
 )
+
+from apps.storage.serializers import EmployeeScheduleSerializer
 
 User = get_user_model()
 
@@ -722,3 +724,14 @@ class ResendCodeWithPreTokenView(generics.GenericAPIView):
         return Response(
             {"detail": "Код был отправлен заново"}, status=status.HTTP_200_OK
         )
+
+
+class EmployeeScheduleView(generics.GenericAPIView):
+    serializer_class = EmployeeScheduleSerializer
+    permission_classes = [permissions.IsAuthenticated, IsEmployee]
+
+    def get(self, request):
+        user = request.user
+        schedule = EmployeeSchedule.objects.filter(employees=user)
+        serializer = EmployeeScheduleSerializer(schedule, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
