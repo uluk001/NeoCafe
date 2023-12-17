@@ -8,7 +8,7 @@ from apps.ordering.models import Order, OrderItem
 class NewOrdersTakeawayConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.branch_id = self.scope['url_route']['kwargs']['branch_id']
-        self.branch_group_name = f'branch_{self.branch_id}'
+        self.branch_group_name = f'new_orders_takeaway_{self.branch_id}'
         # Connect to group
         await self.channel_layer.group_add(
             self.branch_group_name,

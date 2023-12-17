@@ -25,7 +25,7 @@ def update_new_orders_list_on_barista_side(branch_id):
     time.sleep(1)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'branch_{branch_id}',
+        f'new_orders_takeaway_{branch_id}',
         {
             'type': 'get_new_orders',
         }

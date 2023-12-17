@@ -7,3 +7,4 @@ class OrderingConfig(AppConfig):
 
     def ready(self):
         import apps.ordering.signals
+        import apps.ordering.tasks

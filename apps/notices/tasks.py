@@ -39,7 +39,6 @@ def update_notifications_on_barista_side(branch_id):
     Updates notifications on barista side.
     """
     time.sleep(SLEEP_TIME)
-    print('update_notifications_on_barista_side')
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         f'branch_{branch_id}',

@@ -28,7 +28,6 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
         )
 
     async def get_notification(self, event=None):
-        # Send message to barista
         notifications = await sync_to_async(
             list, thread_sensitive=True
         )(

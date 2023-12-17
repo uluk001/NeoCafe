@@ -7,3 +7,4 @@ class NoticesConfig(AppConfig):
 
     def ready(self):
         import apps.notices.signals # noqa
+        import apps.notices.tasks
