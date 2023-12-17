@@ -181,3 +181,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             "birth_date",
             "bonus",
         )
+
+
+class EmployeeScheduleSerializer(serializers.Serializer):
+    """
+    Serializer for employee schedule
+    """
+

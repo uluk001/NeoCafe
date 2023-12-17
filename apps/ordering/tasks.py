@@ -30,3 +30,9 @@ def update_new_orders_list_on_barista_side(branch_id):
             'type': 'get_new_orders',
         }
     )
+    async_to_sync(channel_layer.group_send)(
+        f'new_orders_institution_{branch_id}',
+        {
+            'type': 'get_new_orders',
+        }
+    )

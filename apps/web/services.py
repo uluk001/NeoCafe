@@ -136,8 +136,8 @@ def complete_order(order_id):
     Complete order.
     """
     order = Order.objects.filter(
-        order_id=order_id,
-        status='in_progress',
+        id=order_id,
+        status='ready',
     )
     if not order:
         return False
@@ -149,6 +149,28 @@ def complete_order(order_id):
         order.customer.id,
         'Бариста завершил заказ',
         f'Ваш заказ №{order.id} завершен. {order_items}',
+    )
+    return True
+
+
+def make_order_ready(order_id):
+    """
+    Make order ready.
+    """
+    order = Order.objects.filter(
+        id=order_id,
+        status='in_progress',
+    )
+    if not order:
+        return False
+    order = order.first()
+    order.status = 'ready'
+    order.save()
+    order_items = get_order_items_str(order.id)
+    create_notification_for_client.delay(
+        order.customer.id,
+        'Заказ готов',
+        f'Ваш заказ №{order.id} готов. {order_items}',
     )
     return True
 

@@ -105,25 +105,32 @@ def get_popular_items(branch_id):
     item_sales = OrderItem.objects.values('item_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
     product_sales = OrderItem.objects.values('ready_made_product_id').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
 
-    best_selling_item_ids = [item['item_id'] for item in item_sales]
-    best_selling_product_ids = [product['ready_made_product_id'] for product in product_sales]
+    best_selling_items = [(item['item_id'], item['total_quantity']) for item in item_sales]
+    best_selling_products = [(product['ready_made_product_id'], product['total_quantity']) for product in product_sales]
 
     available_items = []
-    for item_id in best_selling_item_ids:
+    for item_id, total_quantity in best_selling_items:
         if check_if_items_can_be_made(item_id, branch_id, 1):
-            available_items.append(item_id)
+            available_items.append((item_id, total_quantity))
             if len(available_items) >= 3:
                 break
 
     available_products = []
-    for product_id in best_selling_product_ids:
+    for product_id, total_quantity in best_selling_products:
         if check_if_ready_made_product_can_be_made(product_id, branch_id, 1):
-            available_products.append(product_id)
+            available_products.append((product_id, total_quantity))
             if len(available_products) >= 3:
                 break
 
-    top_selling_available_items = Item.objects.filter(id__in=available_items).order_by('-id')[:3]
-    top_selling_available_products = ReadyMadeProduct.objects.filter(id__in=available_products).order_by('-id')[:3]
+    # Объединяем списки и сортируем по общему количеству продаж
+    all_available = sorted(available_items + available_products, key=lambda x: x[1], reverse=True)
+
+    # Возвращаем только первые три элемента
+    top_selling_available = all_available[:4]
+
+    # Получаем объекты Item и ReadyMadeProduct для возвращаемых ID
+    top_selling_available_items = Item.objects.filter(id__in=[item[0] for item in top_selling_available if item in available_items])
+    top_selling_available_products = ReadyMadeProduct.objects.filter(id__in=[item[0] for item in top_selling_available if item in available_products])
 
     return list(top_selling_available_items) + list(top_selling_available_products)
 

@@ -21,3 +21,14 @@ class IsWaiter(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.position == "waiter"
+
+
+class IsEmployee(BasePermission):
+    """
+    Allows access only to employees.
+    """
+
+    message = "Вы не являетесь сотрудником"
+
+    def has_permission(self, request, view):
+        return request.user.position == "waiter" or request.user.position == "barista"
