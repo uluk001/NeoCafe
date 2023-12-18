@@ -131,8 +131,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     def get_item_image(self, obj):
         if obj.item is not None:
-            return obj.item.image.url
-        return obj.ready_made_product.image.url
+            return obj.item.image.url if obj.item.image else None
+        return obj.ready_made_product.image.url if obj.ready_made_product.image else None
 
     def get_item_id(self, obj):
         if obj.item is not None:
