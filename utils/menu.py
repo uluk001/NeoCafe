@@ -14,7 +14,7 @@ from apps.ordering.models import OrderItem
 
 
 client = SearchClient.create(settings.ALGOLIA_APPLICATION_ID, settings.ALGOLIA_API_KEY)
-index = client.init_index('items')
+index = client.init_index('menu')
 
 
 def get_available_items(branch_id):
