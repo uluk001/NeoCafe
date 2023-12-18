@@ -22,7 +22,7 @@ def update_new_orders_list_on_barista_side(branch_id):
     """
     Updates new orders list on barista side.
     """
-    time.sleep(1)
+    time.sleep(2)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         f'new_orders_takeaway_{branch_id}',
