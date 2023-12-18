@@ -14,12 +14,11 @@ models_to_listen = [Item, Ingredient, Composition, AvailableAtTheBranch, ReadyMa
 
 for model in models_to_listen:
     @receiver(post_save, sender=model)
-    def update_algolia(sender, instance, created, **kwargs):
+    def update_algolia(sender, instance, **kwargs):
         """
         Update Algolia index after saving an object.
         """
-        if created:
-            index_menu_task.delay()
+        index_menu_task.delay()
 
 for model in models_to_listen:
     @receiver(post_delete, sender=model)
