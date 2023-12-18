@@ -62,11 +62,11 @@ class MenuItemDetailSerializer(serializers.Serializer):
         if isinstance(instance, Item):
             representation['is_ready_made_product'] = False
             representation['is_available'] = instance.is_available
-            representation['image'] = instance.image.url
+            representation['image'] = instance.image.url if instance.image else None
         elif isinstance(instance, ReadyMadeProduct):
             representation['is_ready_made_product'] = True
             representation['is_available'] = True
-            representation['image'] = instance.image.url
+            representation['image'] = instance.image.url if instance.image else None
         return representation
 
     def get_compositions(self, obj):
