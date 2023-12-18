@@ -8,7 +8,10 @@ from asgiref.sync import sync_to_async
 from apps.notices.tasks import (
     create_notification_for_barista, create_notification_for_client,
 )
-from apps.ordering.services import get_order_items_names_and_quantities
+from apps.ordering.services import (
+    get_order_items_names_and_quantities,
+    return_to_storage,
+)
 
 # ============================================================
 # Getters
@@ -127,7 +130,7 @@ def cancel_order(order_id):
         title='Бариста отменил заказ',
         body=f'Ваш заказ №{order.id} отменен. {order_items}',
     )
-    return_ingredients(order_id)
+    return_to_storage(order_id)
     return True
 
 
@@ -172,35 +175,4 @@ def make_order_ready(order_id):
         'Заказ готов',
         f'Ваш заказ №{order.id} готов. {order_items}',
     )
-    return True
-
-
-def return_ingredients(order_id):
-    """
-    Return ingredients to storage after canceling order.
-    """
-    try:
-        order = Order.objects.filter(id=order_id).first()
-    except Order.DoesNotExist:
-        return False
-    branch = order.branch
-    order_items = OrderItem.objects.filter(order=order)
-    for order_item in order_items:
-        if order_item.ready_made_product:
-            availables = ReadyMadeProductAvailableAtTheBranch.objects.filter(
-                branch=branch,
-                ready_made_product=order_item.ready_made_product,
-            )
-            available = availables.first()
-            available.quantity += order_item.quantity
-            available.save()
-        else:
-            for composition in order_item.item.compositions.all():
-                availables = AvailableAtTheBranch.objects.filter(
-                    branch=branch,
-                    ingredient=composition.ingredient,
-                )
-                available = availables.first()
-                available.quantity += composition.quantity * order_item.quantity
-                available.save()
     return True

@@ -7,6 +7,7 @@ from rest_framework import status
 from apps.ordering.serializers import OrderSerializer
 from apps.ordering.services import (
     create_order, reorder, get_reorder_information,
+    remove_order_item, add_item_to_order,
 )
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -136,3 +137,97 @@ class ReorderInformationView(APIView):
             },
             status=reorder_information['status'],
         )
+
+
+class RemoveOrderItemView(APIView):
+    """
+    View for removing order item.
+    """
+    @swagger_auto_schema(
+        operation_summary="Removes order item.",
+        operation_description="User must be authenticated.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='order_item_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='ID of the order item',
+            ),
+        ],
+    )
+
+    def delete(self, request):
+        """
+        Removes order item.
+        """
+        remove_order_item(request.query_params['order_item_id'])
+        return Response(
+            {
+                'message': 'Order item removed.',
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AddItemToOrderView(APIView):
+    """
+    View for adding item to order.
+    """
+    @swagger_auto_schema(
+        operation_summary="Adds item to order.",
+        operation_description="User must be authenticated.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='order_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='ID of the order',
+            ),
+            openapi.Parameter(
+                name='item_id',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='ID of the item',
+            ),
+            openapi.Parameter(
+                name='is_ready_made_product',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                required=True,
+                description='Whether the item is a ready-made product',
+            ),
+            openapi.Parameter(
+                name='quantity',
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description='Quantity of the item',
+            ),
+        ],
+    )
+
+    def post(self, request):
+        """
+        Adds item to order.
+        """
+        order = add_item_to_order(
+            order_id=request.query_params['order_id'],
+            item_id=request.query_params['item_id'],
+            is_ready_made_product=request.query_params['is_ready_made_product'],
+            quantity=request.query_params['quantity'],
+        )
+        if order:
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {
+                    'message': 'Not enough stock.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )

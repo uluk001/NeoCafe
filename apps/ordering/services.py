@@ -5,7 +5,10 @@ from django.db import transaction
 from rest_framework import status
 
 from apps.ordering.models import Order, OrderItem
-from apps.storage.models import ReadyMadeProduct, Item
+from apps.storage.models import (
+    ReadyMadeProduct, Item, Composition,
+    AvailableAtTheBranch, ReadyMadeProductAvailableAtTheBranch
+)
 from apps.accounts.models import CustomUser
 from apps.notices.tasks import (
     create_notification_for_barista,
@@ -125,6 +128,71 @@ def reorder(order_id):
         return order_create
 
 
+def add_item_to_order(order_id, item_id, quantity, is_ready_made_product):
+    """
+    Adds item to order.
+    """
+    with transaction.atomic():
+        order = Order.objects.get(id=order_id)
+        if not check_if_order_new(order):
+            return None
+        if is_ready_made_product:
+            ready_made_product = ReadyMadeProduct.objects.get(id=item_id)
+            if check_if_ready_made_product_can_be_made(ready_made_product, order.customer.branch, quantity):
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    ready_made_product=ready_made_product,
+                    quantity=quantity,
+                )
+                update_ready_made_product_stock_on_cooking(ready_made_product, order.customer.branch, quantity)
+                order.total_price += ready_made_product.price * quantity
+                order.save()
+                return order_item
+            else:
+                return None
+        else:
+            item = Item.objects.get(id=item_id)
+            if check_if_items_can_be_made(item, order.customer.branch.id, quantity):
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    item=item,
+                    quantity=quantity,
+                )
+                update_ingredient_stock_on_cooking(item, order.customer.branch, quantity)
+                order.total_price += item.price * quantity
+                order.save()
+                return order_item
+            else:
+                return None
+
+
+def check_if_order_new(order):
+    """
+    Checks if order is new.
+    """
+    return order.status == 'new'
+
+
+def remove_order_item(order_item_id):
+    """
+    Removes order item.
+    """
+    with transaction.atomic():
+        order_item = OrderItem.objects.get(id=order_item_id)
+        order = order_item.order
+        if not check_if_order_new(order):
+            return None
+        order_item.delete()
+        order_items = OrderItem.objects.filter(order=order)
+        return_order_item_to_storage(order_item)
+        if len(order_items) == 0:
+            order.delete()
+        else:
+            order.total_price = sum([order_item.item.price * order_item.quantity for order_item in order_items])
+            order.save()
+        return order
+
+
 # ============================================================
 # Getters
 # ============================================================
@@ -206,3 +274,76 @@ def get_reorder_information(order_id):
             'details': str(e),
             'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
         }
+
+
+def return_item_ingredients_to_storage(item_id, branch_id, quantity):
+    """
+    Return item ingredients to storage.
+    """
+    try:
+        compositions = Composition.objects.filter(item_id=item_id).select_related('ingredient')
+        ingredients_to_update = []
+
+        for composition in compositions:
+            available_ingredient = AvailableAtTheBranch.objects.get(
+                branch_id=branch_id,
+                ingredient_id=composition.ingredient_id
+            )
+            available_ingredient.quantity += composition.quantity * quantity
+            ingredients_to_update.append(available_ingredient)
+
+        AvailableAtTheBranch.objects.bulk_update(ingredients_to_update, ['quantity'])
+        return "Updated successfully."
+    except Exception as e:
+        raise e
+
+
+def return_ready_made_product_to_storage(ready_made_product, branch_id, quantity):
+    """
+    Return ready made product to storage.
+    """
+    try:
+        available_product = ReadyMadeProductAvailableAtTheBranch.objects.get(
+            branch_id=branch_id,
+            ready_made_product=ready_made_product
+        )
+        available_product.quantity += quantity
+        available_product.save()
+        return "Updated successfully."
+    except Exception as e:
+        raise e
+
+
+def return_order_item_to_storage(order_item):
+    """
+    Return order item to storage.
+    """
+    try:
+        if order_item.ready_made_product:
+            return_ready_made_product_to_storage(
+                order_item.ready_made_product,
+                order_item.order.branch_id,
+                order_item.quantity,
+            )
+        else:
+            return_item_ingredients_to_storage(
+                order_item.item_id,
+                order_item.order.branch_id,
+                order_item.quantity,
+            )
+        return "Updated successfully."
+    except Exception as e:
+        raise e
+
+
+def return_to_storage(order_id):
+    """
+    Return order to storage.
+    """
+    try:
+        order_items = OrderItem.objects.filter(order_id=order_id)
+        for order_item in order_items:
+            return_order_item_to_storage(order_item)
+        return "Returned successfully."
+    except Exception as e:
+        raise e
