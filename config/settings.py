@@ -30,8 +30,8 @@ DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = ["muha-backender.org.kg", "164.92.160.185", "127.0.0.1"]
 
 # Algolia settings.
-ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID', default='fvsdfsdfbdfbdfvsdf')
-ALGOLIA_API_KEY = config('ALGOLIA_API_KEY', default='keyfreverveazisgeyfvsdfvsdfb')
+ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID', default='7HIUPZXQW4')
+ALGOLIA_API_KEY = config('ALGOLIA_API_KEY', default='fa4f918c6a9740c7266d36cbcac3817d')
 
 # Redis settings.
 REDIS_HOST = config("REDIS_HOST", default="redis")
