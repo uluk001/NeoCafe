@@ -23,19 +23,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("DJANGO_SECRET_KEY")
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-#m&!7@q0@#_9q1j1x#&g7qy7$-1g0^!$-q^j6&g^x1qy8h&0!%")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = ["muha-backender.org.kg", "164.92.160.185", "127.0.0.1"]
 
 # Algolia settings.
-ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID')
-ALGOLIA_API_KEY = config('ALGOLIA_API_KEY')
+ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID', default='fvsdfsdfbdfbdfvsdf')
+ALGOLIA_API_KEY = config('ALGOLIA_API_KEY', default='keyfreverveazisgeyfvsdfvsdfb')
 
 # Redis settings.
-REDIS_HOST = config("REDIS_HOST")
-REDIS_PORT = config("REDIS_PORT")
+REDIS_HOST = config("REDIS_HOST", default="redis")
+REDIS_PORT = config("REDIS_PORT", default="6379")
 
 # Application definition
 
@@ -83,8 +83,8 @@ ROOT_URLCONF = "config.urls"
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = "*"
-BASE_URL_INFOBIP = config("BASE_URL_INFOBIP")
-API_KEY_INFOBIP = config("API_KEY_INFOBIP")
+BASE_URL_INFOBIP = config("BASE_URL_INFOBIP", default="https://api.infobip.com")
+API_KEY_INFOBIP = config("API_KEY_INFOBIP", default="bwrtbwtrbwergwerg")
 
 TEMPLATES = [
     {
@@ -105,21 +105,21 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUD_NAME"),
-    "API_KEY": config("CLOUD_API_KEY"),
-    "API_SECRET": config("CLOUD_API_SECRET"),
+    "CLOUD_NAME": config("CLOUD_NAME", default="feruzbek"),
+    "API_KEY": config("CLOUD_API_KEY", default="veverv"),
+    "API_SECRET": config("CLOUD_API_SECRET", default="ververv"),
 }
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT"),
+        "ENGINE": config("DB_ENGINE", default="django.db.backends.sqlite3"),
+        "NAME": config("DB_NAME", default=os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": config("DB_USER", default=""),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
 
@@ -186,9 +186,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Twilio settings
-TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
-TWILIO_SERVICE_SID = config("TWILIO_SERVICE_SID")
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="sdfvsdfvsdfvsdf")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="fsdfsdfsdfsdfsdf")
+TWILIO_SERVICE_SID = config("TWILIO_SERVICE_SID", default="fsdfsdfsdfsdfsdf")
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {
@@ -203,14 +203,14 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = "587"
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="aziz@gmail.com")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="erveverv")
 
 
 # JWT Settings
 EMAIL_SERVER = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-EMAIL_ADMIN = [config("EMAIL_ADMIN")]
+EMAIL_ADMIN = [config("EMAIL_ADMIN", default="aziz@gmail.com")]
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=25),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
