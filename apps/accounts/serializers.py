@@ -181,3 +181,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "birth_date",
             "bonus",
         )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.position not in ['barista', 'waiter']:
+            representation.pop('bonus')
+        return representation
