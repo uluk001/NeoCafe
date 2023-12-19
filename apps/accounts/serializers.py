@@ -187,3 +187,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         if instance.position not in ['barista', 'waiter']:
             representation.pop('bonus')
         return representation
+
+
+class UpdateWaiterProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating profile
+    """
+
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "birth_date",
+        )

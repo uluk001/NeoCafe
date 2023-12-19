@@ -9,6 +9,7 @@ from apps.accounts.views import (
     ResendCodeView, ResendCodeWithPreTokenView,
     TemporaryLoginView, WaiterLoginView,
     WaiterTemporaryLoginView, EmployeeScheduleView,
+    UpdateWaiterProfileView,
 )
 
 urlpatterns = [
@@ -37,4 +38,5 @@ urlpatterns = [
     ),  # accounts/temporary-login-waiter/
 
     path("my-schedule/", EmployeeScheduleView.as_view()),  # accounts/employee-schedule/
+    path("update-waiter-profile/", UpdateWaiterProfileView.as_view()),  # accounts/update-waiter-profile/
 ]

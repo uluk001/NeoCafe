@@ -20,6 +20,7 @@ from .serializers import (
     ClientEditProfileSerializer, CustomUserSerializer,
     LoginForClientSerializer, LoginSerializer,
     ProfileSerializer, WaiterLoginSerializer,
+    UpdateWaiterProfileSerializer,
 )
 
 from apps.storage.serializers import EmployeeScheduleSerializer
@@ -735,3 +736,34 @@ class EmployeeScheduleView(generics.GenericAPIView):
         schedule = EmployeeSchedule.objects.filter(employees=user).first()
         serializer = EmployeeScheduleSerializer(schedule)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UpdateWaiterProfileView(generics.GenericAPIView):
+    serializer_class = UpdateWaiterProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, IsWaiter]
+
+    def put(self, request):
+        user = request.user
+        first_name = request.data.get("first_name", user.first_name)
+        last_name = request.data.get("last_name", user.last_name)
+        birth_date = request.data.get("birth_date", user.birth_date)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.birth_date = birth_date
+        user.save()
+        return Response(
+            {"detail": "Профиль успешно изменен"}, status=status.HTTP_200_OK
+        )
+
+    def patch(self, request):
+        user = request.user
+        first_name = request.data.get("first_name", user.first_name)
+        last_name = request.data.get("last_name", user.last_name)
+        birth_date = request.data.get("birth_date", user.birth_date)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.birth_date = birth_date
+        user.save()
+        return Response(
+            {"detail": "Профиль успешно изменен"}, status=status.HTTP_200_OK
+        )
