@@ -732,6 +732,6 @@ class EmployeeScheduleView(generics.GenericAPIView):
 
     def get(self, request):
         user = request.user
-        schedule = EmployeeSchedule.objects.filter(employees=user)
-        serializer = EmployeeScheduleSerializer(schedule, many=True)
+        schedule = EmployeeSchedule.objects.filter(employees=user).first()
+        serializer = EmployeeScheduleSerializer(schedule)
         return Response(serializer.data, status=status.HTTP_200_OK)
