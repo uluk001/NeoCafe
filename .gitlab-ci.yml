@@ -1,0 +1,33 @@
+image: docker:stable
+
+stages:
+  - build
+  - test
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  IMAGE: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}
+
+build:
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - touch .env
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build --tag $IMAGE:build-${CI_COMMIT_REF_SLUG} .
+    - docker push $IMAGE:build-${CI_COMMIT_REF_SLUG}
+
+test:
+  stage: test
+  services:
+    - docker:dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker pull $IMAGE:build-${CI_COMMIT_REF_SLUG}
+    - docker run --name test-container $IMAGE:build-${CI_COMMIT_REF_SLUG}
+    - docker exec test-container autopep8 . --exclude=migrations,env --in-place --recursive
+    - docker exec test-container isort . --skip=migrations --skip=env
+    - docker exec test-container black . --exclude '/migrations|/env'
+    - docker exec test-container flake8 --exclude=migrations,env --ignore=E501,F401,F841,F811,F405,F403,W503
