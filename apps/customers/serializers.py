@@ -149,13 +149,26 @@ class OrderSerializer(serializers.ModelSerializer):
     branch_name = serializers.CharField(source='branch.name_of_shop')
     items = OrderItemSerializer(many=True)
     created_at = serializers.SerializerMethodField()
+    exact_time = serializers.SerializerMethodField()
+    waiter_name = serializers.SerializerMethodField()
+    table = serializers.SerializerMethodField()
+    
 
     class Meta:
         model = Order
-        fields = ['id', 'branch_name', 'created_at', 'items', 'total_price', 'spent_bonus_points']
+        fields = ['id', 'branch_name', 'created_at', 'items', 'total_price', 'spent_bonus_points', 'table', 'in_an_institution', 'status', 'exact_time', 'waiter_name']
 
     def get_created_at(self, obj):
         return obj.created_at.strftime("%d.%m.%Y")
+
+    def get_exact_time(self, obj):
+        return obj.created_at.strftime("%H:%M")
+
+    def get_waiter_name(self, obj):
+        return obj.customer.first_name if obj.customer.position == 'waiter' else None
+
+    def get_table(self, obj):
+        return obj.table if obj.table > 0 else None
 
 
 class MyOrdersListSerializer(serializers.ModelSerializer):

@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "apps.ordering",
     "apps.notices",
     "apps.web",
+    "apps.waiter",
 ]
 
 MIDDLEWARE = [

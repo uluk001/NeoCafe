@@ -32,6 +32,7 @@ urlpatterns = [
     path("ordering/", include("apps.ordering.urls")),
     path("notices/", include("apps.notices.urls")),
     path("web/", include("apps.web.urls")),
+    path("waiter/", include("apps.waiter.urls")),
 
     # Swagger
     path(
