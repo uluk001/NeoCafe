@@ -328,6 +328,7 @@ class CreateOrderViewTest(TestCase):
             "total_price": 4.00,
             "spent_bonus_points": 0,
             "in_an_institution": False,
+            "table_number": 4,
             "items": [
                 {
                     "is_ready_made_product": False,
@@ -355,3 +356,4 @@ class CreateOrderViewTest(TestCase):
         self.assertEqual(Order.objects.get().customer, self.user2)
         self.assertEqual(OrderItem.objects.get(id=1).order, Order.objects.get())
         self.assertEqual(ReadyMadeProductAvailableAtTheBranch.objects.get(id=2).quantity, 998)
+        self.assertEqual(Order.objects.get().table, 4)

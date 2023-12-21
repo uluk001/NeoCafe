@@ -22,6 +22,7 @@ class OrderSerializer(serializers.Serializer):
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
     spent_bonus_points = serializers.IntegerField(required=True)
     in_an_institution = serializers.BooleanField(required=True)
+    table_number = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         return create_order(

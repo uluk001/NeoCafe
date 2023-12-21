@@ -34,7 +34,7 @@ def get_only_required_fields(order):
     return {
         'id': order.id,
         'number': order.id,
-        'clientNumber': str(order.customer.phone_number),  # Convert PhoneNumber to string
+        'clientNumber': str(order.customer.phone_number) if not order.customer.position == 'waiter' else order.customer.first_name,
         'items': get_order_items(order),
         'status': order.status,
     }

@@ -27,6 +27,7 @@ class CreateOrderView(APIView):
                 'total_price': openapi.Schema(type=openapi.TYPE_NUMBER, description='Total price of the order'),
                 'spent_bonus_points': openapi.Schema(type=openapi.TYPE_INTEGER, description='Bonus points spent on the order'),
                 'in_an_institution': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Whether the order is made in an institution'),
+                'table_number': openapi.Schema(type=openapi.TYPE_INTEGER, description='Table number of the order'),
                 'items': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Schema(
@@ -54,6 +55,7 @@ class CreateOrderView(APIView):
                     items=request.data['items'],
                     spent_bonus_points=request.data['spent_bonus_points'],
                     in_an_institution=request.data['in_an_institution'],
+                    table_number=request.data['table_number'] if 'table_number' in request.data else 0,
                 )
         if order:
             return Response(

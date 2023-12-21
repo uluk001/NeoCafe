@@ -30,7 +30,12 @@ class Order(models.Model):
         on_delete=models.CASCADE,
         related_name="orders",
         verbose_name="Customer",
-    )   
+    )
+    table = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Table number",
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

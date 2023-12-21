@@ -27,7 +27,7 @@ from utils.menu import (
 # ============================================================
 # Actions
 # ============================================================
-def create_order(user_id, total_price, items, in_an_institution, spent_bonus_points=0, pass_check_if_all_items_can_be_made=False):
+def create_order(user_id, total_price, items, in_an_institution, spent_bonus_points=0, pass_check_if_all_items_can_be_made=False, table_number=0):
     """
     Creates order.
     """
@@ -39,6 +39,7 @@ def create_order(user_id, total_price, items, in_an_institution, spent_bonus_poi
             spent_bonus_points=spent_bonus_points,
             in_an_institution=in_an_institution,
             branch=user.branch,
+            table=table_number,
         )
         update_user_bonus_points.delay(user_id, total_price, spent_bonus_points)
 
