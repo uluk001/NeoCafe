@@ -47,6 +47,7 @@ class Branch(models.Model):
     address = models.TextField()
     phone_number = PhoneNumberField()
     link_to_map = models.URLField()
+    counts_of_tables = models.PositiveSmallIntegerField(default=0)
 
     @property
     def workdays(self):

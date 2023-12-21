@@ -29,6 +29,7 @@ class BranchListView(ListAPIView):
             "address": openapi.Schema(type=openapi.TYPE_STRING),
             "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
             "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
+            "counts_of_tables": openapi.Schema(type=openapi.TYPE_INTEGER),
             "workdays": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(
@@ -70,6 +71,7 @@ class BranchCreateView(CreateAPIView):
             "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
             "name_of_shop": openapi.Schema(type=openapi.TYPE_STRING),
             "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
+            "counts_of_tables": openapi.Schema(type=openapi.TYPE_INTEGER),
             "workdays": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(
@@ -174,6 +176,7 @@ class BranchUpdateView(generics.UpdateAPIView):
             "address": openapi.Schema(type=openapi.TYPE_STRING),
             "phone_number": openapi.Schema(type=openapi.TYPE_STRING),
             "link_to_map": openapi.Schema(type=openapi.TYPE_STRING),
+            "counts_of_tables": openapi.Schema(type=openapi.TYPE_INTEGER),
             "workdays": openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(

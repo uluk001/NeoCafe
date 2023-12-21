@@ -30,6 +30,7 @@ class BranchSerializer(serializers.ModelSerializer):
             "address",
             "phone_number",
             "link_to_map",
+            "counts_of_tables",
             "workdays",
         ]
 
@@ -69,6 +70,7 @@ class BranchCreateSerializer(serializers.ModelSerializer):
             "image",
             "name_of_shop",
             "address",
+            "counts_of_tables",
             "phone_number",
             "link_to_map",
             "workdays",
@@ -117,6 +119,7 @@ class BranchUpdateSerializer(serializers.ModelSerializer):
             "address",
             "phone_number",
             "link_to_map",
+            "counts_of_tables",
             "workdays",
         ]
 
@@ -143,6 +146,9 @@ class BranchUpdateSerializer(serializers.ModelSerializer):
             )
             instance.link_to_map = validated_data.get(
                 "link_to_map", instance.link_to_map
+            )
+            instance.counts_of_tables = validated_data.get(
+                "counts_of_tables", instance.counts_of_tables
             )
             instance.save()
 

@@ -14,7 +14,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 
 
 class BranchAdmin(admin.ModelAdmin):
-    list_display = ("address", "phone_number", "schedule", "link_to_map")
+    list_display = ("address", "phone_number", "schedule", "link_to_map", "counts_of_tables")
 
 
 admin.site.register(Schedule, ScheduleAdmin)
