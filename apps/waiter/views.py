@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from apps.waiter.services import (
-    get_free_tables, get_occupied_tables,
-    get_table_order_details, is_table_free,
+    get_tables_availability, get_occupied_tables,
+    get_table_order_details,
     get_orders_in_institution,
 )
 from drf_yasg import openapi
@@ -42,8 +42,7 @@ class GetTableAvailibilityView(APIView):
         Gets table availibility.
         """
         return Response({
-            'free_tables': get_free_tables(request.user.branch_id),
-            'occupied_tables': get_occupied_tables(request.user.branch_id),
+            'tables': get_tables_availability(request.user.branch_id),
         })
 
 
