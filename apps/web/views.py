@@ -182,8 +182,6 @@ class CompleteOrderView(APIView):
     View for completing order.
     """
 
-    permission_classes = [IsBarista]
-
     @swagger_auto_schema(
         operation_summary="Complete order",
         operation_description="Use this endpoint to complete order.",
