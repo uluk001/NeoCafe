@@ -21,7 +21,6 @@ from apps.storage.views import (
     ReadyMadeProductUpdateView, ScheduleUpdateView,
     UpdateCategoryView, UpdateIngredientView,
     PutImageToReadyMadeProductView,
-    TestView,
 )
 
 # Category URLs
@@ -32,10 +31,6 @@ urlpatterns = [
     path("categories/update/<int:pk>/", UpdateCategoryView.as_view()),
 ]
 
-# Test URLs
-urlpatterns += [
-    path("test/", TestView.as_view()),
-]
 
 # Employee URLs
 urlpatterns += [

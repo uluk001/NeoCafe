@@ -17,7 +17,6 @@ def send_phone_number_verification(user_id):
     """
     Create verification code and send it to user phone number
     """
-    print("send_phone_number_verification" + str(user_id))
     user = CustomUser.objects.get(id=user_id)
     code = generate_code()
     expiration = timezone.now() + timezone.timedelta(minutes=10)

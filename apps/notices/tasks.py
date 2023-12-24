@@ -7,6 +7,15 @@ from apps.branches.models import Branch
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import time
+from apps.storage.services import (
+    get_ingredients_in_stock_more_than_minimal_limit_in_branches,
+    get_ready_made_products_in_stock_more_than_minimal_limit_in_branches,
+)
+from apps.notices.services import (
+    if_exists_admin_notification,
+    create_admin_notification,
+)
+
 
 SLEEP_TIME = 2
 
@@ -74,5 +83,42 @@ def update_notifications_on_client_side(client_id):
         f'user_{client_id}',
         {
             'type': 'get_notification',
+        }
+    )
+
+
+@shared_task
+def create_notification_for_admin_task():
+    """
+    Creates notification for admin.
+    """
+    ingredients_in_stock_more_than_minimal_limit = get_ingredients_in_stock_more_than_minimal_limit_in_branches()
+    ready_made_products_in_stock_more_than_minimal_limit = get_ready_made_products_in_stock_more_than_minimal_limit_in_branches()
+    for ingredient in ingredients_in_stock_more_than_minimal_limit:
+        if not if_exists_admin_notification(
+            f'Ingredient {ingredient["ingredient_name"]} in shop {ingredient["name_of_shop"]} is running out of stock',
+            ingredient["branch_id_annotation"]
+        ):
+            print('create_admin_notification' + str(ingredient["branch_id_annotation"]))
+            create_admin_notification(
+                f'Ingredient {ingredient["ingredient_name"]} in shop {ingredient["name_of_shop"]} is running out of stock',
+                ingredient["branch_id_annotation"]
+            )
+    for ready_made_product in ready_made_products_in_stock_more_than_minimal_limit:
+        if not if_exists_admin_notification(
+            f'Ready made product {ready_made_product["ready_made_product_name"]} in shop {ready_made_product["name_of_shop"]} is running out of stock',
+            ready_made_product["branch_id_annotation"]
+        ):
+            print('create_admin_notification' + str(ready_made_product["branch_id_annotation"]))
+            create_admin_notification(
+                f'Ready made product {ready_made_product["ready_made_product_name"]} in shop {ready_made_product["name_of_shop"]} is running out of stock',
+                ready_made_product["branch_id_annotation"]
+            )
+    time.sleep(SLEEP_TIME)
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'admin',
+        {
+            'type': 'get_admin_notification',
         }
     )

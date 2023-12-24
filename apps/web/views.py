@@ -203,8 +203,6 @@ class CompleteOrderView(APIView):
         """
         Complete order.
         """
-        print(request.GET)
-        print(request.GET.get("order_id"))
         order_id = request.GET.get("order_id")
         if not order_id:
             return Response(

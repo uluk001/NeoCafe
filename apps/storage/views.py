@@ -30,8 +30,6 @@ from apps.storage.services import (
     get_available_at_the_branch, get_categories, get_employees,
     get_ingrediants, get_items, get_low_stock_ingredients_in_branch,
     get_ready_made_products, get_specific_category, get_specific_employee,
-    check_if_ingredients_in_stock_more_than_minimal_limit_in_branches,
-    check_if_ready_made_products_in_stock_more_than_minimal_limit_in_branches,
 )
 
 
@@ -1260,16 +1258,3 @@ class PutImageToReadyMadeProductView(generics.UpdateAPIView):
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
-
-
-class TestView(APIView):
-    """
-    Test view.
-    """
-
-    def get(self, request):
-        """
-        Test method.
-        """
-        ingredient = get_ingrediants().filter(pk=1).first()
-        return Response({"message": check_if_ready_made_products_in_stock_more_than_minimal_limit_in_branches()}, status=200)

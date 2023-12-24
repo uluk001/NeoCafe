@@ -1,8 +1,11 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
-from .models import BaristaNotification, ClentNotification
-from apps.accounts.models import CustomUser
+from .models import (
+    BaristaNotification, ClentNotification,
+    AdminNotification,
+)
+
 
 class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
     """
@@ -135,3 +138,67 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
 
     async def receive_get_notification(self, event):
         await self.get_notification()
+
+
+
+class NotificationToAdminConsumer(AsyncWebsocketConsumer):
+    """
+    Consumer for sending notifications to admin.
+    """
+    async def connect(self):
+        self.admin_group_name = 'admin'
+        # Connect to group
+        await self.channel_layer.group_add(
+            self.admin_group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+        await self.get_admin_notification()
+
+    async def disconnect(self, close_code):
+        # Disconnect from group
+        await self.channel_layer.group_discard(
+            self.admin_group_name,
+            self.channel_name
+        )
+
+    async def get_admin_notification(self, event=None):
+        # Send message to barista
+        notifications = await sync_to_async(
+            list, thread_sensitive=True
+        )(
+            AdminNotification.objects.select_related('branch').all()
+        )
+        notifications_list = []
+        for notification in notifications:
+            branch_name = await sync_to_async(
+                getattr, thread_sensitive=True
+            )(
+                notification.branch, 'name_of_shop'
+            )
+            notifications_list.append({
+                'id': notification.id,
+                'title': notification.title,
+                'text': notification.text,
+                'branch': branch_name,
+                'date_of_notification': notification.date_of_notification.strftime('%d.%m.%Y')
+            })
+        await self.send(text_data=json.dumps({
+            'notifications': notifications_list
+        }))
+
+    async def get_admin_notification_handler(self, event):
+        print('get_admin_notification_handler')
+        await self.get_admin_notification()
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+
+    async def send_admin_notification(self, event):
+        notification = event['notification']
+
+        # Send message to barista
+        await self.send(text_data=json.dumps({
+            'notification': notification
+        }))

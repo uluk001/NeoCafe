@@ -5,7 +5,8 @@ from apps.accounts.models import CustomUser, EmployeeSchedule
 
 from .models import (
     AvailableAtTheBranch, Category, Ingredient,
-    Item, ReadyMadeProduct, MinimalLimitReached
+    Item, ReadyMadeProduct, MinimalLimitReached,
+    ReadyMadeProductAvailableAtTheBranch,
 )
 from .serializers import (
     AvailableAtTheBranchSerializer, LowStockIngredientSerializer
@@ -120,7 +121,7 @@ def get_low_stock_ingredients_in_branch(branch_id):
     return serializer.data
 
 
-def check_if_ingredients_in_stock_more_than_minimal_limit_in_branches():
+def get_ingredients_in_stock_more_than_minimal_limit_in_branches():
     """Check if ingredients in stock more than minimal limit in branches"""
     low_stock_ingredients = (
         AvailableAtTheBranch.objects
@@ -135,32 +136,34 @@ def check_if_ingredients_in_stock_more_than_minimal_limit_in_branches():
                 .values('quantity')[:1]
             ),
             name_of_shop=models.F('branch__name_of_shop'),
+            branch_id_annotation=models.F('branch__id'),
             ingredient_name=models.F('ingredient__name')
         )
         .filter(quantity__lt=models.F('min_limit'))
-        .values('name_of_shop', 'ingredient_name', 'quantity', 'min_limit')
+        .values('branch_id_annotation', 'name_of_shop', 'ingredient_name', 'quantity', 'min_limit')
     )
     return low_stock_ingredients
 
 
-def check_if_ready_made_products_in_stock_more_than_minimal_limit_in_branches():
+def get_ready_made_products_in_stock_more_than_minimal_limit_in_branches():
     """Check if ready made products in stock more than minimal limit in branches"""
     low_stock_ready_made_products = (
-        ReadyMadeProduct.objects
-        .select_related('branch')
+        ReadyMadeProductAvailableAtTheBranch.objects
+        .select_related('ready_made_product', 'branch')
         .annotate(
             min_limit=models.Subquery(
                 MinimalLimitReached.objects
                 .filter(
                     branch=models.OuterRef('branch'),
-                    ready_made_product=models.OuterRef('id')
+                    ready_made_product=models.OuterRef('ready_made_product')
                 )
                 .values('quantity')[:1]
             ),
             name_of_shop=models.F('branch__name_of_shop'),
-            ready_made_product_name=models.F('name')
+            branch_id_annotation=models.F('branch__id'),
+            ready_made_product_name=models.F('ready_made_product__name')
         )
         .filter(quantity__lt=models.F('min_limit'))
-        .values('name_of_shop', 'ready_made_product_name', 'quantity', 'min_limit')
+        .values('branch_id_annotation', 'name_of_shop', 'ready_made_product_name', 'quantity', 'min_limit')
     )
     return low_stock_ready_made_products
