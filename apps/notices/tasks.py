@@ -1,5 +1,8 @@
 from celery import shared_task
-from apps.notices.models import BaristaNotification, ClentNotification
+from apps.notices.models import (
+    BaristaNotification, ClentNotification,
+    AdminNotification,
+)
 from apps.branches.models import Branch
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -30,6 +33,18 @@ def create_notification_for_client(client_id, title, body):
         client_id=client_id,
         title=title,
         body=body,
+    )
+
+
+def create_notification_for_admin(title, running_out_of, branch_id):
+    """
+    Creates notification for admin.
+    """
+    branch = Branch.objects.get(id=branch_id)
+    AdminNotification.objects.create(
+        title=title,
+        running_out_of=running_out_of,
+        branch=branch,
     )
 
 

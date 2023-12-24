@@ -3,7 +3,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAdminUser
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
 
+from apps.storage.filters import BranchFilter
 from .models import Branch
 from .serializers import (BranchCreateSerializer, BranchSerializer,
                           BranchUpdateSerializer, PutImageSerializer,
@@ -54,6 +57,8 @@ class BranchListView(ListAPIView):
 
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_class = BranchFilter
 
 
 class BranchCreateView(CreateAPIView):

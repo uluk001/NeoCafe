@@ -67,3 +67,16 @@ class EmployeeFilter(filters.FilterSet):
 
     def get_queryset(self):
         return get_employees()
+
+
+class BranchFilter(filters.FilterSet):
+    """
+    Filter for Branch
+    """
+
+    id = filters.NumberFilter(field_name="id")
+    name = filters.CharFilter(field_name="name_of_shop", lookup_expr="icontains")
+
+    class Meta:
+        model = Branch
+        fields = ["name", "id"]
