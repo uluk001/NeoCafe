@@ -28,6 +28,18 @@ def delete_client_notification(id):
         return False
 
 
+def clear_waiter_notifications(waiter_id):
+    """
+    Deletes notifications.
+    """
+    try:
+        notifications = BaristaNotification.objects.filter(client_id=waiter_id)
+        notifications.delete()
+        return True
+    except:
+        return False
+
+
 def if_exists_admin_notification(text, branch_id):
     """
     Checks if notification exists.
