@@ -109,7 +109,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     item_image = serializers.SerializerMethodField()
     item_id = serializers.SerializerMethodField()
     item_category = serializers.SerializerMethodField()
-    is_ready_made_product = serializers.BooleanField()
+    is_ready_made_product = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
