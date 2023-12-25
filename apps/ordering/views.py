@@ -201,13 +201,6 @@ class AddItemToOrderView(APIView):
                 required=True,
                 description='Whether the item is a ready-made product',
             ),
-            openapi.Parameter(
-                name='quantity',
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                required=True,
-                description='Quantity of the item',
-            ),
         ],
     )
 
@@ -219,7 +212,6 @@ class AddItemToOrderView(APIView):
             order_id=request.query_params['order_id'],
             item_id=request.query_params['item_id'],
             is_ready_made_product=request.query_params['is_ready_made_product'],
-            quantity=request.query_params['quantity'],
         )
         if order:
             return Response(

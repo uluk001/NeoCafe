@@ -107,12 +107,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
     item_price = serializers.SerializerMethodField()
     item_total_price = serializers.SerializerMethodField()
     item_image = serializers.SerializerMethodField()
-    item_id = serializers.SerializerMetaclass
+    item_id = serializers.SerializerMethodField()
     item_category = serializers.SerializerMethodField()
+    is_ready_made_product = serializers.BooleanField()
 
     class Meta:
         model = OrderItem
-        fields = ['item_name', 'item_price', 'quantity', 'item_total_price', 'item_image', 'item_id', 'item_category']
+        fields = ['item_name', 'item_price', 'quantity', 'item_total_price', 'item_image', 'item_id', 'item_category', 'is_ready_made_product']
 
     def get_item_total_price(self, obj):
         if obj.item is not None:
@@ -143,6 +144,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         if obj.item is not None:
             return obj.item.category.name
         return obj.ready_made_product.category.name
+
+    def get_is_ready_made_product(self, obj):
+        return obj.item is None
 
 
 class OrderSerializer(serializers.ModelSerializer):

@@ -129,7 +129,7 @@ def reorder(order_id):
         return order_create
 
 
-def add_item_to_order(order_id, item_id, quantity, is_ready_made_product):
+def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
     """
     Adds item to order.
     """
@@ -140,11 +140,19 @@ def add_item_to_order(order_id, item_id, quantity, is_ready_made_product):
         if is_ready_made_product:
             ready_made_product = ReadyMadeProduct.objects.get(id=item_id)
             if check_if_ready_made_product_can_be_made(ready_made_product, order.customer.branch, quantity):
-                order_item = OrderItem.objects.create(
-                    order=order,
-                    ready_made_product=ready_made_product,
-                    quantity=quantity,
-                )
+                try:
+                    order_item = OrderItem.objects.get(
+                        order=order,
+                        ready_made_product=ready_made_product,
+                    )
+                    order_item.quantity += quantity
+                    order_item.save()
+                except OrderItem.DoesNotExist:
+                    order_item = OrderItem.objects.create(
+                        order=order,
+                        ready_made_product=ready_made_product,
+                        quantity=quantity,
+                    )
                 update_ready_made_product_stock_on_cooking(ready_made_product, order.customer.branch, quantity)
                 order.total_price += ready_made_product.price * quantity
                 order.save()
@@ -152,18 +160,29 @@ def add_item_to_order(order_id, item_id, quantity, is_ready_made_product):
             else:
                 return None
         else:
-            item = Item.objects.get(id=item_id)
-            if check_if_items_can_be_made(item, order.customer.branch.id, quantity):
-                order_item = OrderItem.objects.create(
-                    order=order,
-                    item=item,
-                    quantity=quantity,
-                )
-                update_ingredient_stock_on_cooking(item, order.customer.branch, quantity)
-                order.total_price += item.price * quantity
-                order.save()
-                return order_item
-            else:
+            try:
+                item = Item.objects.get(id=item_id)
+                if check_if_items_can_be_made(item, order.customer.branch.id, quantity):
+                    try:
+                        order_item = OrderItem.objects.get(
+                            order=order,
+                            item=item,
+                        )
+                        order_item.quantity += quantity
+                        order_item.save()
+                    except OrderItem.DoesNotExist:
+                        order_item = OrderItem.objects.create(
+                            order=order,
+                            item=item,
+                            quantity=quantity,
+                        )
+                    update_ingredient_stock_on_cooking(item, order.customer.branch, quantity)
+                    order.total_price += item.price * quantity
+                    order.save()
+                    return order_item
+                else:
+                    return None
+            except Item.DoesNotExist:
                 return None
 
 
@@ -183,14 +202,25 @@ def remove_order_item(order_item_id):
         order = order_item.order
         if not check_if_order_new(order):
             return None
-        order_item.delete()
-        order_items = OrderItem.objects.filter(order=order)
-        return_order_item_to_storage(order_item)
-        if len(order_items) == 0:
-            order.delete()
+        order_item.quantity -= 1
+        if order_item.quantity == 0:
+            order_item.delete()
         else:
-            order.total_price = sum([order_item.item.price * order_item.quantity for order_item in order_items])
-            order.save()
+            order_item.save()
+        if order_item.ready_made_product:
+            return_ready_made_product_to_storage(
+                order_item.ready_made_product,
+                order_item.order.branch_id,
+                1,
+            )
+        else:
+            return_item_ingredients_to_storage(
+                order_item.item_id,
+                order_item.order.branch_id,
+                1,
+            )
+        order.total_price -= order_item.item.price
+        order.save()
         return order
 
 
