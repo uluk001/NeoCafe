@@ -150,8 +150,8 @@ def complete_order(order_id):
     order_items = get_order_items_str(order.id)
     create_notification_for_client.delay(
         order.customer.id,
-        'Бариста завершил заказ',
-        f'Ваш заказ №{order.id} завершен. {order_items}',
+        'Бариста завершил заказ' if not order.customer.position == 'waiter' else 'Закрытие счета',
+        f'Ваш заказ №{order.id} завершен. {order_items}' if not order.customer.position == 'waiter' else f'Стол №{order.table_number} закрыт',
     )
     return True
 

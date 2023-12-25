@@ -189,7 +189,6 @@ class NotificationToAdminConsumer(AsyncWebsocketConsumer):
         }))
 
     async def get_admin_notification_handler(self, event):
-        print('get_admin_notification_handler')
         await self.get_admin_notification()
 
     async def receive(self, text_data):

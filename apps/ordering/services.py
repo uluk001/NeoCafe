@@ -82,12 +82,12 @@ def create_order(user_id, total_price, items, in_an_institution, spent_bonus_poi
         )
         create_notification_for_client.delay(
             client_id=user.id,
-            title=f'Ваш заказ №{order.id} принят',
+            title=f'Ваш заказ №{order.id} создан' if user.position == 'waiter' else f'Заказ №{order.id} создан',
             body=order_items_names_and_quantities_str,
         )
         create_notification_for_barista.delay(
             order_id=order.id,
-            title=f'Заказ №{order.id} принят (в заведении), ожидайте' if in_an_institution else f'Заказ №{order.id} принят',
+            title=f'Заказ №{order.id} создан (в заведении), ожидайте' if in_an_institution else f'Заказ №{order.id} создан',
             body=order_items_names_and_quantities_str,
             branch_id=user.branch.id,
         )
