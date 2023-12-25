@@ -103,6 +103,7 @@ class ChangeBranchSerializer(serializers.Serializer):
 
 # ==================== Order Serializers ====================
 class OrderItemSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     item_name = serializers.SerializerMethodField()
     item_price = serializers.SerializerMethodField()
     item_total_price = serializers.SerializerMethodField()
@@ -113,7 +114,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['item_name', 'item_price', 'quantity', 'item_total_price', 'item_image', 'item_id', 'item_category', 'is_ready_made_product']
+        fields = ['id', 'item_name', 'item_price', 'quantity', 'item_total_price', 'item_image', 'item_id', 'item_category', 'is_ready_made_product']
 
     def get_item_total_price(self, obj):
         if obj.item is not None:
@@ -147,6 +148,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     def get_is_ready_made_product(self, obj):
         return obj.item is None
+
+    def get_id(self, obj):
+        return obj.id
 
 
 class OrderSerializer(serializers.ModelSerializer):
