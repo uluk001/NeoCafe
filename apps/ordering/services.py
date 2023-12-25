@@ -135,8 +135,11 @@ def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
     """
     with transaction.atomic():
         order = Order.objects.get(id=order_id)
+        print(order.status)
         if not check_if_order_new(order):
+            print('Order is not new.')
             return None
+        print('Order is new.')
         if is_ready_made_product:
             ready_made_product = ReadyMadeProduct.objects.get(id=item_id)
             if check_if_ready_made_product_can_be_made(ready_made_product, order.customer.branch, quantity):
@@ -148,7 +151,7 @@ def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
                     order_item.quantity += quantity
                     order_item.save()
                 except OrderItem.DoesNotExist:
-                    order_item = OrderItem.objects.create(
+                    OrderItem.objects.create(
                         order=order,
                         ready_made_product=ready_made_product,
                         quantity=quantity,
@@ -156,7 +159,7 @@ def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
                 update_ready_made_product_stock_on_cooking(ready_made_product, order.customer.branch, quantity)
                 order.total_price += ready_made_product.price * quantity
                 order.save()
-                return order_item
+                return order  # Return the Order object
             else:
                 return None
         else:
@@ -171,7 +174,7 @@ def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
                         order_item.quantity += quantity
                         order_item.save()
                     except OrderItem.DoesNotExist:
-                        order_item = OrderItem.objects.create(
+                        OrderItem.objects.create(
                             order=order,
                             item=item,
                             quantity=quantity,
@@ -179,10 +182,11 @@ def add_item_to_order(order_id, item_id, is_ready_made_product, quantity=1):
                     update_ingredient_stock_on_cooking(item, order.customer.branch, quantity)
                     order.total_price += item.price * quantity
                     order.save()
-                    return order_item
+                    return order  # Return the Order object
                 else:
                     return None
             except Item.DoesNotExist:
+                print('Item does not exist.')
                 return None
 
 

@@ -208,10 +208,13 @@ class AddItemToOrderView(APIView):
         """
         Adds item to order.
         """
+        order_id = request.query_params['order_id']
+        item_id = request.query_params['item_id']
+        is_ready_made_product = True if request.query_params['is_ready_made_product'] == 'true' else False
         order = add_item_to_order(
-            order_id=request.query_params['order_id'],
-            item_id=request.query_params['item_id'],
-            is_ready_made_product=request.query_params['is_ready_made_product'],
+            order_id=order_id,
+            item_id=item_id,
+            is_ready_made_product=is_ready_made_product,
         )
         if order:
             return Response(

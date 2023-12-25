@@ -176,7 +176,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return obj.customer.first_name if obj.customer.position == 'waiter' else None
 
     def get_table(self, obj):
-        return obj.table if obj.table > 0 else None
+        return obj.table if obj.table is not None and obj.table > 0 else None
 
 
 class MyOrdersListSerializer(serializers.ModelSerializer):
