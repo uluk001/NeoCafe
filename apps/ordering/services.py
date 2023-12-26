@@ -206,6 +206,7 @@ def remove_order_item(order_item_id):
         order = order_item.order
         if not check_if_order_new(order):
             return None
+        item_price = order_item.item.price
         order_item.quantity -= 1
         if order_item.quantity == 0:
             order_item.delete()
@@ -223,10 +224,9 @@ def remove_order_item(order_item_id):
                 order_item.order.branch_id,
                 1,
             )
-        order.total_price -= order_item.item.price
+        order.total_price -= item_price
         order.save()
         return order
-
 
 # ============================================================
 # Getters
