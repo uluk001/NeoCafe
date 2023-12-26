@@ -61,7 +61,7 @@ def get_orders_in_institution(branch_id):
     orders = Order.objects.filter(
         branch_id=branch_id,
         in_an_institution=True,
-        status__in=['new', 'in_progress', 'ready'],
+        status__in=['new', 'in_progress', 'ready', 'canceled', 'completed'],
         table__gt=0,
     ).order_by("-created_at")
 
