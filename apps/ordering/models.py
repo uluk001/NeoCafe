@@ -3,6 +3,7 @@ Models for ordering app
 """
 from django.db import models
 from apps.storage.models import Item
+from django.utils import timezone
 from apps.accounts.models import CustomUser
 
 
@@ -113,6 +114,10 @@ class OrderItem(models.Model):
         default=1,
         verbose_name="Quantity",
     )
+    created_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="Created at",
+    )
 
     def __str__(self):
         return f"Order #{self.order.id} item {self.item}"
@@ -120,4 +125,4 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Order item"
         verbose_name_plural = "Order items"
-        ordering = ["order"]
+        ordering = ["-created_at"]
