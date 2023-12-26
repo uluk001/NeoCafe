@@ -204,9 +204,13 @@ def remove_order_item(order_item_id):
     with transaction.atomic():
         order_item = OrderItem.objects.get(id=order_item_id)
         order = order_item.order
+        print(order.status)
         if not check_if_order_new(order):
             return None
-        item_price = order_item.item.price
+        if order_item.item is not None:
+            item_price = order_item.item.price
+        else:
+            item_price = order_item.ready_made_product.price
         order_item.quantity -= 1
         if order_item.quantity == 0:
             order_item.delete()
@@ -224,9 +228,12 @@ def remove_order_item(order_item_id):
                 order_item.order.branch_id,
                 1,
             )
+        print(order.total_price)
+        print(item_price)
         order.total_price -= item_price
         order.save()
         return order
+
 
 # ============================================================
 # Getters

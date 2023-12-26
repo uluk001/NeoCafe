@@ -164,6 +164,8 @@ class RemoveOrderItemView(APIView):
         Removes order item.
         """
         remove_order_item(request.query_params['order_item_id'])
+        print(request.query_params['order_item_id'])
+        print('here')
         return Response(
             {
                 'message': 'Order item removed.',
