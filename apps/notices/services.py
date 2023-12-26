@@ -33,10 +33,10 @@ def clear_waiter_notifications(waiter_id):
     Deletes notifications.
     """
     try:
-        notifications = BaristaNotification.objects.filter(client_id=waiter_id)
+        notifications = ClentNotification.objects.filter(client_id=waiter_id)
         notifications.delete()
         return True
-    except:
+    except Exception as e:
         return False
 
 
