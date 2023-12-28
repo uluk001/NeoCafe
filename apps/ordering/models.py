@@ -11,6 +11,7 @@ class Order(models.Model):
     """
     Model for orders.
     """
+
     STATUS_CHOICES = [
         ("new", "New"),
         ("in_progress", "In progress"),
@@ -88,6 +89,7 @@ class OrderItem(models.Model):
     """
     Model for order items.
     """
+
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,

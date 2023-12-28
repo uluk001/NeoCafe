@@ -9,6 +9,7 @@ class OrderItemInline(admin.TabularInline):
     """
     Inline model for order items.
     """
+
     model = OrderItem
     extra = 1
 
@@ -17,6 +18,7 @@ class OrderAdmin(admin.ModelAdmin):
     """
     Admin model for orders.
     """
+
     list_display = [
         "id",
         "customer",

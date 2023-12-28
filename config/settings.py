@@ -23,15 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("DJANGO_SECRET_KEY", default="django-insecure-#m&!7@q0@#_9q1j1x#&g7qy7$-1g0^!$-q^j6&g^x1qy8h&0!%")
+SECRET_KEY = config(
+    "DJANGO_SECRET_KEY",
+    default="django-insecure-#m&!7@q0@#_9q1j1x#&g7qy7$-1g0^!$-q^j6&g^x1qy8h&0!%",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = ["muha-backender.org.kg", "164.92.160.185", "127.0.0.1"]
 
 # Algolia settings.
-ALGOLIA_APPLICATION_ID = config('ALGOLIA_APPLICATION_ID', default='7HIUPZXQW4')
-ALGOLIA_API_KEY = config('ALGOLIA_API_KEY', default='fa4f918c6a9740c7266d36cbcac3817d')
+ALGOLIA_APPLICATION_ID = config("ALGOLIA_APPLICATION_ID", default="7HIUPZXQW4")
+ALGOLIA_API_KEY = config("ALGOLIA_API_KEY", default="fa4f918c6a9740c7266d36cbcac3817d")
 
 # Redis settings.
 REDIS_HOST = config("REDIS_HOST", default="redis")
@@ -46,7 +49,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third-Party Apps
     "rest_framework",
     "rest_framework.authtoken",
@@ -55,8 +57,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "django_filters",
     "phonenumber_field",
-    "channels", 
-
+    "channels",
     # Local Apps
     "apps.storage",
     "apps.branches",
@@ -170,7 +171,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 # Включение сжатия файлов
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -251,6 +252,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Algolia settings.
 ALGOLIA = {
-    'APPLICATION_ID': ALGOLIA_APPLICATION_ID,
-    'API_KEY': ALGOLIA_API_KEY,
+    "APPLICATION_ID": ALGOLIA_APPLICATION_ID,
+    "API_KEY": ALGOLIA_API_KEY,
 }

@@ -2,13 +2,21 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.accounts.views import (
-    AdminLoginView, ClientBirthDateView,
-    ClientConfirmLoginView, ClientConfirmPhoneNumberView,
-    ClientEditProfileView, ClientUserProfileView,
-    LoginForClientView, LoginView, RegisterView,
-    ResendCodeView, ResendCodeWithPreTokenView,
-    TemporaryLoginView, WaiterLoginView,
-    WaiterTemporaryLoginView, EmployeeScheduleView,
+    AdminLoginView,
+    ClientBirthDateView,
+    ClientConfirmLoginView,
+    ClientConfirmPhoneNumberView,
+    ClientEditProfileView,
+    ClientUserProfileView,
+    LoginForClientView,
+    LoginView,
+    RegisterView,
+    ResendCodeView,
+    ResendCodeWithPreTokenView,
+    TemporaryLoginView,
+    WaiterLoginView,
+    WaiterTemporaryLoginView,
+    EmployeeScheduleView,
     UpdateWaiterProfileView,
 )
 
@@ -36,7 +44,8 @@ urlpatterns = [
     path(
         "temporary-login-waiter/", WaiterTemporaryLoginView.as_view()
     ),  # accounts/temporary-login-waiter/
-
     path("my-schedule/", EmployeeScheduleView.as_view()),  # accounts/employee-schedule/
-    path("update-waiter-profile/", UpdateWaiterProfileView.as_view()),  # accounts/update-waiter-profile/
+    path(
+        "update-waiter-profile/", UpdateWaiterProfileView.as_view()
+    ),  # accounts/update-waiter-profile/
 ]

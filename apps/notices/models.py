@@ -13,15 +13,16 @@ class BaristaNotification(models.Model):
     def __str__(self):
         return self.title
 
+
 class ClentNotification(models.Model):
     client_id = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     body = models.TextField()
-    status = models.CharField(max_length=255, default='new')
+    status = models.CharField(max_length=255, default="new")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.client_id} - {self.title}'
+        return f"{self.client_id} - {self.title}"
 
 
 class AdminNotification(models.Model):

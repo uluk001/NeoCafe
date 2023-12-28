@@ -4,10 +4,14 @@ Module for admin panel configuration for storage app.
 from django.contrib import admin
 
 from apps.storage.models import (
-    AvailableAtTheBranch, Category, Composition,
-    Ingredient, Item, MinimalLimitReached,
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    MinimalLimitReached,
     ReadyMadeProduct,
-    ReadyMadeProductAvailableAtTheBranch
+    ReadyMadeProductAvailableAtTheBranch,
 )
 
 

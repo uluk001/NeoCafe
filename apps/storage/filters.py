@@ -6,8 +6,12 @@ from django_filters import rest_framework as filters
 from apps.accounts.models import CustomUser
 from apps.branches.models import Branch
 from apps.storage.models import (
-    AvailableAtTheBranch, Category, Composition,
-    Ingredient, Item, ReadyMadeProduct
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    ReadyMadeProduct,
 )
 
 from .services import get_employees

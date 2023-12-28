@@ -4,10 +4,17 @@ Customers URL Configuration
 from django.urls import path
 
 from .views import (
-    ChangeBranchView, CompatibleItemsView, Menu,
-    PopularItemsView, ItemSearchView, MyBonusesView,
-    CheckIfItemCanBeMadeView, MyOrdersView, MyOrderDetailView,
-    MyIdView, MenuItemDetailView
+    ChangeBranchView,
+    CompatibleItemsView,
+    Menu,
+    PopularItemsView,
+    ItemSearchView,
+    MyBonusesView,
+    CheckIfItemCanBeMadeView,
+    MyOrdersView,
+    MyOrderDetailView,
+    MyIdView,
+    MenuItemDetailView,
 )
 from apps.storage.views import (
     ListCategoryView,

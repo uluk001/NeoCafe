@@ -9,17 +9,26 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from utils.phone_number_verification import (
     generate_pre_2fa_token,
     get_user_by_token,
-    send_phone_number_verification
+    send_phone_number_verification,
 )
 
-from .models import CustomUser, PhoneNumberVerification, EmployeeSchedule, EmployeeWorkdays
+from .models import (
+    CustomUser,
+    PhoneNumberVerification,
+    EmployeeSchedule,
+    EmployeeWorkdays,
+)
 from .permissions import IsPhoneNumberVerified, IsWaiter, IsEmployee
 from .serializers import (
-    AdminLoginSerializer, ClientBirthDateSerializer,
+    AdminLoginSerializer,
+    ClientBirthDateSerializer,
     ClientConfirmPhoneNumberSerializer,
-    ClientEditProfileSerializer, CustomUserSerializer,
-    LoginForClientSerializer, LoginSerializer,
-    ProfileSerializer, WaiterLoginSerializer,
+    ClientEditProfileSerializer,
+    CustomUserSerializer,
+    LoginForClientSerializer,
+    LoginSerializer,
+    ProfileSerializer,
+    WaiterLoginSerializer,
     UpdateWaiterProfileSerializer,
 )
 

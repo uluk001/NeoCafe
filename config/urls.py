@@ -33,7 +33,6 @@ urlpatterns = [
     path("notices/", include("apps.notices.urls")),
     path("web/", include("apps.web.urls")),
     path("waiter/", include("apps.waiter.urls")),
-
     # Swagger
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"

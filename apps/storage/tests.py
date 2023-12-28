@@ -7,9 +7,15 @@ from rest_framework.test import APIClient
 from apps.accounts.models import CustomUser as User
 from apps.accounts.models import EmployeeSchedule, EmployeeWorkdays
 from apps.branches.models import Branch, Schedule, Workdays
-from apps.storage.models import (AvailableAtTheBranch, Category, Ingredient,
-                                 Item, MinimalLimitReached, ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch,
+    Category,
+    Ingredient,
+    Item,
+    MinimalLimitReached,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch,
+)
 
 
 # ==================== Category Tests ==================== #
@@ -1173,7 +1179,10 @@ class ReadyMadeProductViewTest(TestCase):
         self.assertTrue(
             ReadyMadeProduct.objects.filter(name="New Ready Made Product").exists()
         )
-        self.assertEqual(ReadyMadeProduct.objects.filter(description="Test Description 001").count(), 1)
+        self.assertEqual(
+            ReadyMadeProduct.objects.filter(description="Test Description 001").count(),
+            1,
+        )
         self.assertEqual(
             ReadyMadeProductAvailableAtTheBranch.objects.filter(
                 ready_made_product__name="New Ready Made Product"

@@ -93,7 +93,9 @@ class ReadyMadeProduct(models.Model):
     name = models.CharField(max_length=255)
     date_of_arrival = models.DateField(auto_now=True)
     description = models.TextField(null=True, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     def __str__(self):
         return f"{self.name}"
@@ -153,7 +155,9 @@ class ReadyMadeProductAvailableAtTheBranch(models.Model):
     """
 
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    ready_made_product = models.ForeignKey(ReadyMadeProduct, related_name='availables', on_delete=models.CASCADE)
+    ready_made_product = models.ForeignKey(
+        ReadyMadeProduct, related_name="availables", on_delete=models.CASCADE
+    )
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):

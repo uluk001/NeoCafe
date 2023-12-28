@@ -3,7 +3,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.filters import (
-    OrderingFilter, SearchFilter,
+    OrderingFilter,
+    SearchFilter,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,15 +14,21 @@ from apps.ordering.models import Order
 from apps.branches.models import Branch
 from apps.storage.models import Item, ReadyMadeProduct
 from utils.menu import (
-    get_compatibles, item_search,
-    get_popular_items, combine_items_and_ready_made_products,
-    check_if_items_can_be_made, check_if_ready_made_product_can_be_made,
+    get_compatibles,
+    item_search,
+    get_popular_items,
+    combine_items_and_ready_made_products,
+    check_if_items_can_be_made,
+    check_if_ready_made_product_can_be_made,
 )
 from apps.storage.serializers import ItemSerializer
 from .serializers import (
-    ChangeBranchSerializer, ExtendedItemSerializer,
-    CheckIfItemCanBeMadeSerializer, OrderSerializer,
-    OrderItemSerializer, UserOrdersSerializer,
+    ChangeBranchSerializer,
+    ExtendedItemSerializer,
+    CheckIfItemCanBeMadeSerializer,
+    OrderSerializer,
+    OrderItemSerializer,
+    UserOrdersSerializer,
     MenuItemDetailSerializer,
 )
 
@@ -72,7 +79,6 @@ class MenuItemDetailView(APIView):
             ),
         ],
     )
-
     def get(self, request, item_id, format=None):
         """
         Get menu item detail.
@@ -80,7 +86,11 @@ class MenuItemDetailView(APIView):
         is_ready_made_product = request.GET.get("is_ready_made_product", False)
         is_ready_made_product = True if is_ready_made_product == "true" else False
         try:
-            item = Item.objects.get(id=item_id) if not is_ready_made_product else ReadyMadeProduct.objects.get(id=item_id)
+            item = (
+                Item.objects.get(id=item_id)
+                if not is_ready_made_product
+                else ReadyMadeProduct.objects.get(id=item_id)
+            )
         except Item.DoesNotExist:
             return Response(
                 {"message": "Item does not exist."},
@@ -88,7 +98,7 @@ class MenuItemDetailView(APIView):
             )
         serializer = MenuItemDetailSerializer(
             item,
-            context={"id": item_id, "is_ready_made_product": is_ready_made_product}
+            context={"id": item_id, "is_ready_made_product": is_ready_made_product},
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 

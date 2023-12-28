@@ -5,10 +5,16 @@ from django.db import models, transaction
 from rest_framework import serializers
 
 from apps.accounts.models import CustomUser, EmployeeSchedule, EmployeeWorkdays
-from apps.storage.models import (AvailableAtTheBranch, Category, Composition,
-                                 Ingredient, Item, MinimalLimitReached,
-                                 ReadyMadeProduct,
-                                 ReadyMadeProductAvailableAtTheBranch)
+from apps.storage.models import (
+    AvailableAtTheBranch,
+    Category,
+    Composition,
+    Ingredient,
+    Item,
+    MinimalLimitReached,
+    ReadyMadeProduct,
+    ReadyMadeProductAvailableAtTheBranch,
+)
 
 
 # =====================================================================
@@ -130,7 +136,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         schedule_data = {"title": f"{validated_data['first_name']}'s schedule"}
 
         schedule = EmployeeSchedule.objects.create(**schedule_data)
-        password = validated_data.pop('password')
+        password = validated_data.pop("password")
         user = CustomUser.objects.create(schedule=schedule, **validated_data)
         user.set_password(password)
         user.save()
@@ -497,10 +503,12 @@ class LowStockIngredientSerializer(serializers.Serializer):
     """
     LowStockIngredient serializer.
     """
+
     name_of_shop = serializers.CharField()
     ingredient_name = serializers.CharField()
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2)
     min_limit = serializers.DecimalField(max_digits=10, decimal_places=2)
+
 
 # =====================================================================
 # ITEM SERIALIZERS

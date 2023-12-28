@@ -12,7 +12,6 @@ def get_branch_name_and_id_list():
     return branches
 
 
-
 def get_my_opened_orders_data(user):
     """
     Get opened orders of the user.
@@ -51,13 +50,19 @@ def get_specific_order_data(order_id):
     """
     Get specific order data.
     """
-    order = Order.objects.filter(
-        id=order_id,
-    ).select_related('branch').first()
+    order = (
+        Order.objects.filter(
+            id=order_id,
+        )
+        .select_related("branch")
+        .first()
+    )
 
     items = OrderItem.objects.filter(
         order=order_id,
-    ).select_related('item', 'item__category', 'ready_made_product', 'ready_made_product__category')
+    ).select_related(
+        "item", "item__category", "ready_made_product", "ready_made_product__category"
+    )
 
     data = {}
     data["order_id"] = order_id

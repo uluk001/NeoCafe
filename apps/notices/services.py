@@ -1,8 +1,10 @@
 from .models import (
-    BaristaNotification, ClentNotification,
+    BaristaNotification,
+    ClentNotification,
     AdminNotification,
 )
 from apps.branches.models import Branch
+
 
 def delete_baristas_notification(id):
     """
@@ -58,7 +60,9 @@ def create_admin_notification(text, branch_id):
     """
     try:
         branch = Branch.objects.get(id=branch_id)
-        notification = AdminNotification.objects.create(text=text, branch=branch, title='Running out of')
+        notification = AdminNotification.objects.create(
+            text=text, branch=branch, title="Running out of"
+        )
         return True
     except Exception as e:
         print(e)

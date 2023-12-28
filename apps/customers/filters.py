@@ -14,7 +14,7 @@ class MenuFilter(filters.FilterSet):
     category__id = filters.CharFilter(
         field_name="category__id", lookup_expr="icontains"
     )
-    can_be_made = filters.BooleanFilter(method='filter_can_be_made')
+    can_be_made = filters.BooleanFilter(method="filter_can_be_made")
 
     class Meta:
         model = Item
@@ -22,5 +22,9 @@ class MenuFilter(filters.FilterSet):
 
     def filter_can_be_made(self, queryset, name, value):
         if value:
-            return queryset.filter(id__in=combine_items_and_ready_made_products(self.request.user.branch.id))
+            return queryset.filter(
+                id__in=combine_items_and_ready_made_products(
+                    self.request.user.branch.id
+                )
+            )
         return queryset

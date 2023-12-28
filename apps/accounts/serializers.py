@@ -184,8 +184,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        if instance.position not in ['barista', 'waiter']:
-            representation.pop('bonus')
+        if instance.position not in ["barista", "waiter"]:
+            representation.pop("bonus")
         return representation
 
 

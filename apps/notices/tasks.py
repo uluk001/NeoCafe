@@ -1,6 +1,7 @@
 from celery import shared_task
 from apps.notices.models import (
-    BaristaNotification, ClentNotification,
+    BaristaNotification,
+    ClentNotification,
     AdminNotification,
 )
 from apps.branches.models import Branch
@@ -18,6 +19,7 @@ from apps.notices.services import (
 
 
 SLEEP_TIME = 2
+
 
 @shared_task
 def create_notification_for_barista(order_id, title, body, branch_id):
@@ -65,10 +67,10 @@ def update_notifications_on_barista_side(branch_id):
     time.sleep(SLEEP_TIME)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'branch_{branch_id}',
+        f"branch_{branch_id}",
         {
-            'type': 'get_notification',
-        }
+            "type": "get_notification",
+        },
     )
 
 
@@ -80,10 +82,10 @@ def update_notifications_on_client_side(client_id):
     time.sleep(SLEEP_TIME)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'user_{client_id}',
+        f"user_{client_id}",
         {
-            'type': 'get_notification',
-        }
+            "type": "get_notification",
+        },
     )
 
 
@@ -92,31 +94,35 @@ def create_notification_for_admin_task():
     """
     Creates notification for admin.
     """
-    ingredients_in_stock_more_than_minimal_limit = get_ingredients_in_stock_more_than_minimal_limit_in_branches()
-    ready_made_products_in_stock_more_than_minimal_limit = get_ready_made_products_in_stock_more_than_minimal_limit_in_branches()
+    ingredients_in_stock_more_than_minimal_limit = (
+        get_ingredients_in_stock_more_than_minimal_limit_in_branches()
+    )
+    ready_made_products_in_stock_more_than_minimal_limit = (
+        get_ready_made_products_in_stock_more_than_minimal_limit_in_branches()
+    )
     for ingredient in ingredients_in_stock_more_than_minimal_limit:
         if not if_exists_admin_notification(
             f'Ингредиент {ingredient["ingredient_name"]} в филиале {ingredient["name_of_shop"]} заканчивается',
-            ingredient["branch_id_annotation"]
+            ingredient["branch_id_annotation"],
         ):
             create_admin_notification(
                 f'Ингредиент {ingredient["ingredient_name"]} в филиале {ingredient["name_of_shop"]} заканчивается',
-                ingredient["branch_id_annotation"]
+                ingredient["branch_id_annotation"],
             )
     for ready_made_product in ready_made_products_in_stock_more_than_minimal_limit:
         if not if_exists_admin_notification(
-                f'Готовый продукт {ready_made_product["ready_made_product_name"]} в филиале {ready_made_product["name_of_shop"]} заканчивается',
-                ready_made_product["branch_id_annotation"]
+            f'Готовый продукт {ready_made_product["ready_made_product_name"]} в филиале {ready_made_product["name_of_shop"]} заканчивается',
+            ready_made_product["branch_id_annotation"],
         ):
             create_admin_notification(
                 f'Готовый продукт {ready_made_product["ready_made_product_name"]} в филиале {ready_made_product["name_of_shop"]} заканчивается',
-                ready_made_product["branch_id_annotation"]
+                ready_made_product["branch_id_annotation"],
             )
     time.sleep(SLEEP_TIME)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        f'admin',
+        f"admin",
         {
-            'type': 'get_admin_notification',
-        }
+            "type": "get_admin_notification",
+        },
     )

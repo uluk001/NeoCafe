@@ -8,8 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from .services import (
-    accept_order, cancel_order,
-    get_orders, complete_order,
+    accept_order,
+    cancel_order,
+    get_orders,
+    complete_order,
     make_order_ready,
 )
 from .permissions import IsBarista
@@ -35,7 +37,6 @@ class MyBranchIdView(APIView):
             200: openapi.Response("My branch id"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get my branch id.
@@ -71,7 +72,6 @@ class AcceptOrderView(APIView):
             400: openapi.Response("Order id not found"),
         },
     )
-
     def get(self, request, format=None):
         """
         Accept order.
@@ -114,7 +114,6 @@ class CancelOrderView(APIView):
             400: openapi.Response("Order id not found"),
         },
     )
-
     def get(self, request, format=None):
         """
         Cancel order.
@@ -157,7 +156,6 @@ class MakeOrderReadyView(APIView):
             400: openapi.Response("Order id not found"),
         },
     )
-
     def get(self, request, format=None):
         """
         Make order ready.
@@ -198,7 +196,6 @@ class CompleteOrderView(APIView):
             400: openapi.Response("Order id not found"),
         },
     )
-
     def get(self, request, format=None):
         """
         Complete order.
@@ -232,7 +229,6 @@ class GetInProcessTakeawayOrdersView(APIView):
             200: openapi.Response("In process orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get in process orders.
@@ -262,7 +258,6 @@ class GetCanceledTakeawayOrdersView(APIView):
             200: openapi.Response("Canceled takeaway orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get canceled takeaway orders.
@@ -292,7 +287,6 @@ class GetReadyTakeawayOrdersView(APIView):
             200: openapi.Response("Ready takeaway orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get ready takeaway orders.
@@ -322,7 +316,6 @@ class GetCompletedTakeawayOrdersView(APIView):
             200: openapi.Response("Completed takeaway orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get completed takeaway orders.
@@ -352,7 +345,6 @@ class GetInProcessInstitutionOrdersView(APIView):
             200: openapi.Response("In process institution orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get in process institution orders.
@@ -382,7 +374,6 @@ class GetCanceledInstitutionOrdersView(APIView):
             200: openapi.Response("Canceled institution orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get canceled institution orders.
@@ -412,7 +403,6 @@ class GetReadyInstitutionOrdersView(APIView):
             200: openapi.Response("Ready institution orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get ready institution orders.
@@ -442,7 +432,6 @@ class GetCompletedInstitutionOrdersView(APIView):
             200: openapi.Response("Completed institution orders"),
         },
     )
-
     def get(self, request, format=None):
         """
         Get completed institution orders.

@@ -3,10 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import BaristaNotification, AdminNotification
 from .services import (
-    delete_baristas_notification, delete_client_notification,
-    clear_waiter_notifications, delete_admin_notification,
+    delete_baristas_notification,
+    delete_client_notification,
+    clear_waiter_notifications,
+    delete_admin_notification,
     clear_admin_notifications,
 )
+
 
 class DeleteBaristaNotificationView(APIView):
     """
@@ -22,7 +25,7 @@ class DeleteBaristaNotificationView(APIView):
         """
         Delete notification.
         """
-        id = request.query_params.get('id')
+        id = request.query_params.get("id")
         if delete_baristas_notification(id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -42,7 +45,7 @@ class DeleteClientNotificationView(APIView):
         """
         Delete notification.
         """
-        id = request.query_params.get('id')
+        id = request.query_params.get("id")
         if delete_client_notification(id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -62,7 +65,7 @@ class ClearWaiterNotificationsView(APIView):
         """
         Delete notifications.
         """
-        waiter_id = request.query_params.get('waiter_id')
+        waiter_id = request.query_params.get("waiter_id")
         if clear_waiter_notifications(waiter_id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -82,7 +85,7 @@ class DeleteAdminNotificationView(APIView):
         """
         Delete notification.
         """
-        id = request.query_params.get('id')
+        id = request.query_params.get("id")
         if delete_admin_notification(id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -102,7 +105,7 @@ class ClearAdminNotificationsView(APIView):
         """
         Delete notifications.
         """
-        branch_id = request.query_params.get('branch_id')
+        branch_id = request.query_params.get("branch_id")
         if clear_admin_notifications(branch_id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)

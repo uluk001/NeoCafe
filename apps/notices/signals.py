@@ -3,7 +3,8 @@ from django.dispatch import receiver
 import time
 from apps.notices.models import BaristaNotification, ClentNotification
 from apps.storage.models import (
-    AvailableAtTheBranch, MinimalLimitReached,
+    AvailableAtTheBranch,
+    MinimalLimitReached,
     ReadyMadeProductAvailableAtTheBranch,
 )
 from apps.notices.tasks import (
@@ -38,35 +39,29 @@ def send_notification(sender, instance, **kwargs):
 # Admin notifications
 @receiver(post_save, sender=AvailableAtTheBranch)
 def send_notification(sender, instance, **kwargs):
-    print('AvailableAtTheBranch')
     create_notification_for_admin_task.delay()
 
 
 @receiver(post_delete, sender=AvailableAtTheBranch)
 def send_notification(sender, instance, **kwargs):
-    print('AvailableAtTheBranch')
     create_notification_for_admin_task.delay()
 
 
 @receiver(post_save, sender=MinimalLimitReached)
 def send_notification(sender, instance, **kwargs):
-    print('MinimalLimitReached')
     create_notification_for_admin_task.delay()
 
 
 @receiver(post_delete, sender=MinimalLimitReached)
 def send_notification(sender, instance, **kwargs):
-    print('MinimalLimitReached')
     create_notification_for_admin_task.delay()
 
 
 @receiver(post_save, sender=ReadyMadeProductAvailableAtTheBranch)
 def send_notification(sender, instance, **kwargs):
-    print('ReadyMadeProductAvailableAtTheBranch')
     create_notification_for_admin_task.delay()
 
 
 @receiver(post_delete, sender=ReadyMadeProductAvailableAtTheBranch)
 def send_notification(sender, instance, **kwargs):
-    print('ReadyMadeProductAvailableAtTheBranch')
     create_notification_for_admin_task.delay()

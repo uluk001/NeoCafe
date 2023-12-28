@@ -8,9 +8,13 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 
 from apps.storage.filters import BranchFilter
 from .models import Branch
-from .serializers import (BranchCreateSerializer, BranchSerializer,
-                          BranchUpdateSerializer, PutImageSerializer,
-                          BranchScheduleUpdateSerializer)
+from .serializers import (
+    BranchCreateSerializer,
+    BranchSerializer,
+    BranchUpdateSerializer,
+    PutImageSerializer,
+    BranchScheduleUpdateSerializer,
+)
 
 
 class BranchListView(ListAPIView):
@@ -234,7 +238,7 @@ class BranchScheduleUpdateView(generics.UpdateAPIView):
 
     @swagger_auto_schema(
         request_body=manual_request_schema,
-        responses={200: BranchScheduleUpdateSerializer}
+        responses={200: BranchScheduleUpdateSerializer},
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)

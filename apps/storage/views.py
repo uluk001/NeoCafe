@@ -11,25 +11,45 @@ from rest_framework.views import APIView
 
 from apps.accounts.models import CustomUser
 from apps.storage.filters import (
-    EmployeeFilter, IngredientFilter, ItemFilter,
-    ReadyMadeProductFilter)
+    EmployeeFilter,
+    IngredientFilter,
+    ItemFilter,
+    ReadyMadeProductFilter,
+)
 from apps.storage.serializers import (
-    AvailableAtTheBranchSerializer, CategorySerializer,
-    CreateIngredientSerializer, CreateItemSerializer,
-    CreateReadyMadeProductSerializer, EmployeeCreateSerializer,
-    EmployeeSerializer, EmployeeUpdateSerializer, IngredientDetailSerializer,
-    IngredientQuantityUpdateSerializer, IngredientSerializer, ItemSerializer,
-    PutImageToItemSerializer, ReadyMadeProductAvailableAtTheBranchSerializer,
-    ReadyMadeProductSerializer, ScheduleUpdateSerializer,
-    UpdateIngredientSerializer, UpdateItemSerializer,
-    UpdateReadyMadeProductSerializer, PutImageToReadyMadeProductSerializer,
+    AvailableAtTheBranchSerializer,
+    CategorySerializer,
+    CreateIngredientSerializer,
+    CreateItemSerializer,
+    CreateReadyMadeProductSerializer,
+    EmployeeCreateSerializer,
+    EmployeeSerializer,
+    EmployeeUpdateSerializer,
+    IngredientDetailSerializer,
+    IngredientQuantityUpdateSerializer,
+    IngredientSerializer,
+    ItemSerializer,
+    PutImageToItemSerializer,
+    ReadyMadeProductAvailableAtTheBranchSerializer,
+    ReadyMadeProductSerializer,
+    ScheduleUpdateSerializer,
+    UpdateIngredientSerializer,
+    UpdateItemSerializer,
+    UpdateReadyMadeProductSerializer,
+    PutImageToReadyMadeProductSerializer,
 )
 from apps.storage.services import (
     delete_employee_schedule_by_employee,
     get_a_list_of_ingredients_and_their_quantities_in_specific_branch,
-    get_available_at_the_branch, get_categories, get_employees,
-    get_ingrediants, get_items, get_low_stock_ingredients_in_branch,
-    get_ready_made_products, get_specific_category, get_specific_employee,
+    get_available_at_the_branch,
+    get_categories,
+    get_employees,
+    get_ingrediants,
+    get_items,
+    get_low_stock_ingredients_in_branch,
+    get_ready_made_products,
+    get_specific_category,
+    get_specific_employee,
 )
 
 
