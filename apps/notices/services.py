@@ -63,3 +63,27 @@ def create_admin_notification(text, branch_id):
     except Exception as e:
         print(e)
         return False
+
+
+def delete_admin_notification(id):
+    """
+    Deletes admin notification.
+    """
+    try:
+        notification = AdminNotification.objects.get(id=id)
+        notification.delete()
+        return True
+    except:
+        return False
+
+
+def clear_admin_notifications():
+    """
+    Deletes admin notifications.
+    """
+    try:
+        notifications = AdminNotification.objects.all()
+        notifications.delete()
+        return True
+    except:
+        return False

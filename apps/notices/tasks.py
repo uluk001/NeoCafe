@@ -96,22 +96,20 @@ def create_notification_for_admin_task():
     ready_made_products_in_stock_more_than_minimal_limit = get_ready_made_products_in_stock_more_than_minimal_limit_in_branches()
     for ingredient in ingredients_in_stock_more_than_minimal_limit:
         if not if_exists_admin_notification(
-            f'Ingredient {ingredient["ingredient_name"]} in shop {ingredient["name_of_shop"]} is running out of stock',
+            f'Ингредиент {ingredient["ingredient_name"]} в филиале {ingredient["name_of_shop"]} заканчивается',
             ingredient["branch_id_annotation"]
         ):
-            print('create_admin_notification' + str(ingredient["branch_id_annotation"]))
             create_admin_notification(
-                f'Ingredient {ingredient["ingredient_name"]} in shop {ingredient["name_of_shop"]} is running out of stock',
+                f'Ингредиент {ingredient["ingredient_name"]} в филиале {ingredient["name_of_shop"]} заканчивается',
                 ingredient["branch_id_annotation"]
             )
     for ready_made_product in ready_made_products_in_stock_more_than_minimal_limit:
         if not if_exists_admin_notification(
-            f'Ready made product {ready_made_product["ready_made_product_name"]} in shop {ready_made_product["name_of_shop"]} is running out of stock',
-            ready_made_product["branch_id_annotation"]
+                f'Готовый продукт {ready_made_product["ready_made_product_name"]} в филиале {ready_made_product["name_of_shop"]} заканчивается',
+                ready_made_product["branch_id_annotation"]
         ):
-            print('create_admin_notification' + str(ready_made_product["branch_id_annotation"]))
             create_admin_notification(
-                f'Ready made product {ready_made_product["ready_made_product_name"]} in shop {ready_made_product["name_of_shop"]} is running out of stock',
+                f'Готовый продукт {ready_made_product["ready_made_product_name"]} в филиале {ready_made_product["name_of_shop"]} заканчивается',
                 ready_made_product["branch_id_annotation"]
             )
     time.sleep(SLEEP_TIME)
