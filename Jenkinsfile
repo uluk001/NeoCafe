@@ -22,7 +22,7 @@ pipeline {
                     sh '''
                         cd /home/test/backend
                         git config --global --add safe.directory /home/test/backend
-                        git pull origin main
+                        git pull origin main || echo "Не удалось выполнить git pull"
                     '''
 
                     // Построение и запуск контейнеров, выполнение тестов
