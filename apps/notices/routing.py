@@ -3,6 +3,7 @@ from .consumers import (
     OrderNotificationToBaristaConsumer,
     NotificationToClentConsumer,
     NotificationToAdminConsumer,
+    ReminderConsumer,
 )
 
 
@@ -13,4 +14,5 @@ websocket_urlpatterns = [
     ),
     re_path(r"ws/to-clients/(?P<user_id>\w+)/$", NotificationToClentConsumer.as_asgi()),
     re_path(r"ws/notifications/admin/$", NotificationToAdminConsumer.as_asgi()),
+    re_path(r"ws/reminder/(?P<branch_id>\w+)/$", ReminderConsumer.as_asgi()),
 ]

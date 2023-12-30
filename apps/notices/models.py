@@ -33,3 +33,15 @@ class AdminNotification(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Reminder(models.Model):
+    content = models.TextField()
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    date_of_reminder = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.content
+
+    class Meta:
+        ordering = ["-date_of_reminder"]

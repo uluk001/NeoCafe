@@ -3,7 +3,9 @@ from apps.notices.models import (
     BaristaNotification,
     ClentNotification,
     AdminNotification,
+    Reminder,
 )
+from apps.ordering.models import Order
 from apps.branches.models import Branch
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -126,3 +128,24 @@ def create_notification_for_admin_task():
             "type": "get_admin_notification",
         },
     )
+
+
+@shared_task
+def create_reminder(branch_id, order_id):
+    """
+    Creates reminder.
+    """
+    if Order.objects.filter(id=order_id, status="new").exists():
+        branch = Branch.objects.get(id=branch_id)
+        Reminder.objects.create(
+            content=f"Примите заказ №{order_id}",
+            branch=branch,
+        )
+        time.sleep(SLEEP_TIME)
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"reminder_{branch_id}",
+            {
+                "type": "get_reminder",
+            },
+        )

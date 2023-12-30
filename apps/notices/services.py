@@ -2,9 +2,11 @@ from .models import (
     BaristaNotification,
     ClentNotification,
     AdminNotification,
+    Reminder,
 )
 from apps.branches.models import Branch
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 def delete_baristas_notification(id):
     """
@@ -88,6 +90,25 @@ def clear_admin_notifications():
     try:
         notifications = AdminNotification.objects.all()
         notifications.delete()
+        return True
+    except:
+        return False
+
+
+def delete_reminder(id):
+    """
+    Deletes reminder.
+    """
+    try:
+        notification = Reminder.objects.get(id=id)
+        notification.delete()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"reminder_{notification.branch.id}",
+            {
+                "type": "get_reminder",
+            },
+        )
         return True
     except:
         return False

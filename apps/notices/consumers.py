@@ -5,6 +5,7 @@ from .models import (
     BaristaNotification,
     ClentNotification,
     AdminNotification,
+    Reminder,
 )
 
 
@@ -68,7 +69,7 @@ class OrderNotificationToBaristaConsumer(AsyncWebsocketConsumer):
 
 # =============================================================
 # Client Notifications
-# ============================================================
+# =============================================================
 class NotificationToClentConsumer(AsyncWebsocketConsumer):
     """
     Consumer for sending notifications to client.
@@ -125,6 +126,9 @@ class NotificationToClentConsumer(AsyncWebsocketConsumer):
         await self.get_notification()
 
 
+# =============================================================
+# Admin Notifications
+# =============================================================
 class NotificationToAdminConsumer(AsyncWebsocketConsumer):
     """
     Consumer for sending notifications to admin.
@@ -176,3 +180,69 @@ class NotificationToAdminConsumer(AsyncWebsocketConsumer):
 
         # Send message to barista
         await self.send(text_data=json.dumps({"notification": notification}))
+
+
+# =============================================================
+# Reminder
+# =============================================================
+class ReminderConsumer(AsyncWebsocketConsumer):
+    """
+    Consumer for sending reminders to admin.
+    """
+
+    async def connect(self):
+        self.branch_id = self.scope["url_route"]["kwargs"]["branch_id"]
+        self.admin_group_name = f"reminder_{self.branch_id}"
+        await self.channel_layer.group_add(self.admin_group_name, self.channel_name)
+
+        await self.accept()
+        await self.get_reminder()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.admin_group_name, self.channel_name)
+
+    async def get_reminder(self, event=None):
+        branch_id = self.scope["url_route"]["kwargs"]["branch_id"]
+        reminders = await sync_to_async(list, thread_sensitive=True)(
+            Reminder.objects.filter(branch_id=branch_id).first()
+        )
+
+    async def get_reminder(self, event=None):
+        branch_id = self.scope["url_route"]["kwargs"]["branch_id"]
+        reminder = await sync_to_async(Reminder.objects.filter(branch_id=branch_id).first, thread_sensitive=True)()
+
+        if reminder:
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "id": reminder.id,
+                        "content": reminder.content,
+                        "date_of_reminder": reminder.date_of_reminder.strftime(
+                            "%d.%m.%Y"
+                        ),
+                    }
+                )
+            )
+        else:
+            await self.send(text_data=json.dumps({"content": None}))
+
+    async def get_reminder_handler(self, event):
+        await self.get_reminder()
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+
+    async def send_reminder(self, event):
+        reminder = event["reminder"]
+
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "id": reminder.id,
+                    "content": reminder.content,
+                    "date_of_reminder": reminder.date_of_reminder.strftime(
+                        "%d.%m.%Y"
+                    ),
+                }
+            )
+        )

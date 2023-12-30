@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     BaristaNotification,
-    ClentNotification,
+    ClentNotification, Reminder,
     AdminNotification,
 )
 
@@ -25,6 +25,12 @@ class AdminNotificationAdmin(admin.ModelAdmin):
     list_filter = ("branch", "date_of_notification")
 
 
+class ReminderAdmin(admin.ModelAdmin):
+    list_display = ("content", "branch", "date_of_reminder")
+    list_filter = ("branch", "date_of_reminder")
+
+
 admin.site.register(ClentNotification, ClentNotificationAdmin)
 admin.site.register(BaristaNotification, BaristaNotificationAdmin)
 admin.site.register(AdminNotification, AdminNotificationAdmin)
+admin.site.register(Reminder, ReminderAdmin)

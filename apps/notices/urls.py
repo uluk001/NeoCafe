@@ -5,6 +5,7 @@ from .views import (
     DeleteClientNotificationView,
     ClearAdminNotificationsView,
     DeleteAdminNotificationView,
+    DeleteReminderView,
 )
 
 
@@ -14,4 +15,5 @@ urlpatterns = [
     path("clear-waiter-notifications/", ClearWaiterNotificationsView.as_view()),
     path("clear-admin-notifications/", ClearAdminNotificationsView.as_view()),
     path("delete-admin-notification/", DeleteAdminNotificationView.as_view()),
+    path("delete-reminder/", DeleteReminderView.as_view()),
 ]

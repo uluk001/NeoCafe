@@ -1,13 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import BaristaNotification, AdminNotification
+from .models import (
+    BaristaNotification, AdminNotification,
+    ClentNotification, Reminder,
+)
 from .services import (
     delete_baristas_notification,
     delete_client_notification,
     clear_waiter_notifications,
     delete_admin_notification,
     clear_admin_notifications,
+    delete_reminder,
 )
 
 
@@ -103,5 +107,25 @@ class ClearAdminNotificationsView(APIView):
         Delete notifications.
         """
         if clear_admin_notifications():
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteReminderView(APIView):
+    """
+    Endpoint for deleting reminder.
+
+    Use this endpoint to delete reminder.
+
+    Parameters:
+    id (int): The id of the reminder.
+    """
+
+    def get(self, request, format=None):
+        """
+        Delete reminder.
+        """
+        id = int(request.query_params.get("id"))
+        if delete_reminder(id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
