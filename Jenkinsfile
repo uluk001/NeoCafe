@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        // Определите переменные для использования в пайплайне
+        BACKEND_DIR = '/home/test/backend'
+        GIT_BRANCH = 'main'
+        DEPLOY_SERVER = 'root@164.92.160.185'
+        DEPLOY_DIR = '/home/myprojects/backend'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -14,27 +22,40 @@ pipeline {
             }
         }
 
-    stage('Lint and Test') {
-        steps {
-            script {
-                // Запуск Redis и Celery
-                sh 'cd /home/test/backend && git pull origin main && docker-compose up -d --build'
-                echo "Redis and Celery started"
+        stage('Lint and Test') {
+            steps {
+                script {
+                    // Проверка существования директории и прав на неё
+                    if (sh(script: "test -d ${BACKEND_DIR}", returnStatus: true) != 0) {
+                        error("Directory does not exist: ${BACKEND_DIR}")
+                    }
 
-                // Запуск тестов
-                sh 'python3 manage.py test apps'
-                echo "Tests passed"
+                    // Запуск Redis, Celery и тестов
+                    sh """
+                        cd ${BACKEND_DIR}
+                        git pull origin ${GIT_BRANCH}
+                        docker-compose up -d --build
+                        python3 manage.py test apps
+                    """
+                    echo "Redis, Celery started and tests passed"
+                }
             }
         }
-    }
 
-    stage('Deploy') {
-        steps {
-            script {
-                sh 'ssh -v root@164.92.160.185 "cd /home/myprojects/backend && git pull origin main && docker-compose up -d --build"'
+        stage('Deploy') {
+            steps {
+                script {
+                    // Передаем переменные и команды в одном блоке sh
+                    sh """
+                        ssh -v ${DEPLOY_SERVER} << EOF
+                        cd ${DEPLOY_DIR}
+                        git pull origin ${GIT_BRANCH}
+                        docker-compose up -d --build
+                        EOF
+                    """
+                }
             }
         }
-    }
 
         stage('Publish results') {
             steps {
@@ -46,11 +67,12 @@ pipeline {
     post {
         success {
             echo "Build successful"
-            // You can add additional steps here, like running tests or notifications.
+            // Дополнительные шаги при успешной сборке
         }
 
         failure {
             echo "Build failed"
+            // Дополнительные шаги при неудачной сборке
         }
     }
 }
