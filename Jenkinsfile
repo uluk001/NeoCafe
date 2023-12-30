@@ -17,12 +17,11 @@ pipeline {
         stage('Lint and Test') {
             steps {
                 script {
-                    // Проверка существования директории и её безопасного использования
-                    sh 'test -d /home/test/backend || echo "Directory does not exist"'
                     sh '''
-                        cd /home/test/backend
-                        git config --global --add safe.directory /home/test/backend
-                        git pull origin main
+                        ssh -v root@164.92.160.185 "
+                        cd /home/myprojects/backend && 
+                        git pull origin main && 
+                        docker-compose up -d --build"
                     '''
 
                     // Построение и запуск контейнеров, выполнение тестов
