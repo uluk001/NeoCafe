@@ -18,7 +18,7 @@ pipeline {
         steps {
             script {
                 // Запуск Redis и Celery
-                sh 'cd /home/test && docker-compose up -d'
+                sh 'cd /home/test/backend && git pull origin main && docker-compose up -d --build'
                 echo "Redis and Celery started"
 
                 // Запуск тестов
