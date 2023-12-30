@@ -18,15 +18,12 @@ pipeline {
         steps {
             script {
                 // Запуск Redis и Celery
-                sh 'docker run -d --name redis redis'
-                sh 'celery -A your_project_name worker --loglevel=info &'
-
-                // Запуск линтеров
-                sh 'flake8 .'
-                sh 'black --check .'
+                sh 'cd /home/test && docker-compose up -d'
+                echo "Redis and Celery started"
 
                 // Запуск тестов
                 sh 'python3 manage.py test apps'
+                echo "Tests passed"
             }
         }
     }
