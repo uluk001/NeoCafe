@@ -96,16 +96,12 @@ class ClearAdminNotificationsView(APIView):
     Endpoint for deleting notifications.
 
     Use this endpoint to delete notifications.
-
-    Parameters:
-    branch_id (int): The id of the branch.
     """
 
     def get(self, request, format=None):
         """
         Delete notifications.
         """
-        branch_id = request.query_params.get("branch_id")
-        if clear_admin_notifications(branch_id):
+        if clear_admin_notifications():
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
