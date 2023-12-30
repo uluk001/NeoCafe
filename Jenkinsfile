@@ -20,10 +20,9 @@ pipeline {
                     // Проверка существования директории и её безопасного использования
                     sh 'test -d /home/test/backend || echo "Directory does not exist"'
                     sh '''
-                        ssh -v root@164.92.160.185 bash -c "'
-                        cd /home/test/backend &&
-                        git pull origin main || echo "Не удалось выполнить git pull"
-                        '"
+                        cd /home/test/backend
+                        git config --global --add safe.directory /home/test/backend
+                        git pull origin main
                     '''
 
                     // Построение и запуск контейнеров, выполнение тестов
