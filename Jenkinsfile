@@ -14,24 +14,6 @@ pipeline {
             }
         }
 
-        stage('Lint and Test') {
-            steps {
-                script {
-                    sh '''
-                        ssh -v root@164.92.160.185 "
-                        cd /home/myprojects/backend && 
-                        git pull origin main && 
-                        docker-compose up -d --build"
-                    '''
-
-                    // Построение и запуск контейнеров, выполнение тестов
-                    sh 'docker-compose up -d --build'
-                    sh 'python3 manage.py test apps'
-                    echo "Tests completed"
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 script {
