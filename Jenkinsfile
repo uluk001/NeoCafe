@@ -14,6 +14,23 @@ pipeline {
             }
         }
 
+    stage('Lint and Test') {
+        steps {
+            script {
+                // Запуск Redis и Celery
+                sh 'docker run -d --name redis redis'
+                sh 'celery -A your_project_name worker --loglevel=info &'
+
+                // Запуск линтеров
+                sh 'flake8 .'
+                sh 'black --check .'
+
+                // Запуск тестов
+                sh 'python3 manage.py test apps'
+            }
+        }
+    }
+
     stage('Deploy') {
         steps {
             script {
