@@ -23,7 +23,7 @@ pipeline {
                         cd /home/test/backend &&
                         git pull origin main &&
                         docker-compose up -d --build
-                        docker exec -it backend python3 manage.py test apps"
+                        docker exec backend python3 manage.py test apps"
                     '''
                 }
             }
