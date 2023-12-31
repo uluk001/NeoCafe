@@ -14,6 +14,20 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                script {
+                    // SSH и деплой на удаленный сервер
+                    sh '''
+                        ssh -v root@164.92.160.185 "
+                        cd /home/test/backend &&
+                        git pull origin main && 
+                        docker-compose up -d --build"
+                    '''
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
                 script {
