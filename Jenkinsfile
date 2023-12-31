@@ -21,9 +21,9 @@ pipeline {
                     sh '''
                         ssh -v root@164.92.160.185 "
                         cd /home/test/backend &&
-                        git pull origin main && 
+                        git pull origin main &&
                         docker-compose up -d --build
-                        python3 manage.py test apps"
+                        docker exec -it backend python3 manage.py test apps"
                     '''
                 }
             }
