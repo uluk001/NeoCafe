@@ -1,6 +1,6 @@
 # Neocafe
 
-**Neocafe** is a mobile app for self-call coffee and food ordering. The app allows users to register, browse menus, place orders and track their status, and receive notifications.
+**Neocafe** is an innovative mobile application designed to automate the process of ordering coffee and food in cafes and restaurants. It allows users not only to make orders quickly and conveniently, but also to track their status in real time, as well as to receive notifications when the order is ready. A special feature of Neocafe is the ability to work with different user roles, including administrators, waiters and baristas, which makes it a versatile tool for improving service and process management in cafes.
 
 
 
@@ -87,23 +87,25 @@ celery -A config worker -l info
 
 
 
-## Technologies and services
-- Python 3.8
-- Django REST Framework
-- Redis
-- Celery
+## Technologies and Services
+Neocafe utilizes a state-of-the-art technology stack including:
 
-#### Third-party services
-- Cloudinary
-- Algolia
-- Twilio
-- Infobip
+- **Python 3.8**: For backend development, provides high speed development and efficiency.
+- **Django REST Framework**: A powerful and flexible framework for building APIs.
+- **Redis & Celery**: For asynchronous task processing and data caching.
+- **Cloudinary**: Provides convenient media management.
+- **Algolia**: Enables advanced search capabilities.
+- **Twilio & Infobip**: Facilitate SMS and voice communications.
+
+Together, these technologies create a powerful platform that can efficiently handle user requests and provide quality service.
+
 
 ## Roles
 
-- **User**: Register, view menus, place orders, track order status, receive notifications.
-- **Administrator**: Manage branches, menus, employees and orders.
-- **Waiter/Barista**: Process and fulfill orders.
+- **User**: Can register, view menus, place orders, track their status and receive notifications.
+- **Administrator**: Manages branches, menus, employees and orders.
+- **Waiter/Barista**: Processes and fulfills orders.
+
 
 ## Using the API
 
@@ -163,3 +165,27 @@ Our API uses API keys to authenticate requests. You can view and manage your API
 
 **Web** 
 - `/web/accept-order/`, `/web/cancel-order/`, `/web/complete-order/` - Accept, cancel and complete an order. - `/web/institution-orders/canceled/`, `/web/institution-orders/completed/`, `/web/institution-orders/in-process/`, `/web/institution-orders/ready/` - Retrieve canceled, completed, in-process, and finished institutional orders. - `/web/make-order-ready/`, `/web/my-branch-id/` - Prepare an order for fulfillment and retrieve the branch ID. - `/web/takeaway-orders/canceled/`, `/web/takeaway-orders/completed/`, `/web/takeaway-orders/in-process/`, `/web/takeaway-orders/ready/` - Receive canceled, completed, in-process and ready takeaway orders.
+
+
+## Contributing
+We welcome contributions to the Neocafe project! If you're interested in helping improve Neocafe, please follow these steps:
+
+1. **Fork the repository**: This creates your own copy of the repository where you can make your changes.
+
+2. **Create a new branch**: Use the command `git checkout -b feature/AmazingFeature` to create a new branch for your feature.
+
+3. **Make your changes**: Implement your new feature or bug fix in this branch.
+
+4. **Commit your changes**: Use the command `git commit -m 'Add some AmazingFeature'` to save your changes with a descriptive commit message.
+
+5. **Push the branch**: Use the command `git push origin feature/AmazingFeature` to upload your changes to your forked repository.
+
+6. **Open a Pull Request**: Go to the GitHub page of your forked repository and click on "New pull request" to submit your changes for review.
+
+
+
+## Author & Contact
+
+- **Ismailov** - Initial work - [uluk001](https://github.com/uluk001)
+
+If you have questions, suggestions, or would like to report a bug, feel free to contact me at my email [ulukmanmuratov@gmail.com](mailto:ulukmanmuratov@gmail.com), via Telegram [@ismailovvv001](https://t.me/ismailovvv001), or connect with me on [LinkedIn](https://www.linkedin.com/in/ismailov-uluk-92784a233/).
