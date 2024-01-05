@@ -17,7 +17,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // SSH и деплой на удаленный сервер
+                    // SSH и запуск тестов на удаленном сервере
                     sh '''
                         ssh -v root@164.92.160.185 "
                         cd /home/test/backend &&
@@ -35,17 +35,21 @@ pipeline {
                     // SSH и деплой на удаленный сервер
                     sh '''
                         ssh -v root@164.92.160.185 "
-                        cd /home/myprojects/backend && 
-                        git pull origin main && 
+                        cd /home/myprojects/backend &&
+                        git pull origin main &&
                         docker-compose up -d --build"
                     '''
+                    echo "Deployment successful"
                 }
             }
         }
 
         stage('Publish results') {
             steps {
-                echo "Deployment successful"
+                script {
+                    // Публикация результатов тестов
+                    junit '**/test-reports/*.xml'
+                }
             }
         }
     }
