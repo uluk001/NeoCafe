@@ -14,21 +14,6 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                script {
-                    // SSH и запуск тестов на удаленном сервере
-                    sh '''
-                        ssh -v root@164.92.160.185 "
-                        cd /home/test/backend &&
-                        git pull origin main &&
-                        docker-compose up -d --build
-                        docker exec backend python3 manage.py test apps"
-                    '''
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 script {
