@@ -69,7 +69,7 @@ def get_available_ready_made_products(branch_id):
                 "id": product.id,
                 "name": product.name,
                 "description": product.description,
-                "price": product.price,
+                "price": str(product.price),
                 "image": product.image if product.image else None,
                 "compositions": [],
                 "is_available": True,

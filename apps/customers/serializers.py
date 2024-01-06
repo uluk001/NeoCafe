@@ -22,6 +22,7 @@ class GetCompatibleItemsSerializer(serializers.Serializer):
 
 
 class ExtendedItemSerializer(ItemSerializer):
+    price = serializers.CharField() 
     is_ready_made_product = serializers.BooleanField()
 
     class Meta(ItemSerializer.Meta):
