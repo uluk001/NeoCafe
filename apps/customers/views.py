@@ -79,12 +79,23 @@ class MenuItemDetailView(APIView):
             ),
         ],
     )
+        
     def get(self, request, item_id, format=None):
         """
         Get menu item detail.
         """
         is_ready_made_product = request.GET.get("is_ready_made_product", False)
         is_ready_made_product = True if is_ready_made_product == "true" else False
+
+        # Проверка валидности item_id
+        try:
+            item_id = int(item_id)
+        except ValueError:
+            return Response(
+                {"message": "Invalid item_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             item = (
                 Item.objects.get(id=item_id)
