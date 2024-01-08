@@ -216,7 +216,7 @@ def get_compatibles(item_id, is_ready_made_product=False, branch_id=None):
         if check_if_ready_made_product_can_be_made(product.id, branch_id, 1)
     ]
 
-    return if_items_can_be_made + if_ready_made_products_can_be_made
+    return (if_items_can_be_made + if_ready_made_products_can_be_made)[:3]
 
 
 def update_ingredient_stock_on_cooking(item_id, branch_id, quantity):
