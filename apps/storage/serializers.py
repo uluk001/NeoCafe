@@ -621,6 +621,11 @@ class UpdateItemSerializer(serializers.ModelSerializer):
         instance.category = Category.objects.get(
             id=validated_data.get("category_id", instance.category.id)
         )
+        if validated_data.get("compositions"):
+            compositions_data = validated_data.pop("compositions", [])
+            Composition.objects.filter(item=instance).delete()
+            for composition_data in compositions_data:
+                Composition.objects.create(item=instance, **composition_data)
         instance.save()
         return instance
 
