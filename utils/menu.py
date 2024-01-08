@@ -179,7 +179,7 @@ def get_complementary_objects(model, exclude_field, item_id, order_ids):
     )
 
 
-def get_compatibles(item_id, is_ready_made_product=False):
+def get_compatibles(item_id, is_ready_made_product=False, branch_id=None):
     """
     Function to get items that are often ordered with the given item.
     """
@@ -208,12 +208,12 @@ def get_compatibles(item_id, is_ready_made_product=False):
     if_items_can_be_made = [
         item
         for item in complementary_items
-        if check_if_items_can_be_made(item.id, 1, 1)
+        if check_if_items_can_be_made(item.id, branch_id, 1)
     ]
     if_ready_made_products_can_be_made = [
         product
         for product in complementary_ready_made_products
-        if check_if_ready_made_product_can_be_made(product.id, 1, 1)
+        if check_if_ready_made_product_can_be_made(product.id, branch_id, 1)
     ]
 
     return if_items_can_be_made + if_ready_made_products_can_be_made

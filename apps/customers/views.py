@@ -166,8 +166,9 @@ class CompatibleItemsView(APIView):
         """
         is_ready_made_product = request.GET.get("is_ready_made_product", False)
         is_ready_made_product = True if is_ready_made_product == "true" else False
-        items = get_compatibles(item_id)
-        serializer = MenuItemDetailSerializer(items, many=True)
+        branch_id = request.user.branch.id
+        items = get_compatibles(item_id, branch_id)
+        serializer = MenuItemDetailSerializer(items, is_ready_made_product, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
